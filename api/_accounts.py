@@ -45,6 +45,12 @@ def request_link(email: str, base_url: str):
         return {"ok": True, "mode": "email", "email": email}, 200
     if res.get("mode") == "dev" and _dev():
         return {"ok": True, "mode": "dev", "email": email, "link": link}, 200
+    if res.get("mode") == "resend":
+        # key is set but the send failed; most common cause is no verified domain,
+        # so Resend only delivers to the account owner's own address.
+        return {"ok": False, "mode": "resend", "email": email,
+                "error": "Could not send the email. Verify a sending domain in Resend "
+                         "to deliver links to addresses other than your own."}, 502
     return {"ok": False, "mode": "unconfigured", "email": email,
             "error": "Email delivery is not set up. Add RESEND_API_KEY to send links."}, 503
 
