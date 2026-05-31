@@ -1,0 +1,20 @@
+# Local secrets and config. Never commit.
+.env
+
+# Belt-and-suspenders: never commit any cookie / session export
+*cookies*.json
+*.session.json
+.gtmforce/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Signals SQLite cache
+*.db
+gtmforce_signals.db
+
+# Content-performance local snapshot store (agent 12, local-dev only)
+api/_store/
