@@ -492,6 +492,17 @@ const html = htm.bind(h);
 
 const API_BASE = location.protocol === 'file:' ? 'http://localhost:5000' : '';
 
+/* Fire-and-forget run logging. The backend saves a row only when the caller is
+   signed in (session cookie present); for anyone else it is a no-op. So tools
+   can call this unconditionally on a successful result, no auth check needed. */
+function recordRun(tool, summary){
+  try{
+    fetch(`${API_BASE}/api/auth`, {method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'run', tool, summary:(summary||'').slice(0,200)})});
+  }catch(e){}
+}
+
 /* ── solid icon set: Phosphor via Iconify. Fill weight for areal glyphs,
       Bold weight for inherently linear ones (check, plus, arrows, hash, code).
       One name→id map drives the whole app. Never reintroduce outline/stroke icons. ── */
@@ -897,6 +908,7 @@ function PersonaTool({seed}){
 
   useEffect(()=>{ if(seed && seed.tool==='persona' && seed.payload){
     preview({text:seed.payload.copy, type:seed.payload.ctype||'landing'}); } }, [seed]);
+  useEffect(()=>{ if(data && !data.error) recordRun('persona', (data.content_type||'copy')+' reviewed · overall '+(data.overall??'')); }, [data]);
 
   return html`
   <div class="view">
@@ -990,6 +1002,7 @@ function ExtractTool({seed}){
   }
 
   useEffect(()=>{ if(seed && seed.tool==='extract' && seed.payload){ run({url:seed.payload.url}); } }, [seed]);
+  useEffect(()=>{ if(data && !data.error) recordRun('extract', 'Transcript · '+(data.language||'')+(data.video_id?(' · '+data.video_id):'')); }, [data]);
 
   const cues = data?.cues || [];
   const q = query.trim().toLowerCase();
@@ -1465,6 +1478,7 @@ function SignalsTool({seed}){
   }
 
   useEffect(()=>{ if(seed && seed.tool==='signals' && seed.payload){ seedLookup(seed.payload); } }, [seed]);
+  useEffect(()=>{ if(data && !data.error) recordRun('signals', (data.unit||'lookup')+(data.query?(' · '+data.query):'')); }, [data]);
 
   async function exportResult(fmt){
     let id = job && job.id;
@@ -1716,6 +1730,7 @@ function CleanTool({seed}){
   }
 
   useEffect(()=>{ if(seed && seed.tool==='clean' && seed.payload){ run({text:seed.payload.text}); } }, [seed]);
+  useEffect(()=>{ if(data && !data.error) recordRun('clean', (((data.summary&&data.summary.validated)||(data.rows&&data.rows.length))||0)+' emails validated'); }, [data]);
 
   const rows = data?.rows || [];
   const sm = data?.summary;
@@ -2039,6 +2054,10 @@ function PlayRunner({card, onBack}){
     if(res && resRef.current && resRef.current.getBoundingClientRect().bottom > innerHeight)
       requestAnimationFrame(()=> resRef.current && resRef.current.scrollIntoView({block:'start'}));
   }, [res]);
+
+  useEffect(()=>{ if(res && res.steps && res.steps.length){
+    const last = res.steps[res.steps.length-1] || {};
+    recordRun(card.id, (card.name||card.title||card.id)+(last.summary?(' · '+last.summary):'')); } }, [res]);
 
   return html`
   <div class="view">
