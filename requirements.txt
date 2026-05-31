@@ -5,13 +5,10 @@ requests>=2.31
 # Signals reads richest with a real browser TLS fingerprint (Reddit / X). Optional:
 # the engine falls back to plain requests when it is absent.
 curl_cffi>=0.7
-# Clean Data (NoBounce): the importable email validator. The local dev box runs
-# mailguard 0.3.0 from a local build, but PyPI only publishes <=0.1.0, so a
-# >=0.3.0 pin is unsatisfiable on Vercel (it installs from PyPI). Left out of the
-# server install on purpose: the import in _clean.py is guarded, so NoBounce
-# degrades to a clean "mailguard not installed" message on the deploy until 0.3.0
-# is published to PyPI. Re-add the pin once it is.
-# mailguard>=0.3.0
+# Clean Data (NoBounce): mailguard 0.3.0 is not on PyPI (only 0.1.0 is), so install
+# it straight from the public GitHub repo, pinned to a commit for a reproducible
+# build. Swap to a plain "mailguard>=0.3.0" pin once 0.3.0 is published to PyPI.
+mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b49172df4861af055e6d49a0dd249d07eb
 # anthropic is optional: only used when ANTHROPIC_API_KEY is set (live persona +
 # teardown reactions). The deterministic engines run fine without it. The other
 # model path (any OpenAI-compatible endpoint, e.g. a RunPod-hosted reasoning
