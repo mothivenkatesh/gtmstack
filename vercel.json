@@ -1,9 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "functions": {
-    "api/transcript.py": { "maxDuration": 30 },
-    "api/clean.py": { "maxDuration": 60 },
-    "api/plays.py": { "maxDuration": 60 }
+    "api/transcript.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
+    "api/clean.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
+    "api/plays.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
+    "api/signals.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
+    "api/persona.py": { "includeFiles": "api/_*.py" },
+    "api/jobs.py": { "includeFiles": "api/_*.py" }
   },
   "rewrites": [
     { "source": "/", "destination": "/index.html" }

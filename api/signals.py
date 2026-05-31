@@ -11,7 +11,11 @@ with a connected session, else best-effort via the public syndication endpoint.
 import json
 from http.server import BaseHTTPRequestHandler
 
-from _signals import lookup, sources_status
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # make api/_*.py importable on Vercel
+
+from _signals import lookup, sources_status  # noqa: E402
 
 
 class handler(BaseHTTPRequestHandler):

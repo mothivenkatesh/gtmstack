@@ -1,0 +1,21 @@
+# Secrets - never upload to Vercel
+.env
+.gtmforce/
+*cookies*.json
+*.session.json
+
+# Local data / caches
+api/_store/
+__pycache__/
+*.pyc
+*.db
+
+# Dev-only / internal docs (root files are served as public static assets, so
+# keep internal build notes and the local Flask server off the deployed site)
+.git/
+.gitignore
+.claude/
+tests/
+app.py
+CLAUDE.md
+RISK.md

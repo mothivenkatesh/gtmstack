@@ -13,7 +13,11 @@ import json
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-from _core import fetch_transcript
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # make api/_*.py importable on Vercel
+
+from _core import fetch_transcript  # noqa: E402
 
 
 class handler(BaseHTTPRequestHandler):

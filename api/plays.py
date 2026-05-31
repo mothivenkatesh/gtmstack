@@ -14,7 +14,11 @@ see api/_plays.py for why the contact-axis plays wait for Phase-2 connectors.
 import json
 from http.server import BaseHTTPRequestHandler
 
-from _plays import list_plays, run_play
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # make api/_*.py importable on Vercel
+
+from _plays import list_plays, run_play  # noqa: E402
 
 
 class handler(BaseHTTPRequestHandler):

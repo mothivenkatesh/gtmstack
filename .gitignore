@@ -18,3 +18,5 @@ gtmforce_signals.db
 
 # Content-performance local snapshot store (agent 12, local-dev only)
 api/_store/
+
+.vercel

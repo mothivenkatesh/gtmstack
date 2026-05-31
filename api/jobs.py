@@ -17,6 +17,9 @@ from urllib.parse import urlparse, parse_qs
 # Force inline processing before the engine reads the flag at import time.
 os.environ.setdefault("SIGNALS_SYNC_JOBS", "1")
 
+import sys  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # make api/_*.py importable on Vercel
+
 from _jobs import submit, get, recent, export  # noqa: E402
 
 
