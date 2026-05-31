@@ -2,6 +2,12 @@
 
 Operating manual for this repo. Read before editing. No em dashes in code, copy, or this doc.
 
+## Deploy / repo
+
+- GitHub: `github.com/mothivenkatesh/gtmforce` (PRIVATE), remote `origin`, branch `main`. Local folder is still `yt-transcript-app`.
+- Secrets never leave the machine: `.env` (RunPod LLM key, cookie paths) is gitignored; LinkedIn cookies live OUTSIDE the repo at `~/.gtmforce/li_cookies.json`. `.gitignore` also blocks `*cookies*.json`, `*.session.json`, `.gtmforce/`, `*.db`, `api/_store/`, `__pycache__/`.
+- Vercel: target account `venkataachalu-gmailcoms-projects` (vercel.com). NOT deployed yet — the Vercel CLI is not logged in (auth is the user's action). Deploy via dashboard "Import Project" from the GitHub repo, or `vercel login` then `vercel --prod`. `vercel.json` is ready (python functions + `/`->`index.html`). Caveats on serverless: LinkedIn followers will not resolve (no local Chrome profile / datacenter IP checkpoints), some Signals sources degrade from datacenter IPs, and LLM-deep modes need env vars set in Vercel project settings (rotate the RunPod key first).
+
 ## What this is
 
 GTMforce is a multi-tool app shell: the GTMstack for AI-native companies and agents. A left dark sidebar navigates between tools. Each tool is a self-contained workspace, and every tool is built to be callable by an API or an AI agent, not only clicked by a human. Think "Cursor for GTM."
