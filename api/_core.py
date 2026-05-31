@@ -114,8 +114,9 @@ def fetch_transcript(url, want=None, tlang=None, api=None):
         return {"error": "Video unavailable (private, deleted, or region-locked)."}, 404
     except CouldNotRetrieveTranscript as e:
         etype = type(e).__name__
-        msg = (str(e).splitlines() or [etype])[0]
-        if "IpBlocked" in etype or "blocked" in msg.lower():
+        lines = str(e).splitlines()
+        msg = next((l.strip() for l in lines if l.strip()), etype)
+        if "IpBlocked" in etype or "RequestBlocked" in etype or "blocked" in msg.lower():
             msg = ("YouTube rate-limited this server IP. Set a residential proxy "
                    "(WEBSHARE_PROXY_USER/PASS or YT_PROXY) to fix — see README.")
         return {"error": msg, "etype": etype}, 502
