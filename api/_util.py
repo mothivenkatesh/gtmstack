@@ -1,5 +1,5 @@
 """
-GTMforce — small shared helpers for the content agents.
+GTMstack — small shared helpers for the content agents.
 
 Engagement-count parsing lives here because three engines need it: the teardown
 (agent 13), trend discovery (agent 14), and content performance (agent 12). One

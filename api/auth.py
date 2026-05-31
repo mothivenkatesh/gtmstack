@@ -1,5 +1,5 @@
 """
-Vercel serverless function for GTMforce sign-in. One file, action-routed:
+Vercel serverless function for GTMstack sign-in. One file, action-routed:
 
   POST /api/auth            {action:"request", email}    -> send magic link
   GET  /api/auth?action=verify&token=...                 -> set cookie, 302 to app

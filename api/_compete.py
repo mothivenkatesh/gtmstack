@@ -1,5 +1,5 @@
 """
-GTMforce — Competitor Intelligence engine.
+GTMstack — Competitor Intelligence engine.
 
 Give it your brand and your competitor brands. It reads who is posting and
 tagging about each across the channels Signals reaches (X, GitHub, YouTube,

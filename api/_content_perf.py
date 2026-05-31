@@ -1,5 +1,5 @@
 """
-GTMforce — Content Performance engine (agent 12).
+GTMstack — Content Performance engine (agent 12).
 
 Reads your OWN recent posts and says what works: the formats that earn
 engagement, the themes that land, and the best time to post (the longitudinal
@@ -8,7 +8,7 @@ themes cite the posts behind them, best-time windows show the metric, and the
 read is honest about how much history it has.
 
 Longitudinal caveat, stated plainly: true month-over-month needs continuous
-capture. GTMforce runs inline, not on a scheduler, so this engine keeps a small
+capture. GTMstack runs inline, not on a scheduler, so this engine keeps a small
 local snapshot store that accumulates a little more history each run; a
 month-over-month delta appears once two snapshots are far enough apart. Daily
 auto-capture is the Phase-2 (scheduled) job, and the store is local-dev only

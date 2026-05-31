@@ -1,5 +1,5 @@
 """
-GTMforce — Creator teardown engine.
+GTMstack — Creator teardown engine.
 
 Give it a handle. It pulls the creator's recent public posts (the Signals
 person engine) and a model names the patterns worth copying: the hooks that

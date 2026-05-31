@@ -1,5 +1,5 @@
 """
-GTMforce — resilient transport (the uninterrupted-scrape cascade).
+GTMstack — resilient transport (the uninterrupted-scrape cascade).
 
 One deterministic, LLM-free fetch path every Signals adapter shares, so a single
 flaky source or a rate-limit never takes the run down. The seven layers, in order:
@@ -116,7 +116,7 @@ _PROXY_RESTED = {}      # proxy url -> epoch until which it is cooling down
 
 
 def _proxy_list():
-    raw = os.getenv("GTMFORCE_PROXIES") or os.getenv("WEBSHARE_PROXY_URL") or ""
+    raw = os.getenv("GTMSTACK_PROXIES") or os.getenv("WEBSHARE_PROXY_URL") or ""
     return [p.strip() for p in raw.split(",") if p.strip()]
 
 

@@ -1,12 +1,12 @@
 """
-Account-flow controller for GTMforce sign-in, shared by the Vercel function
+Account-flow controller for GTMstack sign-in, shared by the Vercel function
 (api/auth.py) and the Flask dev server (app.py) so both speak the same logic.
 
 Passwordless: request a magic link, click it, get a stateless HMAC session cookie.
 Sign-in needs only APP_SECRET; the session token carries the identity, so staying
 signed in needs no database. DATABASE_URL is additive: it records the user (so you
 know who tried) and their run history. RESEND_API_KEY is additive: it delivers the
-link by email. In local dev (GTMFORCE_DEV=1) with no email provider, the link is
+link by email. In local dev (GTMSTACK_DEV=1) with no email provider, the link is
 returned to the caller so the flow works end to end with zero external services.
 Production never leaks the link.
 """
@@ -23,7 +23,7 @@ SESSION_MAX_AGE = 30 * 24 * 3600
 
 
 def _dev() -> bool:
-    return os.getenv("GTMFORCE_DEV") == "1"
+    return os.getenv("GTMSTACK_DEV") == "1"
 
 
 def _valid_email(email: str) -> bool:

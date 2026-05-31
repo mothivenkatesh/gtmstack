@@ -1,5 +1,5 @@
 """
-GTMforce — Signals engine (data intelligence layer).
+GTMstack — Signals engine (data intelligence layer).
 
 Give it a name / handle / email and it fans out across the channels developers
 actually live in, returning ONE normalized footprint card: who they are plus
@@ -70,10 +70,10 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 # Reddit's public JSON allows script-style UAs but 403s browser-mimic UAs from
 # datacenter IPs, so the Reddit adapter uses its own descriptive agent.
-REDDIT_UA = os.getenv("REDDIT_UA", "gtmforce-signals/0.1 (live-signals; research)")
+REDDIT_UA = os.getenv("REDDIT_UA", "gtmstack-signals/0.1 (live-signals; research)")
 
 _DB = os.getenv("SIGNALS_CACHE_DB") or os.path.join(
-    tempfile.gettempdir(), "gtmforce_signals.db")
+    tempfile.gettempdir(), "gtmstack_signals.db")
 
 
 # ── tiny helpers ────────────────────────────────────────────────────────────
@@ -950,7 +950,7 @@ def _gh_headers():
     """Standard GitHub REST headers, plus Bearer auth when a free read-only
     GITHUB_TOKEN is set (lifts the rate limit from 60 to 5,000 reads/hour)."""
     hdr = {"Accept": "application/vnd.github+json",
-           "User-Agent": "gtmforce-signals/0.1",
+           "User-Agent": "gtmstack-signals/0.1",
            "X-GitHub-Api-Version": "2022-11-28"}
     tok = os.getenv("GITHUB_TOKEN")
     if tok:

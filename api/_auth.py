@@ -1,5 +1,5 @@
 """
-Stateless auth tokens for GTMforce accounts.
+Stateless auth tokens for GTMstack accounts.
 
 Two token kinds, same mechanism: an HMAC-signed, time-limited payload of the form
 "body.sig" where body is url-safe-base64(JSON). No secret material lives in the

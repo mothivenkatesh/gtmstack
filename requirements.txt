@@ -12,7 +12,7 @@ mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b49172df48
 # anthropic is optional: only used when ANTHROPIC_API_KEY is set (live persona +
 # teardown reactions). The deterministic engines run fine without it. The other
 # model path (any OpenAI-compatible endpoint, e.g. a RunPod-hosted reasoning
-# model via GTMFORCE_LLM_BASE_URL) reuses requests above, so it needs no extra dep.
+# model via GTMSTACK_LLM_BASE_URL) reuses requests above, so it needs no extra dep.
 anthropic>=0.40
 
 # Accounts + run history (Phase 1). Postgres driver, used only when DATABASE_URL

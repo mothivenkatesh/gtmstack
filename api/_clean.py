@@ -1,5 +1,5 @@
 """
-GTMforce — Clean Data engine (deliverability layer).
+GTMstack — Clean Data engine (deliverability layer).
 
 Hand it a messy CSV / paste of contacts; get back agent-ready rows. Every
 address is run through mailguard (the same 9-layer validator published on PyPI):
