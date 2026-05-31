@@ -14,3 +14,8 @@ mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b49172df48
 # model path (any OpenAI-compatible endpoint, e.g. a RunPod-hosted reasoning
 # model via GTMFORCE_LLM_BASE_URL) reuses requests above, so it needs no extra dep.
 anthropic>=0.40
+
+# Accounts + run history (Phase 1). Postgres driver, used only when DATABASE_URL
+# is set; the app runs anonymously without it. [binary] ships a self-contained
+# build so no system libpq is needed on Vercel.
+psycopg[binary]>=3.1
