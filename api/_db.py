@@ -78,9 +78,9 @@ def upsert_user(email: str):
         cur.execute(
             "INSERT INTO users(email) VALUES(%s) "
             "ON CONFLICT(email) DO UPDATE SET last_seen_at=now() "
-            "RETURNING id, email", (email,))
+            "RETURNING id, email, (xmax = 0) AS created", (email,))
         row = cur.fetchone()
-    return {"id": row[0], "email": row[1]} if row else None
+    return {"id": row[0], "email": row[1], "created": bool(row[2])} if row else None
 
 
 def save_run(user_id, tool: str, summary: str, input_obj) -> bool:

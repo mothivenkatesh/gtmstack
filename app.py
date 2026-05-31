@@ -15,7 +15,7 @@ Optional translation (YouTube IP-blocks &tlang= from datacenter IPs):
 import os
 import sys
 
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, redirect
 from flask_cors import CORS
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -175,6 +175,39 @@ def plays_execute():
     body = request.get_json(silent=True) or {}
     payload, status = plays_run(body.get("play", ""), body.get("input") or {})
     return jsonify(payload), status
+
+
+@app.route("/api/auth", methods=["GET", "POST"])
+def auth_route():
+    """Passwordless sign-in, same controller as the Vercel function."""
+    import _accounts
+    if request.method == "GET":
+        action = request.args.get("action", "")
+        if action == "verify":
+            sess, ok, first = _accounts.consume_link(request.args.get("token", ""))
+            resp = redirect(("/?welcome=1" if first else "/") if ok else "/?auth=expired")
+            if ok:
+                resp.set_cookie(_accounts.COOKIE, sess, max_age=_accounts.SESSION_MAX_AGE,
+                                httponly=True, samesite="Lax", secure=request.is_secure)
+            return resp
+        if action == "me":
+            return jsonify(_accounts.whoami(request.cookies.get(_accounts.COOKIE)))
+        if action == "runs":
+            return jsonify(_accounts.list_runs(request.cookies.get(_accounts.COOKIE)))
+        return jsonify({"error": "unknown action"}), 400
+    body = request.get_json(silent=True) or {}
+    action = body.get("action")
+    if action == "request":
+        payload, status = _accounts.request_link(body.get("email", ""), request.host_url)
+        return jsonify(payload), status
+    if action == "logout":
+        resp = jsonify({"ok": True})
+        resp.delete_cookie(_accounts.COOKIE)
+        return resp
+    if action == "run":
+        return jsonify(_accounts.record_run(
+            request.cookies.get(_accounts.COOKIE), body.get("tool", ""), body.get("summary", "")))
+    return jsonify({"error": "unknown action"}), 400
 
 
 if __name__ == "__main__":

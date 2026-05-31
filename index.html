@@ -313,6 +313,45 @@
   .ci-ins-h{font-weight:600;color:var(--ink-gray-9);font-size:13.5px;overflow-wrap:anywhere}
   .ci-ins-d{color:var(--ink-gray-6);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}
 
+  /* ── accounts: auth modal + user chip ── */
+  .auth-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.32);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .auth-card{position:relative;background:#fff;border:1px solid var(--outline-gray-2);border-radius:14px;box-shadow:0 12px 48px rgba(15,23,42,.16);width:100%;max-width:400px;padding:34px 34px 26px}
+  .auth-mark{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink-gray-9);font-size:15px;margin-bottom:18px}
+  .auth-mark .m{width:30px;height:30px;border-radius:8px;background:var(--ink-violet-1);color:#fff;display:inline-flex;align-items:center;justify-content:center}
+  .auth-ico{width:46px;height:46px;border-radius:50%;background:var(--surface-violet-1);color:var(--ink-violet-1);display:flex;align-items:center;justify-content:center;margin:0 0 16px}
+  .auth-h{font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink-gray-9);margin:0 0 7px}
+  .auth-sub{font-size:14px;color:var(--ink-gray-5);line-height:1.55;margin:0 0 20px}
+  .auth-sub b{color:var(--ink-gray-8)}
+  .auth-label{font-size:12px;font-weight:600;color:var(--ink-gray-7);margin:0 0 7px;display:block}
+  .auth-input{width:100%;height:44px;border:1px solid var(--outline-gray-3);border-radius:9px;padding:0 13px;font-family:inherit;font-size:14px;color:var(--ink-gray-9);outline:none;transition:.14s;background:#fff}
+  .auth-input:focus{border-color:var(--ink-violet-1);box-shadow:0 0 0 3px var(--surface-violet-1)}
+  .auth-btn{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border:none;border-radius:9px;background:var(--ink-violet-1);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:14px;transition:.14s;text-decoration:none}
+  .auth-btn:hover{background:#5a3bd0}
+  .auth-btn:disabled{opacity:.55;cursor:not-allowed}
+  .auth-note{font-size:12px;color:var(--ink-gray-5);line-height:1.5;margin:16px 0 0}
+  .auth-err{font-size:12.5px;color:var(--ink-red-3);margin:9px 0 0;line-height:1.45}
+  .auth-legal{font-size:11px;color:var(--ink-gray-4);text-align:center;margin:18px 0 0;line-height:1.5}
+  .auth-x{position:absolute;top:13px;right:15px;background:none;border:none;color:var(--ink-gray-4);cursor:pointer;font-size:22px;line-height:1}
+  .auth-link{color:var(--ink-violet-1);background:none;border:none;font-family:inherit;font-size:13px;cursor:pointer;padding:0;margin-top:12px}
+  .auth-runrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--outline-gray-1);font-size:13px}
+  .auth-runrow:last-child{border-bottom:none}
+  .auth-runrow .rt{color:var(--ink-gray-9);font-weight:600;text-transform:capitalize}
+  .auth-runrow .rs{color:var(--ink-gray-5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .auth-runrow .ra{color:var(--ink-gray-4);font-size:11.5px;white-space:nowrap}
+  .auth-empty{text-align:center;color:var(--ink-gray-5);font-size:13px;padding:24px 0;line-height:1.6}
+  /* user chip + menu in the dark sidebar foot */
+  .user-chip{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:var(--menu-ink-6);padding:5px;border-radius:9px;transition:.13s}
+  .user-chip:hover{background:var(--menu-cards)}
+  .user-mono{width:30px;height:30px;border-radius:50%;background:var(--ink-violet-1);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;text-transform:uppercase}
+  .user-meta{min-width:0;flex:1}
+  .user-email{font-size:12.5px;color:var(--menu-ink-9);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-act{font-size:11px;color:var(--menu-ink-4)}
+  .signin-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;border-radius:9px;background:var(--ink-violet-1);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .signin-btn:hover{background:#5a3bd0}
+  .user-menu{position:absolute;bottom:60px;left:14px;right:14px;background:var(--menu-cards);border:1px solid var(--menu-line);border-radius:10px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .user-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--menu-ink-6);padding:11px 14px;font-family:inherit;font-size:13px;cursor:pointer}
+  .user-menu button:hover{background:var(--menu-bar);color:var(--menu-ink-9)}
+
   /* ── live signals ── */
   .conn-strip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 14px;margin-bottom:16px;
               background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:11px}
@@ -472,7 +511,7 @@ const ICONS = {
   reddit:'ph:reddit-logo-fill', building:'ph:buildings-fill', webhook:'ph:webhooks-logo-fill',
   rss:'ph:rss-fill', sealCheck:'ph:seal-check-fill', upload:'ph:upload-simple-fill',
   mail:'ph:envelope-fill', broom:'ph:broom-fill', chartLine:'ph:chart-line-up-fill',
-  minus:'ph:minus-bold',
+  minus:'ph:minus-bold', user:'ph:user-fill', signout:'ph:sign-out-fill',
 };
 const Icon = ({name, size=16, cls=''}) => html`<iconify-icon class=${cls} icon=${ICONS[name]||name} width=${size} height=${size}></iconify-icon>`;
 
@@ -2118,6 +2157,92 @@ function HomeTool({onLaunch}){
 }
 
 /* ════════════════════════ APP SHELL ════════════════════════ */
+/* ════════════════════════ ACCOUNTS — sign-in modal + run history ════════════════════════ */
+function Auth({open, onClose, initialErr}){
+  const [email, setEmail] = useState('');
+  const [stage, setStage] = useState('entry');   // entry | sent | dev
+  const [busy, setBusy]   = useState(false);
+  const [err, setErr]     = useState('');
+  const [link, setLink]   = useState('');
+  useEffect(()=>{ if(open){ setStage('entry'); setErr(initialErr||''); setBusy(false); } }, [open]);
+  if(!open) return null;
+  const submit = async () => {
+    if(busy || !email) return;
+    setBusy(true); setErr('');
+    try{
+      const r = await fetch('/api/auth', {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'request', email})});
+      const d = await r.json();
+      if(d.mode==='dev' && d.link){ setLink(d.link); setStage('dev'); }
+      else if(d.ok){ setStage('sent'); }
+      else setErr(d.error || 'Could not send the link. Try again.');
+    }catch(e){ setErr('Network error. Try again.'); }
+    setBusy(false);
+  };
+  return html`
+    <div class="auth-backdrop" onClick=${e=>{ if(e.target.classList.contains('auth-backdrop')) onClose(); }}>
+      <div class="auth-card">
+        <button class="auth-x" onClick=${onClose} aria-label="Close">×</button>
+        ${stage==='entry' && html`
+          <div class="auth-mark"><span class="m"><${Icon} name="target" size=16 /></span>GTMforce</div>
+          <h2 class="auth-h">Sign in to GTMforce</h2>
+          <p class="auth-sub">No password. We email you a one-time sign-in link.</p>
+          <label class="auth-label">Email</label>
+          <input class="auth-input" type="email" placeholder="you@company.com" value=${email}
+            onInput=${e=>setEmail(e.target.value)} onKeyDown=${e=>{ if(e.key==='Enter') submit(); }} autofocus />
+          ${err && html`<div class="auth-err">${err}</div>`}
+          <button class="auth-btn" disabled=${busy||!email} onClick=${submit}>${busy?'Sending…':'Continue with email'}</button>
+          <p class="auth-note">Your runs save to your history once you sign in.</p>
+          <p class="auth-legal">By continuing you agree to the Terms and Privacy Policy.</p>`}
+        ${stage==='sent' && html`
+          <div class="auth-ico"><${Icon} name="mail" size=22 /></div>
+          <h2 class="auth-h">Check your inbox</h2>
+          <p class="auth-sub">We sent a sign-in link to <b>${email}</b>. It expires in 15 minutes.</p>
+          <button class="auth-link" onClick=${()=>setStage('entry')}>Use a different email</button>`}
+        ${stage==='dev' && html`
+          <div class="auth-ico"><${Icon} name="sealCheck" size=22 /></div>
+          <h2 class="auth-h">Your sign-in link</h2>
+          <p class="auth-sub">Email is not configured in dev, so here is your link directly. It expires in 15 minutes.</p>
+          <a class="auth-btn" href=${link}>Open sign-in link</a>
+          <button class="auth-link" onClick=${()=>setStage('entry')}>Use a different email</button>`}
+      </div>
+    </div>`;
+}
+
+function RunsModal({open, onClose}){
+  const [data, setData] = useState(null);
+  useEffect(()=>{ if(open){ setData(null);
+    fetch('/api/auth?action=runs').then(r=>r.json()).then(setData).catch(()=>setData({runs:[]})); } }, [open]);
+  if(!open) return null;
+  const runs = (data&&data.runs)||[];
+  const fmt = (iso)=>{ try{ return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } };
+  return html`
+    <div class="auth-backdrop" onClick=${e=>{ if(e.target.classList.contains('auth-backdrop')) onClose(); }}>
+      <div class="auth-card" style="max-width:440px">
+        <button class="auth-x" onClick=${onClose}>×</button>
+        <div class="auth-mark"><span class="m"><${Icon} name="clock" size=16 /></span>Your runs</div>
+        ${!data ? html`<div class="auth-empty">Loading…</div>`
+          : runs.length ? html`<div>${runs.map(r=>html`
+              <div class="auth-runrow"><span class="rt">${r.tool}</span><span class="rs">${r.summary||''}</span><span class="ra">${fmt(r.at)}</span></div>`)}</div>`
+          : data.no_db ? html`<div class="auth-empty">You are signed in. Run history starts saving once a database is connected to GTMforce.</div>`
+          : html`<div class="auth-empty">No runs yet. Use any tool and it shows up here.</div>`}
+      </div>
+    </div>`;
+}
+
+function WelcomeModal({open, onClose}){
+  if(!open) return null;
+  return html`
+    <div class="auth-backdrop" onClick=${onClose}>
+      <div class="auth-card" style="text-align:center" onClick=${e=>e.stopPropagation()}>
+        <div class="auth-ico" style="margin:0 auto 16px"><${Icon} name="sparkles" size=22 /></div>
+        <h2 class="auth-h">Welcome to GTMforce</h2>
+        <p class="auth-sub">You are signed in. Every tool you run now saves to your history.</p>
+        <button class="auth-btn" onClick=${onClose}>Start exploring</button>
+      </div>
+    </div>`;
+}
+
 function App(){
   const [tool, setTool] = useState('home');
   const [seed, setSeed] = useState(null);
@@ -2126,6 +2251,23 @@ function App(){
   /* Pre-fill + run live: stamp a seed (n makes each launch a fresh object so the
      target tool's effect re-fires even on a repeat of the same card), then show it. */
   function launch(toolId, payload){ setSeed({tool:toolId, payload, n:Date.now()}); setTool(toolId); }
+
+  /* accounts: passwordless sign-in, soft-gated (the app stays usable anonymously) */
+  const [me, setMe]           = useState(null);   // null=loading; {anon:true} | {anon:false,email}
+  const [authOpen, setAuth]   = useState(false);
+  const [authErr, setAuthErr] = useState('');
+  const [menu, setMenu]       = useState(false);
+  const [runsOpen, setRuns]   = useState(false);
+  const [welcome, setWelcome] = useState(false);
+  const refreshMe = () => fetch('/api/auth?action=me').then(r=>r.json()).then(setMe).catch(()=>setMe({anon:true}));
+  useEffect(()=>{
+    refreshMe();
+    const p = new URLSearchParams(location.search);
+    if(p.get('welcome')==='1') setWelcome(true);
+    if(p.get('auth')==='expired'){ setAuthErr('That sign-in link expired or was already used. Request a new one.'); setAuth(true); }
+    if(p.get('welcome')||p.get('auth')) history.replaceState({}, '', location.pathname);
+  }, []);
+  const logout = async () => { try{ await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}); }catch(e){} setMenu(false); refreshMe(); };
 
   return html`
   <div class="app">
@@ -2141,8 +2283,19 @@ function App(){
             <span class="si-name">${t.name}</span>
           </div>`; })}
       </nav>
-      <div class="side-foot">
-        Preview your go-to-market before you spend on it.<br/>Your copy stays on your machine.
+      <div class="side-foot" style="position:relative">
+        ${me && !me.anon ? html`
+          ${menu && html`<div class="user-menu">
+            <button onClick=${()=>{ setRuns(true); setMenu(false); }}><${Icon} name="clock" size=15 /> Your runs</button>
+            <button onClick=${logout}><${Icon} name="signout" size=15 /> Sign out</button>
+          </div>`}
+          <button class="user-chip" onClick=${()=>setMenu(o=>!o)}>
+            <span class="user-mono">${(me.email||'?').slice(0,1)}</span>
+            <span class="user-meta"><div class="user-email">${me.email}</div><div class="user-act">Account and runs</div></span>
+          </button>`
+        : html`
+          <button class="signin-btn" onClick=${()=>{ setAuthErr(''); setAuth(true); }}><${Icon} name="user" size=15 /> Sign in</button>
+          <div style="margin-top:11px;line-height:1.55">Preview your go-to-market before you spend on it.</div>`}
       </div>
     </aside>
 
@@ -2161,6 +2314,9 @@ function App(){
       ${tool==='competitor' && html`<div><${CompetitorTool} /></div>`}
       <div style=${tool==='connectors' ? '' : 'display:none'}><${ConnectorsTool} /></div>
     </main>
+    <${Auth} open=${authOpen} initialErr=${authErr} onClose=${()=>setAuth(false)} />
+    <${RunsModal} open=${runsOpen} onClose=${()=>setRuns(false)} />
+    <${WelcomeModal} open=${welcome} onClose=${()=>setWelcome(false)} />
   </div>`;
 }
 render(html`<${App} />`, document.getElementById('root'));
