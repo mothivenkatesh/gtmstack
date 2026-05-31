@@ -995,7 +995,7 @@ function ExtractTool({seed}){
     try{
       const r = await fetch(`${API_BASE}/api/transcript?` + p.toString());
       const j = await r.json();
-      if(!r.ok){ setError(j.error || 'Request failed.'); if(!opts.lang && !opts.translate) setData(null); }
+      if(!r.ok){ setError(j.error || 'YouTube blocked this fetch from the server (common on hosting). Some videos slip through, most need a residential proxy. Try a different video.'); if(!opts.lang && !opts.translate) setData(null); }
       else { setData(j); setQuery(''); if(bodyRef.current) bodyRef.current.scrollTop = 0; }
     }catch(e){ setError('Could not reach the extractor. Is the local server running on :5000?'); }
     setLoading(false);
