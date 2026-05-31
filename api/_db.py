@@ -1,10 +1,10 @@
 """
-Postgres data layer for GTMforce accounts and run history.
+Postgres data layer for GTMstack accounts and run history.
 
 Env-gated on DATABASE_URL (Neon / Supabase / any Postgres). When it is unset, or
 the driver is missing, configured() is False and every call degrades to a no-op:
 the app runs exactly as it does today, anonymous and stateless. This mirrors the
-rest of GTMforce, where each capability lights up only when its key is present.
+rest of GTMstack, where each capability lights up only when its key is present.
 
 Boring on purpose: one lazy connection per process (serverless reuses warm
 instances), autocommit, parameterised SQL only. At ~100 concurrent the single

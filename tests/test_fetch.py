@@ -39,7 +39,7 @@ class FetchTests(unittest.TestCase):
         self._orig_transport = _fetch._transport_get
         self._orig_sleep = time.sleep
         time.sleep = lambda *a, **k: None          # no real backoff waits
-        for k in ("GTMFORCE_PROXIES", "WEBSHARE_PROXY_URL", "OPENAI_API_KEY"):
+        for k in ("GTMSTACK_PROXIES", "WEBSHARE_PROXY_URL", "OPENAI_API_KEY"):
             os.environ.pop(k, None)
 
     def tearDown(self):
@@ -171,13 +171,13 @@ class FetchTests(unittest.TestCase):
         self.assertIsNone(c["proxies"][0])
 
     def test_proxy_used_when_configured(self):
-        os.environ["GTMFORCE_PROXIES"] = "http://p1:1,http://p2:2"
+        os.environ["GTMSTACK_PROXIES"] = "http://p1:1,http://p2:2"
         c = self._seq([FakeResp(200)])
         _fetch.get("https://o.test/x")
         self.assertIsNotNone(c["proxies"][0])
 
     def test_proxy_rested_on_failure(self):
-        os.environ["GTMFORCE_PROXIES"] = "http://only:1"
+        os.environ["GTMSTACK_PROXIES"] = "http://only:1"
         self._seq([ConnectionError("boom"), FakeResp(200)])
         _fetch.get("https://p.test/x", retries=2)
         self.assertTrue(any(v > 0 for v in _fetch._PROXY_RESTED.values()))

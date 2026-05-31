@@ -1,10 +1,10 @@
 """
-GTMforce — the reliability primitive the content agents share.
+GTMstack — the reliability primitive the content agents share.
 
 The product thesis (positioning.md, agent-specs.md section B) is that an agent is
 only trustworthy when its outputs carry three things: a confidence the caller can
 gate on, provenance that traces every insight to its source, and an auditable
-reason. The pipeline agents (1-11) get this from a data layer GTMforce does not
+reason. The pipeline agents (1-11) get this from a data layer GTMstack does not
 have yet; the content agents (12 Content Performance, 13 Profile Teardown, 14
 Trend & Top-Voice) can get it from the evidence they already read.
 

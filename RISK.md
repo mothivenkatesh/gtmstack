@@ -20,7 +20,7 @@ to an LLM, then returns grounded analysis.
 
 ## The Failure Story (90 days out)
 
-A user points `GTMFORCE_LLM_BASE_URL` at their model and `GTMFORCE_MODEL` at a
+A user points `GTMSTACK_LLM_BASE_URL` at their model and `GTMSTACK_MODEL` at a
 DeepSeek reasoning model. It works in testing. Three weeks later a play quietly
 starts returning "built-in model" results for every run. Root cause: the
 reasoning model's `<think>` block plus the JSON now exceeds `max_tokens`, so the
@@ -43,10 +43,10 @@ fell back. This is the textbook silent-swallow failure (Category 2).
 
 | Mode | Likelihood | Impact | Fix |
 |---|---|---|---|
-| S1: Anthropic call has no explicit timeout | Medium | A slow Anthropic API hangs the play far past the OpenAI-path's bounded timeout | Pass a `timeout` to `Anthropic().messages.create` (mirror `GTMFORCE_LLM_TIMEOUT`) |
+| S1: Anthropic call has no explicit timeout | Medium | A slow Anthropic API hangs the play far past the OpenAI-path's bounded timeout | Pass a `timeout` to `Anthropic().messages.create` (mirror `GTMSTACK_LLM_TIMEOUT`) |
 | S2: No circuit breaker on the LLM host | Medium | If the model endpoint is down, every play eats the full timeout then falls back; no fast-fail | Route the LLM POST through `_fetch` (it already has the breaker) or add a model-host breaker |
 | S3: `_store` snapshot write is not atomic | Medium under concurrency | Two content_performance runs for the same handle race the JSON read-modify-write → lost or corrupt snapshots | Write to a temp file + `os.replace`, or a per-handle lock; the breaker pattern already shows the lock idiom |
-| S4: No startup validation of model config | Medium | `GTMFORCE_MODEL` not matching the deployed model fails at runtime, not startup, and degrades silently (ties to C2) | On first use, validate reachability or surface the first error loudly instead of swallowing |
+| S4: No startup validation of model config | Medium | `GTMSTACK_MODEL` not matching the deployed model fails at runtime, not startup, and degrades silently (ties to C2) | On first use, validate reachability or surface the first error loudly instead of swallowing |
 | S5: Play output shape changed (string list → object) | Low now, high if an agent already calls it | An external caller of the old `creator_teardown` shape breaks with no version flag | Version the play response, or document the shape as unstable pre-1.0 |
 
 ## Acceptable (document and monitor)

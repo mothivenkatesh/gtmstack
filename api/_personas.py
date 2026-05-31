@@ -1,5 +1,5 @@
 """
-Synthetic Dev Persona engine for GTMforce.
+Synthetic Dev Persona engine for GTMstack.
 
 Five developer archetypes, distilled from a corpus of ~17.5K real developer
 voices across HackerNews / Reddit / Dev.to / GitHub / Quora. You paste a piece
@@ -12,7 +12,7 @@ Two engines, same output shape:
              evaluates copy (works with no key, always on).
   • ai     — richer in-character reactions from a live model, used automatically
              when one is configured (ANTHROPIC_API_KEY, or any OpenAI-compatible
-             endpoint via GTMFORCE_LLM_BASE_URL, e.g. a RunPod-hosted model).
+             endpoint via GTMSTACK_LLM_BASE_URL, e.g. a RunPod-hosted model).
 """
 import re
 

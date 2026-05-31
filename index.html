@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GTMforce · Cursor for GTM</title>
+<title>GTMstack · Cursor for GTM</title>
 <meta name="description" content="Preview how developers react to your go-to-market copy before you launch, then mine real audience language to sharpen every message." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -2184,8 +2184,8 @@ function Auth({open, onClose, initialErr}){
       <div class="auth-card">
         <button class="auth-x" onClick=${onClose} aria-label="Close">×</button>
         ${stage==='entry' && html`
-          <div class="auth-mark"><span class="m"><${Icon} name="target" size=16 /></span>GTMforce</div>
-          <h2 class="auth-h">Sign in to GTMforce</h2>
+          <div class="auth-mark"><span class="m"><${Icon} name="target" size=16 /></span>GTMstack</div>
+          <h2 class="auth-h">Sign in to GTMstack</h2>
           <p class="auth-sub">No password. We email you a one-time sign-in link.</p>
           <label class="auth-label">Email</label>
           <input class="auth-input" type="email" placeholder="you@company.com" value=${email}
@@ -2224,7 +2224,7 @@ function RunsModal({open, onClose}){
         ${!data ? html`<div class="auth-empty">Loading…</div>`
           : runs.length ? html`<div>${runs.map(r=>html`
               <div class="auth-runrow"><span class="rt">${r.tool}</span><span class="rs">${r.summary||''}</span><span class="ra">${fmt(r.at)}</span></div>`)}</div>`
-          : data.no_db ? html`<div class="auth-empty">You are signed in. Run history starts saving once a database is connected to GTMforce.</div>`
+          : data.no_db ? html`<div class="auth-empty">You are signed in. Run history starts saving once a database is connected to GTMstack.</div>`
           : html`<div class="auth-empty">No runs yet. Use any tool and it shows up here.</div>`}
       </div>
     </div>`;
@@ -2236,7 +2236,7 @@ function WelcomeModal({open, onClose}){
     <div class="auth-backdrop" onClick=${onClose}>
       <div class="auth-card" style="text-align:center" onClick=${e=>e.stopPropagation()}>
         <div class="auth-ico" style="margin:0 auto 16px"><${Icon} name="sparkles" size=22 /></div>
-        <h2 class="auth-h">Welcome to GTMforce</h2>
+        <h2 class="auth-h">Welcome to GTMstack</h2>
         <p class="auth-sub">You are signed in. Every tool you run now saves to your history.</p>
         <button class="auth-btn" onClick=${onClose}>Start exploring</button>
       </div>
@@ -2274,7 +2274,7 @@ function App(){
     <aside class="sidebar">
       <div class="side-brand">
         <span class="side-mark"><${Icon} name="target" size=19 /></span>
-        <span class="side-name">GTMforce<span class="tag">Cursor for GTM</span></span>
+        <span class="side-name">GTMstack<span class="tag">Cursor for GTM</span></span>
       </div>
       <nav class="side-nav">
         ${NAV.map(id=>{ const t=TOOLS[id]; return html`

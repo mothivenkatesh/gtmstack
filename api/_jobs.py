@@ -1,5 +1,5 @@
 """
-GTMforce — Signals async jobs (the delivery layer).
+GTMstack — Signals async jobs (the delivery layer).
 
 Wraps the synchronous Signals engine in an async job surface so an agent can:
   - submit a lookup (single or bulk) and get a job id back right away,
@@ -40,7 +40,7 @@ except Exception:  # pragma: no cover
 from _signals import lookup, to_csv, to_csv_bulk
 
 _JOBS_DB = os.getenv("SIGNALS_JOBS_DB") or os.path.join(
-    tempfile.gettempdir(), "gtmforce_jobs.db")
+    tempfile.gettempdir(), "gtmstack_jobs.db")
 # Inline mode: process synchronously inside submit(). Default-on for serverless,
 # where a background worker thread cannot outlive the request.
 SYNC = os.getenv("SIGNALS_SYNC_JOBS", "").strip().lower() in ("1", "true", "yes")
@@ -241,7 +241,7 @@ def _fire_webhook(url, job):
     }
     try:
         requests.post(url, json=body, timeout=10,
-                      headers={"User-Agent": "GTMforce-Signals/1.0",
+                      headers={"User-Agent": "GTMstack-Signals/1.0",
                                "Content-Type": "application/json"})
     except Exception:
         pass

@@ -1,19 +1,19 @@
 """
-GTMforce — one chat completion, provider-agnostic.
+GTMstack — one chat completion, provider-agnostic.
 
 Both content engines (_teardown, _personas) want the same thing: send a system
 + user prompt, get text back, and fall back to a heuristic when no model is
 configured. This module owns the provider switch so neither engine repeats it.
 
 Provider is chosen by env, most specific first:
-  1. GTMFORCE_LLM_BASE_URL  -> any OpenAI-compatible endpoint (RunPod Serverless
+  1. GTMSTACK_LLM_BASE_URL  -> any OpenAI-compatible endpoint (RunPod Serverless
      vLLM, OpenRouter, DeepSeek, a local server). One POST to
-     {base}/chat/completions, bearer = GTMFORCE_LLM_KEY. The bring-your-own-model
+     {base}/chat/completions, bearer = GTMSTACK_LLM_KEY. The bring-your-own-model
      path. Uses requests (already a dep), so no openai SDK needed.
   2. ANTHROPIC_API_KEY      -> Anthropic Messages API (the original path).
   3. neither                -> raise NoModel; the caller runs its heuristic.
 
-GTMFORCE_MODEL names the model for whichever provider wins. GTMFORCE_MAX_TOKENS
+GTMSTACK_MODEL names the model for whichever provider wins. GTMSTACK_MAX_TOKENS
 optionally raises the ceiling (reasoning models need room for their <think>
 block before the JSON). Shared by app.py (Flask) and the Vercel handlers.
 """
@@ -28,11 +28,11 @@ class NoModel(Exception):
 
 def configured():
     """True when some live model is reachable (either provider)."""
-    return bool(os.getenv("GTMFORCE_LLM_BASE_URL") or os.getenv("ANTHROPIC_API_KEY"))
+    return bool(os.getenv("GTMSTACK_LLM_BASE_URL") or os.getenv("ANTHROPIC_API_KEY"))
 
 
 def _provider():
-    if os.getenv("GTMFORCE_LLM_BASE_URL"):
+    if os.getenv("GTMSTACK_LLM_BASE_URL"):
         return "openai"
     if os.getenv("ANTHROPIC_API_KEY"):
         return "anthropic"
@@ -40,7 +40,7 @@ def _provider():
 
 
 def _model(prov):
-    m = os.getenv("GTMFORCE_MODEL")
+    m = os.getenv("GTMSTACK_MODEL")
     if m:
         return m
     return "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" if prov == "openai" else "claude-haiku-4-5"
@@ -65,20 +65,20 @@ def chat(system, user, max_tokens=900):
     model = _model(prov)
     # Reasoning models spend tokens thinking before they answer, so give the
     # OpenAI-compatible path more headroom or the JSON gets truncated.
-    mt = int(os.getenv("GTMFORCE_MAX_TOKENS") or
+    mt = int(os.getenv("GTMSTACK_MAX_TOKENS") or
              (max(max_tokens, 3000) if prov == "openai" else max_tokens))
 
     if prov == "openai":
         import requests
-        base = os.environ["GTMFORCE_LLM_BASE_URL"].rstrip("/")
-        key = os.getenv("GTMFORCE_LLM_KEY") or os.getenv("OPENAI_API_KEY") or "x"
+        base = os.environ["GTMSTACK_LLM_BASE_URL"].rstrip("/")
+        key = os.getenv("GTMSTACK_LLM_KEY") or os.getenv("OPENAI_API_KEY") or "x"
         r = requests.post(
             f"{base}/chat/completions",
             headers={"Authorization": f"Bearer {key}"},
             json={"model": model, "max_tokens": mt, "temperature": 0.6,
                   "messages": [{"role": "system", "content": system},
                                {"role": "user", "content": user}]},
-            timeout=float(os.getenv("GTMFORCE_LLM_TIMEOUT", "120")),
+            timeout=float(os.getenv("GTMSTACK_LLM_TIMEOUT", "120")),
         )
         r.raise_for_status()
         return _strip_think(r.json()["choices"][0]["message"]["content"])

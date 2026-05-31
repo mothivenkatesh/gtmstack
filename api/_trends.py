@@ -1,5 +1,5 @@
 """
-GTMforce — Trend & Top-Voice discovery engine (agent 14).
+GTMstack — Trend & Top-Voice discovery engine (agent 14).
 
 Give it a topic. It scans the dev-native channels (the Signals keyword feed),
 ranks what is moving by VELOCITY (engagement per hour, the metric shown, never

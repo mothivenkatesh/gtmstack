@@ -1,5 +1,5 @@
 """
-GTMforce — Plays (composite, agent-callable multi-step tools).
+GTMstack — Plays (composite, agent-callable multi-step tools).
 
 A play chains existing single-tool engines into ONE run an agent can call and
 branch on. Each play takes a small input dict and returns:

@@ -1,5 +1,5 @@
 """
-Magic-link email delivery for GTMforce sign-in.
+Magic-link email delivery for GTMstack sign-in.
 
 Provider-agnostic and gated, like the rest of the app. If RESEND_API_KEY is set,
 send via Resend's HTTP API (reuses requests, no SDK). Otherwise a dev fallback
@@ -26,13 +26,13 @@ def configured() -> bool:
 
 
 def _from() -> str:
-    return os.getenv("MAIL_FROM", "GTMforce <onboarding@resend.dev>")
+    return os.getenv("MAIL_FROM", "GTMstack <onboarding@resend.dev>")
 
 
 def _html(link: str) -> str:
     return (
         '<div style="font-family:system-ui,sans-serif;font-size:15px;color:#171717">'
-        "<p>Click to sign in to GTMforce:</p>"
+        "<p>Click to sign in to GTMstack:</p>"
         f'<p><a href="{link}" style="display:inline-block;padding:10px 16px;'
         'background:#6846E3;color:#fff;border-radius:8px;text-decoration:none">'
         "Sign in</a></p>"
@@ -59,7 +59,7 @@ def send_magic_link(email: str, link: str) -> dict:
             headers={"Authorization": f"Bearer {os.getenv('RESEND_API_KEY')}",
                      "Content-Type": "application/json"},
             json={"from": _from(), "to": [email],
-                  "subject": "Your GTMforce sign-in link", "html": _html(link)},
+                  "subject": "Your GTMstack sign-in link", "html": _html(link)},
             timeout=15)
         if r.status_code in (200, 201):
             return {"sent": True, "mode": "resend"}

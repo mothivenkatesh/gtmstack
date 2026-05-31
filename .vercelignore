@@ -1,6 +1,6 @@
 # Secrets - never upload to Vercel
 .env
-.gtmforce/
+.gtmstack/
 *cookies*.json
 *.session.json
 
