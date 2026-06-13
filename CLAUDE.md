@@ -170,7 +170,7 @@ Env vars (all optional, they act as feature flags). `app.py` loads a gitignored 
 
 **Design**
 - Frappe Design System tokens (light surface + dark `--menu-bar` sidebar). Geist + Geist Mono.
-- Icons are always solid. Source: Phosphor via Iconify, Fill weight for areal glyphs and Bold weight for inherently linear ones (check, plus, arrows, hash, code). One central name to id map drives the `Icon` component. Never reintroduce outline/stroke icons.
+- Icons: Phosphor via Iconify, **regular weight** (One UI suite canonical, matches Agentic + India Payments). One central name to id map drives the `Icon` component. Keep every glyph the same regular weight; do not mix in `-fill` / `-bold` suffixes. (Changed 2026-06: was solid fill/bold; unified to regular when the three apps were converged to One UI.)
 - No em dashes in UI copy. Lead with the answer. Plain language so a non-technical founder gets it.
 - Text-overflow safety on cards (`overflow-wrap: anywhere`, `min-width: 0` on flex/grid children). Check WCAG contrast.
 

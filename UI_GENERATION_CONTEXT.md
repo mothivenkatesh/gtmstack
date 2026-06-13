@@ -52,6 +52,23 @@ These rules are derived from product-design case studies on complex reporting an
 - Prefer a dependency modal or drawer when edits may affect other surfaces. Show affected reports, generated UI, owners, and last-used metadata.
 - Use color to support rule/state comprehension, but tokenized status colors must carry the meaning; do not invent local palettes per screen.
 
+The full visual evidence inventory is in `VISUAL_RESEARCH_AUDIT.md`. It covers all supplied links and reachable images, including the mobile wallet screens, reporting builders, dependency modals, conversation-builder panels, and Recko component boards.
+
+## Pattern Classification
+
+Before generating UI, classify the requested screen into one primary pattern. If two patterns apply, choose the one with the higher risk or more complex state.
+
+| Pattern | Use for | Required context |
+| --- | --- | --- |
+| Dense analytics definition UI | Metrics, dimensions, reports, dashboards, reusable finance/GTM definitions | Definition name, values, source/channel, filters, dependencies, owner, last edited |
+| Dependency-aware editor | Shared prompts, rules, metrics, dimensions, portfolios, workflows | Affected surfaces, severity, owner, preview diff, publish/rollback path |
+| High-risk mobile task | Connect, send, vote, publish, deploy, generate, sync, import, review | Active entity/account, destination, scope, fee/cost, trust reason, confirmation |
+| Journey or agent builder | Flow, journey, prompt chain, conversation, workflow automation | Assets, nodes, branches, selected-node config, tester, flow-level status |
+| AI evidence review | Recommendations, research, scoring, generated artifacts | Sources, recency, confidence, assumptions, user override |
+| Design-system work | Components, tokens, layouts, modals, mobile variants | Foundation layer, anatomy, states, token mapping, examples, adoption note |
+
+If the pattern is unclear, generate a discovery/setup UI that collects missing context instead of inventing a new surface.
+
 ## Complex Systems Model
 
 For advanced products such as personalized portfolio builders, AI agent apps, analytics suites, and GTM research workbenches, generate UI from this model:
@@ -84,6 +101,8 @@ If a generated UI cannot identify these pieces, it should start with a conservat
 | Journey builder | User designs a flow or agent journey | Assets rail, flow canvas, configuration/testing panel, node status |
 | Focused form | User needs concentration and low distraction | Centered narrow content, sticky validation/action footer |
 | Data workspace | User needs visibility across modules | Full-width 12-column content, stable gutters, dense modules |
+| Definition library | User manages reusable rules, metrics, dimensions, prompts, or portfolios | Search/filter header, table/list rows, row expansion, dependency counts, edit drawer |
+| Mobile risk flow | User commits a sensitive action on mobile | Context header, compact form, trust/state message, bottom review action, confirmation sheet |
 
 Do not use a marketing hero for app screens. Hero-scale type belongs only to public landing pages.
 
@@ -106,6 +125,8 @@ Do not use a marketing hero for app screens. Hero-scale type belongs only to pub
 - Keep the active entity/account/portfolio/wallet/workspace visible before asking for action.
 - Show trust, security, saved-state, or data-scope messages near sensitive actions.
 - Use bottom sheets or drawers for focused configuration; avoid full desktop modals on small screens.
+- Review screens must repeat the risky details before commit: destination, scope, amount/cost, source data, generated artifact, or affected workflow.
+- Keep destructive and irreversible actions visually separated from the primary safe action.
 
 ### Page Header
 - Kicker: optional, mono or small uppercase, app accent.
@@ -130,6 +151,8 @@ Do not use a marketing hero for app screens. Hero-scale type belongs only to pub
 - Always include meaningful empty states and sortable/default order when relevant.
 - Numeric columns should align right and use tabular numbers.
 - Keep row actions visible but quiet.
+- For reusable definition tables, support row expansion and show dependency counts without requiring navigation.
+- Long rules and filters should wrap into tokenized chips or readable clauses.
 
 ### Charts
 - Use charts only when the visual answer is faster than a table.
@@ -149,6 +172,7 @@ Do not use a marketing hero for app screens. Hero-scale type belongs only to pub
 - Modal anatomy: title, short explanation, body, footer actions.
 - Destructive or external-side-effect actions require explicit copy and a secondary cancel action.
 - Use dependency modals before publishing edits to shared definitions. Show affected surfaces, severity, owner, last used date, and a preview of the changed output.
+- On mobile, prefer a bottom sheet over a centered modal unless the content is a system-level alert.
 
 ### Drawers
 - Use drawers for inspecting or editing one item without losing list context.
@@ -169,6 +193,8 @@ Do not use a marketing hero for app screens. Hero-scale type belongs only to pub
 - Keep branch conditions visible and editable next to the branch node.
 - If no node is selected, the configuration panel should become a testing/preview panel.
 - Flow-level errors belong near the publish/deploy/recommend action; node-level errors belong on the node.
+- Assets should remain one click away while editing a flow.
+- Node-type color must come from semantic status/app-accent tokens and should never create a local rainbow palette.
 
 ## Personalization Rules
 
@@ -210,6 +236,9 @@ A generated screen is gold-standard only if all checks pass:
 | Accessibility | Text contrast is AA for small text; controls have labels and visible focus states |
 | Density | Operational screens are scannable and not padded like marketing pages |
 | Drift | New UI visually matches at least two existing suite screens before introducing variation |
+| Source fit | UI maps to an audited source-backed pattern or documents a new pattern |
+| Definition model | Reusable metrics, rules, prompts, portfolios, journeys, and dimensions are first-class objects |
+| Risk preview | Sensitive or global actions repeat scope, impact, and confirmation before commit |
 
 ## LLM Prompt Contract
 
@@ -222,7 +251,9 @@ Keep the dark sidebar + light workspace shell.
 Use the app accent only for primary actions, active states, focused controls, and key chart series.
 Do not use structural inline CSS. Use classes, components, and --ds-* tokens.
 Use the 4px spacing scale, 12-column content grid, and paired type/line-height tokens.
+Classify the requested screen against VISUAL_RESEARCH_AUDIT.md before choosing components.
 Choose layout by user task: dashboard, builder, research browser, detail workspace, compare view, AI review queue, or personalized portfolio.
+For dense analytics and definition management, prefer search/filter headers, tables, row expansion, dependency counts, and edit drawers.
 For mobile UI, use a compact top context bar, dark bottom navigation, safe-area action spacing, and one-column task flows.
 For journey builders, keep assets, flow canvas, configuration/testing, node status, and branch/error states visible.
 For reusable components, include variant/state documentation and do not ship without loading, disabled, focus, hover, selected, and error/empty behavior.

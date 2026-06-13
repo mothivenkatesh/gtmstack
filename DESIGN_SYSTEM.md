@@ -115,8 +115,24 @@ Required component documentation:
 
 - Compact controls use `--ds-icon-size-sm`.
 - Sidebar, bottom nav, feature icons, and high-signal empty states use `--ds-icon-size-md`.
-- Use one icon style per app surface. Do not mix filled and outline styles unless state changes require it.
+- Use one documented icon family and style per app surface. Phosphor, Lucide, or local SVG icons are acceptable only when the app uses them consistently and maps them to the same One UI size tokens.
+- Filled icons are acceptable for active navigation, brand marks, or emphasis states; regular/line icons are preferred for neutral controls and repeated table actions.
+- Do not mix filled and outline styles inside the same control group unless state changes require it.
 - Icons provide context in uncertainty, warnings, empty states, and navigation. They should not replace clear labels for unfamiliar actions.
+
+## Source-Audited Patterns
+
+The detailed evidence log lives in `VISUAL_RESEARCH_AUDIT.md`. Use these patterns as the starting library for generated UI:
+
+| Pattern | Source evidence | One UI requirement |
+| --- | --- | --- |
+| Dense analytics definition UI | ScaleXP, Clarisights | Prefer tables, row expansion, rule chips, actual/target comparison, and reusable definitions over decorative cards |
+| Dependency-aware editing | Clarisights, ScaleXP | Show impacted dashboards, reports, workflows, generated UI, owners, and publish risk before global edits |
+| High-risk mobile task flow | Leap | Use sticky context, bottom sheets, safe-area action bars, 44px targets, trust copy, and explicit review/confirm states |
+| Journey or conversation builder | Smartbeings | Keep assets, canvas, configuration/testing, node status, branches, and flow actions visible in one workflow |
+| Design-system foundation work | Recko | Start with principles and UI audit, then spacing, grid, type, color, icon, components, and adoption rituals |
+
+If a generated screen does not match one of these patterns, record the new pattern and add its tokens/components before treating it as One UI-compliant.
 
 ## Mobile App Shell
 
@@ -129,6 +145,8 @@ Mobile product screens should feel intentionally designed, not like compressed d
 - Prefer a single-column task flow with progressive disclosure over shrinking a 3-column desktop layout.
 - Keep the current entity, saved context, and trust/security status visible near the top of mobile flows.
 - Use sticky mobile action bars for expensive actions such as generate, deploy, recommend, publish, vote, connect, or review.
+- Use bottom sheets for focused mobile decisions that should preserve the current page: connect, choose account, select asset, configure rule, review generated output, or confirm publish.
+- Every high-risk mobile flow needs a review state before commit and a visible cancel/escape path.
 
 ## Builder Layouts
 
@@ -140,6 +158,8 @@ For journey builders, conversation builders, flow editors, prompt chains, and ag
 - Use semantic status tokens for node errors, warnings, ready states, and testing results.
 - Show flow-level status near the deploy/recommend/publish action.
 - Let users test or preview the journey without losing their place in the builder.
+- Keep branch conditions visually attached to the branch node.
+- When no node is selected, the right panel should become a tester, preview, or flow-level issue panel instead of going blank.
 
 ## No Structural Inline CSS
 
@@ -164,6 +184,8 @@ For complex systems, the design system must model definitions and relationships 
 - Provenance: who created it, source data, last refresh, confidence, and assumptions.
 - Impact previews: affected reports, dashboards, generated artifacts, workflows, and collaborators.
 - Safe publishing: draft, preview, compare, confirm, publish, rollback.
+- Rule structures: values, channels/sources, filters, exceptions, and preview results.
+- Mobile risk context: active account/entity, destination, amount/scope, fee/cost, trust reason, and recovery path.
 
 ## Adoption And Governance
 

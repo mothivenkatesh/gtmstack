@@ -1,10 +1,12 @@
 # One UI Research Notes
 
-These notes translate two complex B2B product-design case studies into One UI rules for generated interfaces.
+These notes translate five product-design case studies and their reachable visual assets into One UI rules for generated interfaces. The detailed image-by-image coverage summary lives in `VISUAL_RESEARCH_AUDIT.md`.
 
 ## ScaleXP: Automated Time-Series Reports
 
 Source: https://suwardhan.com/scalexp
+
+Visual assets inspected: report screenshots, column configuration, row computation editor, customer-research notes, iteration boards, process timeline, final designs, and 4px specs.
 
 Relevant lessons:
 
@@ -24,6 +26,8 @@ One UI implications:
 ## Clarisights: Custom Dimensions
 
 Source: https://suwardhan.com/clarisights
+
+Visual assets inspected: custom-dimension tables, expanded rows, color-coded rules, final listing UI, old listing UI, dependency modal, specs, SVG rule/table fragments, and rollout feedback. Two source assets were broken on the page and are recorded in `VISUAL_RESEARCH_AUDIT.md`.
 
 Relevant lessons:
 
@@ -55,6 +59,8 @@ When generating UI for complex systems, an LLM should:
 
 Source: https://suwardhan.com/leap
 
+Visual assets inspected: mobile concept screens, information architecture, trust/seed phrase import screen, connect-wallet bottom sheet, portfolio, send, asset detail, staking, proposal, and App Store feedback.
+
 Relevant lessons:
 
 - Mobile apps need their own information architecture, not a compressed extension or desktop view.
@@ -68,10 +74,13 @@ One UI implications:
 - Keep active entity/account/workspace context visible near the top of the flow.
 - Put trust/security/saved-state explanation beside sensitive generation, connection, publishing, or deploy actions.
 - Prefer compact cards and bottom sheets to full desktop panels on mobile.
+- Repeat sensitive details on a review screen before commit: account, destination, amount/scope, fee/cost, generated output, or affected workflow.
 
 ## Smartbeings: Conversation Flow Builder
 
 Source: https://suwardhan.com/smartbeings
+
+Visual assets inspected: information architecture, domain assets, empty state, intent modal, 3-column interface, node configuration, response configuration, branching, sample flows, and testing/error states.
 
 Relevant lessons:
 
@@ -87,10 +96,13 @@ One UI implications:
 - Use a progressive mobile builder: flow first, then selected node details and testing.
 - Show node-level errors on cards and flow-level errors near deploy/recommend/publish.
 - Let users test or preview without leaving the builder context.
+- Keep branch conditions attached to branch nodes, and keep assets one click away while editing.
 
 ## Recko: Building A Design System
 
 Source: https://suwardhan.com/18531115
+
+Visual assets inspected: principles, UI audit, spacing, layout, grid behavior, 12-column grid, margins/gutters, type scale, font alignment, icon guidelines, color palette, component boards, state matrices, documentation, adoption, and chronology.
 
 Relevant lessons:
 
@@ -110,3 +122,13 @@ One UI implications:
 - Document component anatomy, states, edge cases, and token mapping before calling a component complete.
 - Treat deviations as backlog for the next One UI version instead of allowing silent one-off overrides.
 - Run design-system QA before handoff or merge.
+
+## Cross-Source Synthesis
+
+Use this synthesis when deciding whether a generated UI is good enough:
+
+- Web apps: choose dense, scannable layouts for repeated work. Tables, lists, row expansion, and quiet actions beat oversized cards.
+- Mobile apps: use native-feeling one-task flows with sticky context, safe-area actions, bottom sheets, and trust states.
+- Builders: preserve context. Assets, canvas, selected-node configuration, tester, node errors, and publish status should stay in the same workflow.
+- Design systems: start with principles and an audit, then tokens, components, state matrices, documentation, and adoption rituals.
+- AI UI: make the model's context visible. Show sources, assumptions, confidence, recency, dependency impact, and human override.
