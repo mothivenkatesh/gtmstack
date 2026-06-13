@@ -25,12 +25,38 @@ One UI is the shared design system for the GTMstack / India Payments / Agentic S
 | `--ds-radius-card` | `12px` | Cards and product panels |
 | `--ds-radius-pill` | `9999px` | Pills and status chips |
 | `--ds-space-1..10` | `4px` to `40px` | Product spacing on a 4px grid |
+| `--ds-grid-columns` | `12` | Desktop content-area grid |
+| `--ds-grid-gutter` | `24px` | Space between grid columns |
+| `--ds-grid-margin` | `24px` | Content-area edge margin |
+| `--ds-content-narrow` | `760px` | Focused forms, docs, and review flows |
+| `--ds-content-default` | `1280px` | Standard product workspace max width |
+| `--ds-content-wide` | `1500px` | Builder, dashboard, and canvas-heavy views |
+| `--ds-font-size-*` | `12px` to `20px` | Product type scale |
+| `--ds-line-height-*` | `16px` to `28px` | Coupled line heights on the 4px scale |
+| `--ds-icon-size-sm/md` | `20px` / `24px` | Compact controls and navigation/feature icons |
+| `--ds-control-height-*` | `32px` / `36px` / `44px` | Small, default, and mobile-safe controls |
 | `--ds-accent` | app-specific | Primary actions and active states |
 | `--ds-accent-soft` | app-specific tint | Focus rings and selected surfaces |
 | `--ds-status-*` | info / success / warning / danger | Semantic status text and soft backgrounds |
 | `--ds-focus-ring` | `0 0 0 3px var(--ds-accent-soft)` | Focus and selected control outlines |
 | `--ds-shadow-card` | subtle 1px shadow | Optional card separation |
 | `--ds-shadow-overlay` | larger overlay shadow | Modals, drawers, popovers |
+
+## Foundation Order
+
+Build and extend One UI in this order so later decisions do not create structural debt:
+
+1. Product principles and personality.
+2. UI audit: every component, variation, layout, typeface, icon, and color currently in use.
+3. Spacing scale.
+4. Layout and column grid.
+5. Type scale with line-height.
+6. Color palette.
+7. Icon library and usage rules.
+8. Component library with states and edge cases.
+9. Adoption model: changelog, QA, support, and review rituals.
+
+When deadlines are tight, define the bare minimum for each foundation so it unblocks the next layer, then refine in versioned updates.
 
 ## App Accents
 
@@ -46,10 +72,74 @@ One UI is the shared design system for the GTMstack / India Payments / Agentic S
 - Sidebar width should stay in the `212px` to `224px` range unless a screen has a strong data-density reason.
 - Keep the main workspace light and dense.
 - Use the `--ds-space-*` scale for spacing. Default to a 4px base grid and avoid arbitrary one-off padding values.
+- Desktop content areas use a 12-column grid with stable gutter and edge margins. When a sidebar is present, sidebar width is fixed and the remaining content area owns the 12 columns.
+- Choose grid behavior by context: full-width content for dashboards and comparison views; centered/narrow content for forms, focused review, docs, and single-object editing.
 - Use `14px` as the default product UI text size.
 - Use `28px` for app page titles and `15px` to `16px` for card titles.
 - Cards should be white with a 1px subtle border and 12px radius.
 - Avoid heavy shadows; use shadows only to separate floating overlays or active hover states.
+
+## Typography
+
+- Type scale and line-height are coupled. Do not invent a font size without its matching line height.
+- Product body text defaults to `14px / 20px`.
+- Compact metadata can use `12px / 16px`.
+- Card titles and dense section headings use `16px / 24px`.
+- Compact display labels and modal titles can use `20px / 28px`.
+- Base-size text can support more weight variation; larger headings should use fewer weights for consistency.
+
+## Component State Contract
+
+Every reusable component must document its variants, anatomy, states, and token mapping before it is treated as One UI-compliant.
+
+Required states:
+
+- Enabled
+- Hover
+- Focused
+- Active or selected
+- Loading
+- Disabled
+- Error or destructive
+- Empty when the component owns data display
+
+Required component documentation:
+
+- Anatomy: slots, icon placement, counter/badge behavior, helper/error text.
+- Tokens: surface, stroke, text, icon, focus ring, radius, spacing, height.
+- Interaction: keyboard behavior, pointer behavior, selection behavior, escape/close behavior.
+- Edge cases: long text, missing data, async loading, permissions, and validation errors.
+- Accessibility: label source, ARIA role when needed, contrast, focus order, and minimum target size.
+
+## Icon Rules
+
+- Compact controls use `--ds-icon-size-sm`.
+- Sidebar, bottom nav, feature icons, and high-signal empty states use `--ds-icon-size-md`.
+- Use one icon style per app surface. Do not mix filled and outline styles unless state changes require it.
+- Icons provide context in uncertainty, warnings, empty states, and navigation. They should not replace clear labels for unfamiliar actions.
+
+## Mobile App Shell
+
+Mobile product screens should feel intentionally designed, not like compressed desktop screens.
+
+- Use a sticky compact top bar for app identity, current context, and overflow/navigation access.
+- Use a dark bottom navigation bar for the primary app sections when the desktop app uses a dark sidebar.
+- Respect `env(safe-area-inset-bottom)` and keep primary actions above the OS home indicator.
+- Use 44px minimum tap targets for bottom nav, icon buttons, segmented controls, and primary actions.
+- Prefer a single-column task flow with progressive disclosure over shrinking a 3-column desktop layout.
+- Keep the current entity, saved context, and trust/security status visible near the top of mobile flows.
+- Use sticky mobile action bars for expensive actions such as generate, deploy, recommend, publish, vote, connect, or review.
+
+## Builder Layouts
+
+For journey builders, conversation builders, flow editors, prompt chains, and agent-workflow designers:
+
+- Desktop builder layout: assets/library rail, central flow canvas, configuration/testing panel.
+- Mobile builder layout: flow first, then configuration/testing, with assets exposed through tabs, drawers, or compact chips.
+- Every node needs type, status, label, short description, and next action.
+- Use semantic status tokens for node errors, warnings, ready states, and testing results.
+- Show flow-level status near the deploy/recommend/publish action.
+- Let users test or preview the journey without losing their place in the builder.
 
 ## No Structural Inline CSS
 
@@ -74,6 +164,16 @@ For complex systems, the design system must model definitions and relationships 
 - Provenance: who created it, source data, last refresh, confidence, and assumptions.
 - Impact previews: affected reports, dashboards, generated artifacts, workflows, and collaborators.
 - Safe publishing: draft, preview, compare, confirm, publish, rollback.
+
+## Adoption And Governance
+
+One UI should be easy to trust and hard to accidentally bypass:
+
+- Keep a changelog for token, component, and generation-context changes.
+- Run design-system QA before handoff or merge, not only after implementation.
+- Include design and engineering in foundation decisions, especially spacing, grids, type, icon, and component APIs.
+- Maintain a support channel or owner path for unclear component usage.
+- When a screen requires a deviation, document the gap and convert repeated deviations into the next One UI version.
 
 ## Drift Guard
 
