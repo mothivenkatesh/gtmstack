@@ -498,6 +498,66 @@
     .view{padding:22px 16px 48px} .topbar{padding:0 16px}
     .side-item .si-name{display:none}
   }
+
+  /* ── view-template utilities (replaces structural inline styles so the suite
+        passes One UI audit:strict; data-driven styles keep a one-ui-allow note) ── */
+  .u-row{display:flex}
+  .u-ac{align-items:center}
+  .u-as{align-items:flex-start}
+  .u-jb{justify-content:space-between}
+  .u-jc{justify-content:center}
+  .u-col{flex-direction:column}
+  .u-wrap{flex-wrap:wrap}
+  .u-grow{flex:1}
+  .u-grow0{flex:1;min-width:0}
+  .u-min0{min-width:0}
+  .u-shrink0{flex-shrink:0}
+  .u-center{text-align:center}
+  .u-mla{margin-left:auto}
+  .u-hidden{display:none}
+  .u-g6{gap:6px}.u-g7{gap:7px}.u-g8{gap:8px}.u-g9{gap:9px}.u-g10{gap:10px}.u-g12{gap:12px}.u-g14{gap:14px}.u-g18{gap:18px}
+  .u-mt2{margin-top:2px}.u-mt3{margin-top:3px}.u-mt4{margin-top:4px}.u-mt8{margin-top:8px}.u-mt10{margin-top:10px}.u-mt11{margin-top:11px}.u-mt14{margin-top:14px}.u-mt18{margin-top:18px}.u-mt20{margin-top:20px}.u-mt22{margin-top:22px}
+  .u-mb2{margin-bottom:2px}.u-mb6{margin-bottom:6px}.u-mb10{margin-bottom:10px}.u-mb12{margin-bottom:12px}.u-mb14{margin-bottom:14px}.u-mb16{margin-bottom:16px}.u-mb18{margin-bottom:18px}
+  .u-fs10{font-size:10px}.u-fs11{font-size:11px}.u-fs115{font-size:11.5px}.u-fs12{font-size:12px}.u-fs125{font-size:12.5px}.u-fs13{font-size:13px}.u-fs135{font-size:13.5px}
+  .u-cfaint{color:var(--ink-gray-4)}.u-cmuted{color:var(--ink-gray-5)}.u-c6{color:var(--ink-gray-6)}.u-c7{color:var(--ink-gray-7)}.u-c9{color:var(--ink-gray-9)}
+  .u-cblue{color:var(--ink-blue-2)}.u-cgreen{color:var(--ink-green-2)}.u-camber{color:var(--ink-amber-2)}.u-cred{color:var(--ink-red-3)}
+  .u-link{color:var(--ink-blue-2);cursor:pointer;text-decoration:underline}
+  .u-cardbody{padding:20px;margin-bottom:18px}
+  .u-pill-lg{font-size:13px;padding:5px 12px}
+  .u-input-grow{flex:1;min-width:240px}
+  .u-note-tight{font-size:11px;color:var(--ink-gray-4);margin-top:10px;text-align:center}
+  .u-italic-note{font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:22px 0 0}
+  .u-fnote{font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:2px 0 0}
+  .u-lh145{line-height:1.45}.u-lh15{line-height:1.5}.u-lh155{line-height:1.55}.u-lh16{line-height:1.6}
+  .u-mt5{margin-top:5px}.u-mt6{margin-top:6px}.u-mt7{margin-top:7px}.u-mt9{margin-top:9px}.u-mt12{margin-top:12px}
+  .u-mb5{margin-bottom:5px}.u-mb8{margin-bottom:8px}
+  .u-mw210{min-width:210px}
+  .u-fw400{font-weight:400}.u-fw600{font-weight:600}
+  .u-op85{opacity:.85}
+  .u-cap{text-transform:capitalize}
+  .u-w35{width:35%}.u-w40{width:40%}.u-w42{width:42%}.u-w55{width:55%}.u-w60{width:60%}.u-w70{width:70%}.u-w75{width:75%}.u-w80{width:80%}.u-w85{width:85%}.u-w90{width:90%}.u-w94{width:94%}.u-w100{width:100%}
+  .u-h7{height:7px}.u-h9{height:9px}.u-h10{height:10px}.u-h11{height:11px}.u-h13{height:13px}.u-h14{height:14px}.u-h24{height:24px}.u-h40{height:40px}.u-h46{height:46px}.u-h48{height:48px}
+  .u-sq26{width:26px;height:26px}.u-sq46{width:46px;height:46px}.u-sq48{width:48px;height:48px}
+  .u-br7{border-radius:7px}.u-br10{border-radius:10px}.u-br11{border-radius:11px}.u-br50{border-radius:50%}
+  .u-m2t0{margin:2px 0 0}.u-m8t0{margin:8px 0 0}.u-m10t0{margin:10px 0 0}.u-m12t0{margin:12px 0 0}
+  .u-sel-narrow{width:auto;padding:7px 26px 7px 10px;font-size:12.5px}
+  .u-p22{padding:22px}.u-p24{padding:24px}.u-p1214{padding:12px 14px}
+  .u-pill-xs{padding:1px 6px;font-size:10px}
+  .u-empty{padding:24px;text-align:center;color:var(--ink-gray-5);font-size:13px}
+  .u-cinherit{color:inherit}.u-clickable{cursor:pointer}
+  .u-img-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .sig-accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .u-br12{border-radius:12px}.u-mtb18{margin:18px 0}
+  .u-jobstrip{margin-top:18px}
+  .u-flush{margin:0}.u-mb9{margin-bottom:9px}
+  .u-ta-grow{flex:1;min-width:240px;min-height:96px}
+  .u-grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+  .u-m18014{margin:18px 0 14px}.u-m1808{margin:18px 0 8px}.u-ta128{min-height:128px}
+  .u-pcap{font-size:12px;color:var(--ink-gray-5);margin:0 2px 14px}.u-wrapany{overflow-wrap:anywhere}
+  .u-emrow{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--outline-gray-1)}
+  .u-seg-mb{margin:0 0 18px}
+  .u-mw440{max-width:440px}.u-ico-c{margin:0 auto 16px}
+  .u-relative{position:relative}.u-ml2{margin-left:2px}.u-invisible{visibility:hidden}
 </style>
 </head>
 <body>
@@ -585,18 +645,18 @@ function PersonaResult(d){
   return html`
       <div class="stack">
         <div class="glass-card gauge">
-          <div style="text-align:center;flex-shrink:0">
-            <div class="gauge-num" style=${`color:${toneHex[tn]}`}>${d.overall}</div>
-            <div style="font-size:11px;color:var(--ink-gray-5);margin-top:3px">out of 100</div>
+          <div class="u-center u-shrink0">
+            <div class="gauge-num" style=${/* one-ui-allow: gauge number color from score tone */ `color:${toneHex[tn]}`}>${d.overall}</div>
+            <div class="u-fs11 u-cmuted u-mt3">out of 100</div>
           </div>
-          <div style="flex:1;min-width:210px">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-              <span class=${'pill pill-'+tn} style="font-size:13px;padding:5px 12px">${d.verdict}</span>
+          <div class="u-grow u-mw210">
+            <div class="u-row u-ac u-g8 u-wrap u-mb10">
+              <span class=${'pill pill-'+tn+' u-pill-lg'}>${d.verdict}</span>
               <span class="pill pill-gray"><${Icon} name=${d.engine==='ai'?'sparkles':'cpu'} size=12 /> ${d.engine==='ai'?'Live AI reactions':'Built-in model'}</span>
               <span class="pill pill-gray">${ctypeLabel(d.content_type)}</span>
             </div>
-            <div class="gauge-bar"><div class="gauge-fill" style=${`width:${d.overall}%;background:${toneHex[tn]}`}></div></div>
-            <div style="font-size:12.5px;color:var(--ink-gray-6);line-height:1.55;margin-top:10px">${overallNote(d.overall)}</div>
+            <div class="gauge-bar"><div class="gauge-fill" style=${/* one-ui-allow: gauge bar width + color from score */ `width:${d.overall}%;background:${toneHex[tn]}`}></div></div>
+            <div class="u-fs125 u-c6 u-lh155 u-mt10">${overallNote(d.overall)}</div>
           </div>
         </div>
 
@@ -605,25 +665,25 @@ function PersonaResult(d){
             <div class="glass-card pcard">
               <div class="pcard-head">
                 <span class="pcard-emoji">${r.emoji}</span>
-                <div style="flex:1;min-width:0">
+                <div class="u-grow0">
                   <div class="pcard-name">${r.name}</div>
                   <div class="pcard-tag">${r.tagline}</div>
                 </div>
                 <span class=${'pill pill-'+t}>${r.verdict}</span>
               </div>
               <div>
-                <div class="scorebar" style="margin-bottom:5px"><div class="scorefill" style=${`width:${r.score}%;background:${toneHex[t]}`}></div></div>
-                <div class="score-meta"><span>Fit score</span><span class="mono" style=${`color:${toneHex[t]};font-weight:600`}>${r.score}/100</span></div>
+                <div class="scorebar u-mb5"><div class="scorefill" style=${/* one-ui-allow: fit-score bar width + color */ `width:${r.score}%;background:${toneHex[t]}`}></div></div>
+                <div class="score-meta"><span>Fit score</span><span class="mono" style=${/* one-ui-allow: score number color from tone */ `color:${toneHex[t]};font-weight:600`}>${r.score}/100</span></div>
               </div>
-              <div class="quote" style=${`border-left-color:${toneHex[t]}`}>${r.reaction}</div>
-              <div class="kv"><span class="kv-ic" style="color:var(--ink-green-2)"><${Icon} name="check" size=15 /></span>
+              <div class="quote" style=${/* one-ui-allow: quote accent border from tone */ `border-left-color:${toneHex[t]}`}>${r.reaction}</div>
+              <div class="kv"><span class="kv-ic u-cgreen"><${Icon} name="check" size=15 /></span>
                 <div><b>What landed:</b> ${r.worked}</div></div>
-              <div class="kv"><span class="kv-ic" style="color:var(--ink-amber-2)"><${Icon} name="wrench" size=14 /></span>
+              <div class="kv"><span class="kv-ic u-camber"><${Icon} name="wrench" size=14 /></span>
                 <div><b>Biggest fix:</b> ${r.fix}</div></div>
             </div>`; })}
         </div>
 
-        <p style="font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:2px 0 0">
+        <p class="u-fnote">
           Reactions are simulated to help you sharpen copy, not a substitute for real users.
           Connect an AI key to upgrade from the built-in model to live reactions.
         </p>
@@ -645,7 +705,7 @@ function Logo(domain, size){
     src=${'https://logo.clearbit.com/' + domain}
     onError=${e=>{ const t=e.target;
       if(!t.dataset.fb){ t.dataset.fb='1'; t.src='https://www.google.com/s2/favicons?domain='+domain+'&sz=64'; }
-      else { t.style.visibility='hidden'; } }} />`;
+      else { t.classList.add('u-invisible'); } }} />`;
 }
 
 /* Renders the 'signals' step of a play: which platforms answered, plus the
@@ -653,7 +713,7 @@ function Logo(domain, size){
 function SignalsEvidence(o){
   const ev = (o.evidence||[]).slice(0,6);
   return html`
-    <div style="margin-top:4px">
+    <div class="u-mt4">
       <div class="ev-chips">
         ${(o.platform_status||[]).map(p=>{ const m=PLAT_META[p.platform]||[null,p.platform];
           const ok=p.status==='ok'; return html`
@@ -705,8 +765,8 @@ function groundedFacet(label, icon, items){
 function TeardownResult(o){
   const conf = o.confidence||{};
   return html`
-    <div style="margin-top:4px">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+    <div class="u-mt4">
+      <div class="u-row u-g8 u-wrap u-mb2">
         <span class="pill pill-gray"><${Icon} name=${o.engine==='ai'?'sparkles':'cpu'} size=12 /> ${o.engine==='ai'?'Live AI teardown':'Built-in model'}</span>
         ${confPill(conf)}
       </div>
@@ -721,7 +781,7 @@ function TeardownResult(o){
         <div class="td-steal-t">${o.steal}</div>
       </div>`}
       ${o.audit&&html`<p class="td-audit"><${Icon} name="sealCheck" size=12 /> ${o.audit}</p>`}
-      <p style="font-size:11.5px;color:var(--ink-gray-4);margin:8px 0 0">
+      <p class="u-fs115 u-cfaint u-m8t0">
         Every pattern cites the posts it was drawn from. Connect an AI key for the full live teardown.
       </p>
     </div>`;
@@ -736,8 +796,8 @@ function TrendResult(o){
   const ic = (plat)=>(PLAT_META[plat]||['globe',plat])[0];
   const eng = (e)=>(e||[]).map(x=>`${x.value} ${x.label}`).join(' · ');
   return html`
-    <div style="margin-top:4px">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+    <div class="u-mt4">
+      <div class="u-row u-g8 u-wrap u-mb2">
         <span class="pill pill-gray"><${Icon} name=${o.engine==='ai'?'sparkles':'cpu'} size=12 /> ${o.engine==='ai'?'Live AI read':'Built-in model'}</span>
         ${confPill(conf)}
       </div>
@@ -776,8 +836,8 @@ function ContentPerfResult(o){
   const times = o.best_post_times||[];
   const trend = o.trend||{};
   return html`
-    <div style="margin-top:4px">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px">
+    <div class="u-mt4">
+      <div class="u-row u-g8 u-wrap u-mb2">
         <span class="pill pill-gray"><${Icon} name=${o.engine==='ai'?'sparkles':'cpu'} size=12 /> ${o.engine==='ai'?'Live AI read':'Built-in model'}</span>
         ${confPill(conf)}
       </div>
@@ -821,7 +881,7 @@ function CompeteResult(o){
   const anyLi=sov.some(r=>r.linkedin&&(r.linkedin.followers_h||r.linkedin.staff_h));
   return html`
     <div class="ci-wrap">
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="u-row u-g8 u-wrap">
         <span class="pill pill-gray"><${Icon} name="radar" size=12 /> ${(o.brands||[]).length} brands · live read</span>
       </div>
       ${(o.insights||[]).length?html`<div class="ci-card">
@@ -829,7 +889,7 @@ function CompeteResult(o){
         <div class="ci-ins">${o.insights.map(i=>html`
           <div class="ci-ins-row">
             <span class=${'ci-ins-dot '+(i.kind||'')}></span>
-            <div style="min-width:0"><div class="ci-ins-h">${i.headline}</div><div class="ci-ins-d">${i.detail}</div></div>
+            <div class="u-min0"><div class="ci-ins-h">${i.headline}</div><div class="ci-ins-d">${i.detail}</div></div>
           </div>`)}</div>
       </div>`:null}
       <div class="ci-card">
@@ -841,7 +901,7 @@ function CompeteResult(o){
           <div class="ci-trow">
             <span class=${'ci-rank'+(r.rank===1?' r1':'')}>${r.rank}</span>
             <span class=${'ci-brand'+(r.you?' you':'')}>${Logo(domainOf(r.brand),16)}<span class="ci-bn">${r.brand}</span></span>
-            <span class="ci-reach"><span class="ci-bar"><i style=${'width:'+Math.max(3,r.reach_pct/maxReach*100)+'%'}></i></span><span class="ci-pct">${r.reach_pct}%</span></span>
+            <span class="ci-reach"><span class="ci-bar"><i style=${/* one-ui-allow: reach bar width from data */ 'width:'+Math.max(3,r.reach_pct/maxReach*100)+'%'}></i></span><span class="ci-pct">${r.reach_pct}%</span></span>
             <span class="ci-num">${r.posts}</span>
             ${liCell(r)}
           </div>`)}
@@ -935,9 +995,9 @@ function PersonaTool({seed}){
       <p class="view-sub">Paste a headline, email, or ad. Five synthetic developers tell you what they’d think, and the fix worth the most.</p>
     </div>
 
-    <div class="glass-card" style="padding:20px;margin-bottom:18px">
+    <div class="glass-card u-cardbody">
       <label class="field-label">1 · What kind of copy is this?</label>
-      <div class="seg" style="margin-bottom:18px">
+      <div class="seg u-mb18">
         ${CTYPES.map(([id,label])=>html`
           <button class=${ctype===id?'on':''} onClick=${()=>setCtype(id)}>${label}</button>`)}
       </div>
@@ -945,13 +1005,13 @@ function PersonaTool({seed}){
       <label class="field-label">2 · Paste your copy</label>
       <textarea class="copy-area" placeholder="e.g. Add payments to your app in 15 minutes. One install, six lines of code, live today..."
         value=${copy} onInput=${e=>setCopy(e.target.value)}></textarea>
-      <div style="margin-top:9px;font-size:12px;color:var(--ink-gray-5)">
+      <div class="u-mt9 u-fs12 u-cmuted">
         Not sure what to try?
-        <a style="color:var(--ink-blue-2);cursor:pointer;text-decoration:underline"
+        <a class="u-link"
            onClick=${()=>{setCopy(SAMPLE_COPY);setCtype('landing');}}>Load sample landing-page copy</a>
       </div>
 
-      <label class="field-label" style="margin-top:18px">3 · Who should react? <span style="font-weight:400;color:var(--ink-gray-5)">(${selected.length} selected)</span></label>
+      <label class="field-label u-mt18">3 · Who should react? <span class="u-fw400 u-cmuted">(${selected.length} selected)</span></label>
       <div class="pchips">
         ${PERSONAS.map(p=>html`
           <div class=${'pchip'+(selected.includes(p.id)?' on':'')} onClick=${()=>toggle(p.id)} title=${p.tag}>
@@ -960,29 +1020,29 @@ function PersonaTool({seed}){
           </div>`)}
       </div>
 
-      <div style="display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap">
+      <div class="u-row u-ac u-g12 u-mt20 u-wrap">
         <button class="btn btn-primary btn-lg" disabled=${loading} onClick=${preview}>
           ${loading ? html`<${Icon} name="loader" size=15 cls="spin" /> Reading reactions` : html`<${Icon} name="sparkles" size=15 /> Preview reactions`}
         </button>
-        <span style="font-size:12px;color:var(--ink-gray-5)">Simulated reactions to sharpen your copy. Not real people.</span>
+        <span class="u-fs12 u-cmuted">Simulated reactions to sharpen your copy. Not real people.</span>
       </div>
     </div>
 
-    ${error && html`<div class="errbox" style="margin-bottom:18px">
+    ${error && html`<div class="errbox u-mb18">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn’t run the preview</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div><div class="u-fw600 u-mb2">Couldn’t run the preview</div>
+      <div class="u-fs13 u-op85">${error}</div></div>
     </div>`}
 
     ${loading && !data && html`
-      <div class="glass-card" style="padding:22px;margin-bottom:14px;display:flex;gap:18px">
-        <div class="skel" style="height:48px;width:48px;border-radius:10px"></div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:9px;justify-content:center">
-          <div class="skel" style="height:14px;width:40%"></div><div class="skel" style="height:10px;width:70%"></div></div>
+      <div class="glass-card u-p22 u-mb14 u-row u-g18">
+        <div class="skel u-sq48 u-br10"></div>
+        <div class="u-grow u-row u-col u-g9 u-jc">
+          <div class="skel u-h14 u-w40"></div><div class="skel u-h10 u-w70"></div></div>
       </div>
       <div class="pcard-grid">
-        ${[0,1,2].map(()=>html`<div class="glass-card pcard"><div class="skel" style="height:46px;width:60%"></div>
-          <div class="skel" style="height:7px;width:100%"></div><div class="skel" style="height:40px;width:100%"></div></div>`)}
+        ${[0,1,2].map(()=>html`<div class="glass-card pcard"><div class="skel u-h46 u-w60"></div>
+          <div class="skel u-h7 u-w100"></div><div class="skel u-h40 u-w100"></div></div>`)}
       </div>`}
 
     ${data && PersonaResult(data)}
@@ -1052,33 +1112,33 @@ function ExtractTool({seed}){
       <p class="view-sub">Paste any link and get a timestamped transcript in seconds, ready to mine for the exact words your market uses.</p>
     </div>
 
-    <div class="glass-card" style="padding:20px;margin-bottom:18px">
+    <div class="glass-card u-cardbody">
       <label class="field-label">Paste a YouTube link</label>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <input class="input" style="flex:1;min-width:240px" placeholder="A watch, youtu.be, shorts, or embed link (or a video ID)"
+      <div class="u-row u-g10 u-wrap">
+        <input class="input u-input-grow" placeholder="A watch, youtu.be, shorts, or embed link (or a video ID)"
           value=${url} onInput=${e=>setUrl(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&run()} />
         <button class="btn btn-primary btn-lg" disabled=${loading} onClick=${()=>run()}>
           ${loading ? html`<${Icon} name="loader" size=15 cls="spin" /> Pulling text` : html`<${Icon} name="captions" size=15 /> Get transcript`}
         </button>
       </div>
-      <div style="margin-top:10px;font-size:12px;color:var(--ink-gray-5)">
+      <div class="u-mt10 u-fs12 u-cmuted">
         Try a sample:
-        <a style="color:var(--ink-blue-2);cursor:pointer;text-decoration:underline" onClick=${()=>run({url:'https://www.youtube.com/watch?v=T1Lowy1mnEg'})}>youtube.com/watch?v=T1Lowy1mnEg</a>
+        <a class="u-link" onClick=${()=>run({url:'https://www.youtube.com/watch?v=T1Lowy1mnEg'})}>youtube.com/watch?v=T1Lowy1mnEg</a>
       </div>
     </div>
 
-    ${error && html`<div class="errbox" style="margin-bottom:18px">
+    ${error && html`<div class="errbox u-mb18">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn’t fetch that transcript</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div><div class="u-fw600 u-mb2">Couldn’t fetch that transcript</div>
+      <div class="u-fs13 u-op85">${error}</div></div>
     </div>`}
 
-    ${loading && !data && html`<div class="kpi-grid" style="margin-bottom:18px">
-      ${[0,1,2,3].map(()=>html`<div class="glass-card kpi"><div class="skel" style="height:13px;width:60%"></div><div class="skel" style="height:24px;width:75%"></div></div>`)}
+    ${loading && !data && html`<div class="kpi-grid u-mb18">
+      ${[0,1,2,3].map(()=>html`<div class="glass-card kpi"><div class="skel u-h13 u-w60"></div><div class="skel u-h24 u-w75"></div></div>`)}
     </div>`}
 
     ${data && html`
-      <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="kpi-grid u-mb16">
         ${[
           ['Words', (data.word_count||0).toLocaleString(), 'type'],
           ['Duration', data.duration_ts, 'clock'],
@@ -1089,25 +1149,25 @@ function ExtractTool({seed}){
         </div>`)}
         <div class="glass-card kpi">
           <div class="kpi-top"><span class="kpi-label">Source</span><span class="chip"><${Icon} name="captions" size=14 /></span></div>
-          <div style="display:flex;align-items:center;gap:7px;margin-top:2px">
+          <div class="u-row u-ac u-g7 u-mt2">
             <span class=${'pill '+(data.kind==='manual'?'pill-green':data.kind==='translated'?'pill-amber':'pill-blue')}>
               ${data.kind==='manual'?'Manual subs':data.kind==='translated'?'Translated':'Auto (ASR)'}
             </span>
-            <span class="mono" style="font-size:12px;color:var(--ink-gray-6)">${data.code}</span>
+            <span class="mono u-fs12 u-c6">${data.code}</span>
           </div>
         </div>
       </div>
 
-      <div class="glass-card" style="padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;color:var(--ink-gray-5)">TRACKS</span>
-        <div style="display:flex;gap:7px;flex-wrap:wrap;flex:1">
+      <div class="glass-card u-p1214 u-mb16 u-row u-ac u-g14 u-wrap">
+        <span class="u-fs115 u-fw600 u-cmuted">TRACKS</span>
+        <div class="u-row u-g7 u-wrap u-grow">
           ${data.tracks.map(t=>html`<button class=${'track'+(t.code===data.code&&!data.translated_to?' on':'')} onClick=${()=>run({lang:t.code})}>
-            ${t.code} <span class=${'pill '+(t.kind==='manual'?'pill-green':'pill-blue')} style="padding:1px 6px;font-size:10px">${t.kind==='manual'?'manual':'ASR'}</span>
+            ${t.code} <span class=${'pill '+(t.kind==='manual'?'pill-green':'pill-blue')+' u-pill-xs'}>${t.kind==='manual'?'manual':'ASR'}</span>
           </button>`)}
         </div>
-        <div style="display:flex;align-items:center;gap:7px">
+        <div class="u-row u-ac u-g7">
           <${Icon} name="globe" size=14 />
-          <select class="input" style="width:auto;padding:7px 26px 7px 10px;font-size:12.5px" value=${tlang} onChange=${e=>setTlang(e.target.value)}>
+          <select class="input u-sel-narrow" value=${tlang} onChange=${e=>setTlang(e.target.value)}>
             ${TRANSLATE_TARGETS.map(([c,n])=>html`<option value=${c}>${n}</option>`)}
           </select>
           <button class="btn btn-ghost btn-sm" disabled=${loading||!tlang} onClick=${()=>run({translate:tlang})}>Translate</button>
@@ -1120,7 +1180,7 @@ function ExtractTool({seed}){
             <button class=${view==='stamped'?'on':''} onClick=${()=>setView('stamped')}><${Icon} name="list" size=13 /> Timestamped</button>
             <button class=${view==='plain'?'on':''} onClick=${()=>setView('plain')}><${Icon} name="type" size=13 /> Plain text</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
+          <div class="u-row u-ac u-g8">
             <div class="search"><${Icon} name="search" size=14 />
               <input placeholder="Search…" value=${query} onInput=${e=>setQuery(e.target.value)} /></div>
             <button class="btn btn-ghost btn-sm" onClick=${copyAll}>
@@ -1130,13 +1190,13 @@ function ExtractTool({seed}){
           </div>
         </div>
         <div class="tbody" ref=${bodyRef}>
-          ${filtered.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:13px">No lines match “${query}”.</div>`}
+          ${filtered.length===0 && html`<div class="u-empty">No lines match “${query}”.</div>`}
           ${view==='stamped'
             ? filtered.map(c=>html`<div class="cue"><span class="cue-ts mono">${c.ts}</span><span class="cue-text">${hl(c.text)}</span></div>`)
             : html`<div class="plain">${query ? hl(plainText) : plainText}</div>`}
         </div>
       </div>
-      <p style="font-size:11px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
+      <p class="u-note-tight">
         video <span class="mono">${data.video_id}</span> · ${data.tracks.length} track(s) available · fetched for you, no API key
       </p>`}
 
@@ -1221,14 +1281,14 @@ function SignalCard({s}){
   return html`
   <div class=${'glass-card sig-card' + (ok ? '' : ' dim')}>
     <div class="sig-head">
-      <span style=${`position:absolute;left:0;top:0;bottom:0;width:3px;background:${m.color}`}></span>
-      <span class="sig-ava" style=${`background:${m.color}`}>
+      <span class="sig-accent" style=${/* one-ui-allow: platform brand color */ `background:${m.color}`}></span>
+      <span class="sig-ava" style=${/* one-ui-allow: platform brand color */ `background:${m.color}`}>
         ${initialsOf(s.display_name || s.handle)}
         ${s.avatar && html`<img src=${s.avatar} alt="" referrerpolicy="no-referrer" onError=${e=>e.target.remove()}
-          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />`}
+          class="u-img-cover" />`}
       </span>
       <div class="sig-id">
-        <span class="sig-plat" style=${`color:${m.color}`}><${Icon} name=${m.icon} size=12 /> ${m.label}</span>
+        <span class="sig-plat" style=${/* one-ui-allow: platform brand color */ `color:${m.color}`}><${Icon} name=${m.icon} size=12 /> ${m.label}</span>
         <div class="sig-name">${s.display_name || s.handle || '—'}</div>
         ${s.headline && html`<div class="sig-headline">${s.headline}</div>`}
         ${(s.handle || s.location) && html`<div class="sig-meta">
@@ -1237,7 +1297,7 @@ function SignalCard({s}){
         </div>`}
       </div>
       ${s.profile_url && html`<a href=${s.profile_url} target="_blank" rel="noopener noreferrer" title="Open profile"
-        style="color:var(--ink-gray-4);flex-shrink:0;margin-top:2px"><${Icon} name="externalLink" size=15 /></a>`}
+        class="u-cfaint u-shrink0 u-mt2"><${Icon} name="externalLink" size=15 /></a>`}
     </div>
 
     ${ok && (s.stats||[]).length > 0 && html`<div class="sig-stats">
@@ -1251,10 +1311,10 @@ function SignalCard({s}){
                 <span class="sig-act-ic"><${Icon} name=${ACT_ICON[a.kind] || 'pen'} size=14 /></span>
                 <div class="sig-act-main">
                   <div class="sig-act-text">${a.url
-                    ? html`<a href=${a.url} target="_blank" rel="noopener noreferrer" style="color:inherit">${a.text}</a>`
+                    ? html`<a href=${a.url} target="_blank" rel="noopener noreferrer" class="u-cinherit">${a.text}</a>`
                     : a.text}</div>
                   <div class="sig-act-meta">${joinDots([
-                    a.kind && html`<span style="text-transform:capitalize">${a.kind}</span>`,
+                    a.kind && html`<span class="u-cap">${a.kind}</span>`,
                     a.where && html`<span>${a.where}</span>`,
                     a.ago && html`<span>${a.ago}</span>`,
                     ...(a.engagement || []).map(e=>html`<span class="sig-act-eng">${e}</span>`),
@@ -1280,16 +1340,15 @@ function PersonRoster({people, onPick}){
       <span class="sec-n">${people.length} found</span></div>
     <div class="roster">
       ${people.map(p=>{ const m = SIG_META[p.platform] || {color:'#525252', icon:'globe'};
-        return html`<div class="rost" onClick=${()=>onPick && onPick(p)} title="Look up this person"
-          style="cursor:pointer">
-          <span class="rost-ava" style=${`background:${m.color}`}>
+        return html`<div class="rost u-clickable" onClick=${()=>onPick && onPick(p)} title="Look up this person">
+          <span class="rost-ava" style=${/* one-ui-allow: platform brand color */ `background:${m.color}`}>
             ${initialsOf(p.display_name || p.handle)}
             ${p.avatar && html`<img src=${p.avatar} alt="" referrerpolicy="no-referrer" onError=${e=>e.target.remove()}
-              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />`}
+              class="u-img-cover" />`}
           </span>
           <div class="rost-id">
             <div class="rost-name">${p.display_name || p.handle}</div>
-            <div class="rost-sub"><span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=11 /></span>
+            <div class="rost-sub"><span style=${/* one-ui-allow: platform brand color */ `color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=11 /></span>
               @${String(p.handle).replace(/^@/,'')}</div>
           </div>
         </div>`; })}
@@ -1300,21 +1359,21 @@ function PersonRoster({people, onPick}){
 function FeedList({feed, sources}){
   const errs = (sources||[]).filter(s=>s.status!=='ok');
   return html`
-    ${(sources||[]).length>0 && html`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    ${(sources||[]).length>0 && html`<div class="u-row u-g8 u-wrap u-mb12">
       ${(sources||[]).map(s=>{ const m = SIG_META[s.platform]||{label:s.platform,color:'#525252',icon:'globe'};
         const ok = s.status==='ok'; const n = (s.activity||[]).length;
         return html`<span class="pill ${ok?'pill-green':'pill-gray'}" title=${s.note||''}>
-          <span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=12 /></span>
+          <span style=${/* one-ui-allow: platform brand color */ `color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=12 /></span>
           ${m.label} ${ok?`· ${n}`:'· quiet'}</span>`; })}
     </div>`}
     ${feed && feed.length
       ? html`<div class="feed">
           ${feed.map(a=>{ const m = SIG_META[a.platform]||{label:a.platform,color:'#525252',icon:'globe'};
             return html`<div class="feed-row">
-              <span class="feed-plat" style=${`background:${m.color}`}><${Icon} name=${m.icon} size=15 /></span>
+              <span class="feed-plat" style=${/* one-ui-allow: platform brand color */ `background:${m.color}`}><${Icon} name=${m.icon} size=15 /></span>
               <div class="feed-main">
                 <div class="feed-text">${a.url
-                  ? html`<a href=${a.url} target="_blank" rel="noopener noreferrer" style="color:inherit">${a.text}</a>`
+                  ? html`<a href=${a.url} target="_blank" rel="noopener noreferrer" class="u-cinherit">${a.text}</a>`
                   : a.text}</div>
                 <div class="feed-meta">${joinDots([
                   a.author && html`<span class="feed-au">${a.where && /^r\//.test(a.where) ? a.where+' · ' : ''}${a.author.startsWith?'@'+String(a.author).replace(/^@/,''):a.author}</span>`,
@@ -1325,7 +1384,7 @@ function FeedList({feed, sources}){
               </div>
             </div>`; })}
         </div>`
-      : html`<div class="sig-empty glass-card" style="border-radius:12px">
+      : html`<div class="sig-empty glass-card u-br12">
           <span class="se-ic"><${Icon} name="rss" size=17 /></span>
           <div class="se-title">No live mentions yet.</div>
           <div class="se-note">${errs.length
@@ -1358,7 +1417,7 @@ function BulkItem({item, onPick}){
       <span class="bulk-sum">${sum}</span>
     </div>
     ${open && !item.error && html`<div class="bulk-body"><${UnitResult} payload=${p} onPick=${onPick} /></div>`}
-    ${item.error && html`<div class="bulk-body" style="font-size:12.5px;color:var(--ink-red-3)">${item.error}</div>`}
+    ${item.error && html`<div class="bulk-body u-fs125 u-cred">${item.error}</div>`}
   </div>`;
 }
 
@@ -1532,18 +1591,18 @@ function SignalsTool({seed}){
   function copySnippet(){ navigator.clipboard.writeText(apiSnippet()); setCopied(true); setTimeout(()=>setCopied(false),1400); }
 
   const summary = data && !isBulk && html`
-    <div style="font-size:13px;color:var(--ink-gray-6)">
+    <div class="u-fs13 u-c6">
       ${unit==='keyword'
-        ? html`<b style="color:var(--ink-gray-9)">${(data.feed||[]).length}</b> live mentions across ${data.summary.platforms_found} of ${data.summary.platforms_searched} sources`
-        : html`<b style="color:var(--ink-gray-9)">${data.summary.platforms_found}</b> of ${data.summary.platforms_searched} sources matched${
-            unit==='company' ? html` · <b style="color:var(--ink-gray-9)">${data.summary.people_found||0}</b> people` : ''}${
-            data.summary.latest_activity_ago ? html` · last seen <b style="color:var(--ink-gray-9)">${data.summary.latest_activity_ago}</b>` : ''}`}
+        ? html`<b class="u-c9">${(data.feed||[]).length}</b> live mentions across ${data.summary.platforms_found} of ${data.summary.platforms_searched} sources`
+        : html`<b class="u-c9">${data.summary.platforms_found}</b> of ${data.summary.platforms_searched} sources matched${
+            unit==='company' ? html` · <b class="u-c9">${data.summary.people_found||0}</b> people` : ''}${
+            data.summary.latest_activity_ago ? html` · last seen <b class="u-c9">${data.summary.latest_activity_ago}</b>` : ''}`}
     </div>`;
 
   return html`
   <div class="view">
     <div class="view-head">
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+      <div class="u-row u-ac u-g9 u-mb12">
         <span class="pill pill-blue"><${Icon} name="radar" size=12 /> Real-time</span>
         <span class="pill pill-gray"><${Icon} name="cpu" size=12 /> Agent-ready</span>
       </div>
@@ -1557,20 +1616,20 @@ function SignalsTool({seed}){
         ${SIG_ORDER.map(s=>{ const c = conn[s] || {}; const m = SIG_META[s];
           return html`<span class=${'conn' + (c.ready ? ' ready' : '')} title=${c.note || ''}>
             <span class="cn-dot"></span>
-            <span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=13 /></span>
+            <span style=${/* one-ui-allow: platform brand color */ `color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=13 /></span>
             ${m.label}
-            <span style="color:var(--ink-gray-4);font-weight:400">· ${c.ready ? 'connected' : 'public'}</span>
+            <span class="u-cfaint u-fw400">· ${c.ready ? 'connected' : 'public'}</span>
           </span>`; })}
       </div>`}
 
-    <div class="glass-card" style="padding:20px;margin-bottom:18px">
-      <div class="seg" style="margin-bottom:14px">
+    <div class="glass-card u-cardbody">
+      <div class="seg u-mb14">
         ${Object.entries(UNIT_META).map(([u,m])=>html`<button class=${unit===u?'on':''} onClick=${()=>pickUnit(u)}>
           <${Icon} name=${m.icon} size=14 /> ${m.label}</button>`)}
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px">
-        <label class="field-label" style="margin:0">${bulk
+      <div class="u-row u-ac u-jb u-g10 u-wrap u-mb6">
+        <label class="field-label u-flush">${bulk
           ? (unit==='person'?'Handles or profile URLs':unit==='company'?'Companies':'Topics') + ', one per line'
           : (unit==='person'?'Who are you looking up?':unit==='company'?'Which company?':'What do you want to track?')}</label>
         <button class="btn btn-ghost btn-sm" onClick=${()=>{ setBulk(b=>!b); setData(null); setJob(null); setError(null); }}>
@@ -1578,11 +1637,11 @@ function SignalsTool({seed}){
         </button>
       </div>
 
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start">
+      <div class="u-row u-g10 u-wrap u-as">
         ${bulk
-          ? html`<textarea class="copy-area" style="flex:1;min-width:240px;min-height:96px"
+          ? html`<textarea class="copy-area u-ta-grow"
               placeholder=${um.bulkPh} value=${bulkText} onInput=${e=>setBulkT(e.target.value)}></textarea>`
-          : html`<input class="input" style="flex:1;min-width:240px" placeholder=${um.ph}
+          : html`<input class="input u-input-grow" placeholder=${um.ph}
               value=${query} onInput=${e=>setQuery(e.target.value)} onKeyDown=${e=>e.key==='Enter'&&run(false)} />`}
         <button class="btn btn-primary btn-lg" disabled=${loading} onClick=${()=>run(false)}>
           ${loading
@@ -1592,28 +1651,28 @@ function SignalsTool({seed}){
       </div>
       <div class="sig-hint">${um.hint}${bulk ? ' Bulk runs as an async job you can poll, webhook, or export.' : ''}</div>
 
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px">
-        <span class="field-label" style="margin:0">Look in</span>
+      <div class="u-row u-ac u-g10 u-wrap u-mt14">
+        <span class="field-label u-flush">Look in</span>
         <div class="sig-srcs">
           ${um.sources.map(s=>{ const m = SIG_META[s]; const on = sel[s];
-            return html`<span class=${'sig-src' + (on ? ' on' : '')} style=${on ? `background:${m.color}` : ''}
+            return html`<span class=${'sig-src' + (on ? ' on' : '')} style=${/* one-ui-allow: selected-source brand color */ on ? `background:${m.color}` : ''}
               onClick=${()=>setSel(p=>({...p, [s]:!p[s]}))}>
               <span class="ss-ic"><${Icon} name=${m.icon} size=14 /></span> ${m.label}
               ${on && html`<span class="ss-ck"><${Icon} name="check" size=13 /></span>`}
             </span>`; })}
         </div>
-        ${unit==='person' && !bulk && html`<span style="flex:1"></span>
+        ${unit==='person' && !bulk && html`<span class="u-grow"></span>
           <button class="btn btn-ghost btn-sm" onClick=${()=>setAdv(a=>!a)}>
             <${Icon} name=${adv?'minus':'plus'} size=13 /> ${adv ? 'Using exact handles' : 'Know their exact handles?'}
           </button>`}
       </div>
 
       ${unit==='person' && !bulk && adv && html`
-        <div class="sig-adv" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px">
+        <div class="sig-adv u-grid2">
           ${um.sources.map(s=>{ const m = SIG_META[s];
             return html`<div>
-              <label class="field-label" style="display:flex;align-items:center;gap:6px">
-                <span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=13 /></span> ${m.label}
+              <label class="field-label u-row u-ac u-g6">
+                <span style=${/* one-ui-allow: platform brand color */ `color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=13 /></span> ${m.label}
               </label>
               <input class="input" placeholder=${m.label + ' handle'} value=${handles[s]}
                 onInput=${e=>setHandles(p=>({...p, [s]:e.target.value}))} onKeyDown=${e=>e.key==='Enter'&&run(false)} />
@@ -1624,7 +1683,7 @@ function SignalsTool({seed}){
     <div class="deliver">
       <div class="deliver-h" onClick=${()=>setDeliver(d=>!d)}>
         <${Icon} name="webhook" size=15 /> Delivery: API, webhook, bulk export
-        <span style="margin-left:auto;color:var(--ink-gray-4)"><${Icon} name=${deliver?'minus':'plus'} size=14 /></span>
+        <span class="u-mla u-cfaint"><${Icon} name=${deliver?'minus':'plus'} size=14 /></span>
       </div>
       ${deliver && html`<div class="deliver-b">
         <div class="dlv-block">
@@ -1642,7 +1701,7 @@ function SignalsTool({seed}){
         </div>
         <div class="dlv-block">
           <div class="dlv-lab"><${Icon} name="download" size=13 /> Bulk export</div>
-          <div style="display:flex;gap:9px;flex-wrap:wrap">
+          <div class="u-row u-g9 u-wrap">
             <button class="btn btn-ghost btn-sm" disabled=${!data} onClick=${()=>exportResult('csv')}><${Icon} name="download" size=13 /> Export CSV</button>
             <button class="btn btn-ghost btn-sm" disabled=${!data} onClick=${()=>exportResult('json')}><${Icon} name="download" size=13 /> Export JSON</button>
           </div>
@@ -1651,49 +1710,49 @@ function SignalsTool({seed}){
       </div>`}
     </div>
 
-    ${error && html`<div class="errbox" style="margin:18px 0">
+    ${error && html`<div class="errbox u-mtb18">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn't run that lookup</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div><div class="u-fw600 u-mb2">Couldn't run that lookup</div>
+      <div class="u-fs13 u-op85">${error}</div></div>
     </div>`}
 
-    ${job && html`<div class="job-strip" style="margin-top:18px">
+    ${job && html`<div class="job-strip u-jobstrip">
       <span class="pill ${job.status==='done'?'pill-green':job.status==='error'?'pill-amber':'pill-blue'}">
         <${Icon} name=${job.status==='done'?'check':job.status==='error'?'alert':'loader'} size=12 cls=${job.status==='running'||job.status==='queued'?'spin':''} />
         ${job.status}</span>
-      <span style="font-size:12.5px;color:var(--ink-gray-7)">Async ${job.kind} job</span>
+      <span class="u-fs125 u-c7">Async ${job.kind} job</span>
       <span class="js-id">${job.id ? job.id.slice(0,12) : ''}</span>
-      ${job.webhook && html`<span style="font-size:11.5px;color:var(--ink-gray-5)"><${Icon} name="webhook" size=11 /> webhook set</span>`}
+      ${job.webhook && html`<span class="u-fs115 u-cmuted"><${Icon} name="webhook" size=11 /> webhook set</span>`}
     </div>`}
 
-    ${loading && !job && !data && html`<div class="sig-grid" style="margin-top:18px">
+    ${loading && !job && !data && html`<div class="sig-grid u-mt18">
       ${(chosen.length?chosen:[0,1,2]).map(()=>html`<div class="glass-card sig-card">
         <div class="sig-head">
-          <div class="skel" style="width:46px;height:46px;border-radius:11px"></div>
-          <div style="flex:1"><div class="skel" style="height:13px;width:55%;margin-bottom:9px"></div>
-            <div class="skel" style="height:11px;width:85%"></div></div>
+          <div class="skel u-sq46 u-br11"></div>
+          <div class="u-grow"><div class="skel u-h13 u-w55 u-mb9"></div>
+            <div class="skel u-h11 u-w85"></div></div>
         </div>
         <div class="sig-body">${[0,1,2].map(()=>html`<div class="sig-act">
-          <div class="skel" style="width:26px;height:26px;border-radius:7px;flex-shrink:0"></div>
-          <div style="flex:1"><div class="skel" style="height:11px;width:94%;margin-bottom:6px"></div>
-            <div class="skel" style="height:9px;width:42%"></div></div></div>`)}</div>
+          <div class="skel u-sq26 u-br7 u-shrink0"></div>
+          <div class="u-grow"><div class="skel u-h11 u-w94 u-mb6"></div>
+            <div class="skel u-h9 u-w42"></div></div></div>`)}</div>
       </div>`)}
     </div>`}
 
     ${isBulk && html`
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 14px">
-        <div style="font-size:13px;color:var(--ink-gray-6)">
-          Batch of <b style="color:var(--ink-gray-9)">${data.count}</b> ${data.unit} lookups</div>
-        <span style="flex:1"></span>
+      <div class="u-row u-ac u-g12 u-wrap u-m18014">
+        <div class="u-fs13 u-c6">
+          Batch of <b class="u-c9">${data.count}</b> ${data.unit} lookups</div>
+        <span class="u-grow"></span>
         <button class="btn btn-ghost btn-sm" onClick=${()=>exportResult('csv')}><${Icon} name="download" size=13 /> Export CSV</button>
       </div>
       ${data.items.map(it=>html`<${BulkItem} item=${it} onPick=${pickPerson} />`)}`}
 
     ${data && !isBulk && html`
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 14px">
+      <div class="u-row u-ac u-g12 u-wrap u-m18014">
         ${summary}
         ${data.cached && html`<span class="pill pill-amber"><${Icon} name="clock" size=11 /> Cached</span>`}
-        <span style="flex:1"></span>
+        <span class="u-grow"></span>
         <button class="btn btn-ghost btn-sm" disabled=${loading} onClick=${()=>run(true)}>
           <${Icon} name="refresh" size=13 cls=${loading?'spin':''} /> Refresh
         </button>
@@ -1701,7 +1760,7 @@ function SignalsTool({seed}){
       <${UnitResult} payload=${data} onPick=${pickPerson} />`}
 
     ${!data && !loading && !job && !error && html`
-      <div class="note note-blue" style="margin-top:18px"><${Icon} name="zap" size=16 />
+      <div class="note note-blue u-mt18"><${Icon} name="zap" size=16 />
         <div>Every source is read live at lookup time, so you see what was posted today, not a stale export. GitHub and YouTube
           read with zero config; LinkedIn and X read richest with a connected session. One source being quiet never blocks the rest.</div>
       </div>`}
@@ -1793,24 +1852,24 @@ function CleanTool({seed}){
       <p class="view-sub">Paste a list and get one verdict per address: syntax, live MX, disposable, role, and typos, de-duped. No mail is sent.</p>
     </div>
 
-    <div class="glass-card" style="padding:20px;margin-bottom:18px">
+    <div class="glass-card u-cardbody">
       <label class="field-label">Paste emails, or upload a CSV</label>
-      <textarea class="copy-area" style="min-height:128px" placeholder="One email per line, or paste a whole CSV — addresses are pulled out of any column."
+      <textarea class="copy-area u-ta128" placeholder="One email per line, or paste a whole CSV — addresses are pulled out of any column."
         value=${text} onInput=${e=>setText(e.target.value)}></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <div class="u-row u-g10 u-wrap u-mt12">
         <button class="btn btn-primary btn-lg" disabled=${loading} onClick=${()=>run()}>
           ${loading ? html`<${Icon} name="loader" size=15 cls="spin" /> Validating` : html`<${Icon} name="broom" size=15 /> Clean list`}
         </button>
         <button class="btn btn-ghost btn-lg" onClick=${()=>fileRef.current.click()}><${Icon} name="upload" size=15 /> Upload CSV</button>
-        <input ref=${fileRef} type="file" accept=".csv,.txt,.tsv" style="display:none" onChange=${onFile} />
-        <button class="btn btn-ghost btn-lg" disabled=${loading} onClick=${()=>run({text:CLEAN_SAMPLE})} style="margin-left:auto">Try a sample</button>
+        <input ref=${fileRef} type="file" accept=".csv,.txt,.tsv" class="u-hidden" onChange=${onFile} />
+        <button class="btn btn-ghost btn-lg u-mla" disabled=${loading} onClick=${()=>run({text:CLEAN_SAMPLE})}>Try a sample</button>
       </div>
     </div>
 
     <div class="deliver">
       <div class="deliver-h" onClick=${()=>setDeliver(d=>!d)}>
         <${Icon} name="code" size=15 /> Call it from an agent
-        <span style="margin-left:auto;color:var(--ink-gray-4)"><${Icon} name=${deliver?'minus':'plus'} size=14 /></span>
+        <span class="u-mla u-cfaint"><${Icon} name=${deliver?'minus':'plus'} size=14 /></span>
       </div>
       ${deliver && html`<div class="deliver-b">
         <div class="dlv-block">
@@ -1824,18 +1883,18 @@ function CleanTool({seed}){
       </div>`}
     </div>
 
-    ${error && html`<div class="errbox" style="margin:18px 0">
+    ${error && html`<div class="errbox u-mtb18">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn't clean that list</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div><div class="u-fw600 u-mb2">Couldn't clean that list</div>
+      <div class="u-fs13 u-op85">${error}</div></div>
     </div>`}
 
-    ${loading && !data && html`<div class="kpi-grid" style="margin:18px 0">
-      ${[0,1,2,3].map(()=>html`<div class="glass-card kpi"><div class="skel" style="height:13px;width:55%"></div><div class="skel" style="height:24px;width:40%"></div></div>`)}
+    ${loading && !data && html`<div class="kpi-grid u-mtb18">
+      ${[0,1,2,3].map(()=>html`<div class="glass-card kpi"><div class="skel u-h13 u-w55"></div><div class="skel u-h24 u-w40"></div></div>`)}
     </div>`}
 
     ${data && sm && html`
-      <div class="kpi-grid" style="margin:18px 0 8px">
+      <div class="kpi-grid u-m1808">
         ${[
           ['Deliverable', v.deliverable||0, 'sealCheck', 'pill-green'],
           ['Risky',       v.risky||0,     'alert',     'pill-amber'],
@@ -1846,7 +1905,7 @@ function CleanTool({seed}){
           <div class="kpi-value">${(val||0).toLocaleString()}</div>
         </div>`)}
       </div>
-      <p style="font-size:12px;color:var(--ink-gray-5);margin:0 2px 14px">
+      <p class="u-pcap">
         ${sm.unique.toLocaleString()} unique address${sm.unique===1?'':'es'} from ${sm.submitted.toLocaleString()} found${sm.truncated?html` · capped at ${sm.max_emails.toLocaleString()}`:''}.
       </p>
 
@@ -1856,7 +1915,7 @@ function CleanTool({seed}){
             <button class=${cleanOnly?'':'on'} onClick=${()=>setCleanOnly(false)}>All ${rows.length}</button>
             <button class=${cleanOnly?'on':''} onClick=${()=>setCleanOnly(true)}><${Icon} name="sealCheck" size=13 /> Sendable ${sm.valid}</button>
           </div>
-          <div style="display:flex;align-items:center;gap:8px">
+          <div class="u-row u-ac u-g8">
             <div class="search"><${Icon} name="search" size=14 />
               <input placeholder="Search…" value=${query} onInput=${e=>setQuery(e.target.value)} /></div>
             <button class="btn btn-ghost btn-sm" onClick=${()=>dl('csv')}><${Icon} name="download" size=13 /> CSV</button>
@@ -1864,9 +1923,9 @@ function CleanTool({seed}){
           </div>
         </div>
         <div class="tbody" ref=${bodyRef}>
-          ${shown.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:13px">No addresses to show${q?html` for “${query}”`:''}.</div>`}
-          ${shown.map(r=>html`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--outline-gray-1)">
-            <span class="mono" style="flex:1;min-width:0;font-size:12.5px;overflow-wrap:anywhere">${r.email}</span>
+          ${shown.length===0 && html`<div class="u-empty">No addresses to show${q?html` for “${query}”`:''}.</div>`}
+          ${shown.map(r=>html`<div class="u-emrow">
+            <span class="mono u-grow0 u-fs125 u-wrapany">${r.email}</span>
             ${r.typo_suggestion && html`<span class="pill pill-amber">did you mean ${r.typo_suggestion}?</span>`}
             ${r.disposable && html`<span class="pill pill-red">disposable</span>`}
             ${r.role_based && html`<span class="pill pill-gray">role</span>`}
@@ -1875,12 +1934,12 @@ function CleanTool({seed}){
           </div>`)}
         </div>
       </div>
-      <p style="font-size:11px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
+      <p class="u-note-tight">
         ${sm.validated.toLocaleString()} validated · ${sm.smtp_checked?'with SMTP probe':'MX + heuristics, no mailbox contacted'} · download is agent-ready CSV or JSON
       </p>`}
 
     ${!data && !loading && !error && html`
-      <div class="note note-blue" style="margin-top:18px"><${Icon} name="zap" size=16 />
+      <div class="note note-blue u-mt18"><${Icon} name="zap" size=16 />
         <div>Deliverable means valid syntax and a live MX record with no junk-domain flags. Risky usually means a role inbox
           (info@, sales@) or a catch-all. Undeliverable is a broken address, a dead domain, or a disposable burner. Sendable
           is everything except undeliverable (deliverable plus risky) — the list an agent can actually send to.</div>
@@ -2085,16 +2144,16 @@ function PlayRunner({card, onBack}){
       <p class="view-sub">${card.desc}</p>
     </div>
 
-    <div class="glass-card" style="padding:20px;margin-bottom:18px">
+    <div class="glass-card u-cardbody">
       ${card.inputs.map(f=> html`
         <div>
           <label class="field-label">${f.label}</label>
           ${f.type==='seg'
-            ? html`<div class="seg" style="margin:0 0 18px">
+            ? html`<div class="seg u-seg-mb">
                 ${f.options.map(([id,label])=>html`
                   <button class=${vals[f.key]===id?'on':''} onClick=${()=>setVal(f.key,id)}>${label}</button>`)}
               </div>`
-            : html`<input class="input" style="width:100%;margin-bottom:18px" placeholder=${f.placeholder||''}
+            : html`<input class="input u-mb18" placeholder=${f.placeholder||''}
                 value=${vals[f.key]||''} onInput=${e=>setVal(f.key,e.target.value)}
                 onKeyDown=${e=>e.key==='Enter'&&run()} />`}
         </div>`)}
@@ -2103,17 +2162,17 @@ function PlayRunner({card, onBack}){
       </button>
     </div>
 
-    ${error && html`<div class="errbox" style="margin-bottom:18px">
+    ${error && html`<div class="errbox u-mb18">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn’t run the play</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div><div class="u-fw600 u-mb2">Couldn’t run the play</div>
+      <div class="u-fs13 u-op85">${error}</div></div>
     </div>`}
 
     ${loading && !res && html`
-      <div class="glass-card" style="padding:22px;display:flex;gap:14px;margin-bottom:14px">
-        <div class="skel" style="height:26px;width:26px;border-radius:50%;flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:9px;justify-content:center">
-          <div class="skel" style="height:14px;width:35%"></div><div class="skel" style="height:10px;width:60%"></div></div>
+      <div class="glass-card u-p22 u-row u-g14 u-mb14">
+        <div class="skel u-sq26 u-br50 u-shrink0"></div>
+        <div class="u-grow u-row u-col u-g9 u-jc">
+          <div class="skel u-h14 u-w35"></div><div class="skel u-h10 u-w60"></div></div>
       </div>`}
 
     ${res && html`<div class="stack" ref=${resRef}>
@@ -2158,7 +2217,7 @@ function HomeTool({onLaunch}){
           <h3 class="hc-title">${t.title}</h3>
           <p class="hc-desc">${t.desc}</p>
           ${t.engines&&html`<div class="hc-apps">${t.engines.map(e=>html`
-            <span class="hc-app" style=${'color:'+(APP_COLOR[e]||'var(--ink-gray-5)')}><${Icon} name=${e} size=18 /></span>`)}</div>`}
+            <span class="hc-app" style=${/* one-ui-allow: per-app brand color */ 'color:'+(APP_COLOR[e]||'var(--ink-gray-5)')}><${Icon} name=${e} size=18 /></span>`)}</div>`}
           <div class="hc-foot">
             <span class="hc-eg">Opens ${dest.name} · loads <b>${t.eg}</b></span>
             <span class="hc-go">Run it <${Icon} name="arrowRight" size=13 /></span>
@@ -2187,7 +2246,7 @@ function HomeTool({onLaunch}){
       </div>
     </div>
 
-    <p style="font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:22px 0 0">
+    <p class="u-italic-note">
       Every tool here is also an API an agent can call, not just a screen to click.
     </p>
   </div>`;
@@ -2255,7 +2314,7 @@ function RunsModal({open, onClose}){
   const fmt = (iso)=>{ try{ return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } };
   return html`
     <div class="auth-backdrop" onClick=${e=>{ if(e.target.classList.contains('auth-backdrop')) onClose(); }}>
-      <div class="auth-card" style="max-width:440px">
+      <div class="auth-card u-mw440">
         <button class="auth-x" onClick=${onClose}>×</button>
         <div class="auth-mark"><span class="m"><${Icon} name="clock" size=16 /></span>Your runs</div>
         ${!data ? html`<div class="auth-empty">Loading…</div>`
@@ -2271,8 +2330,8 @@ function WelcomeModal({open, onClose}){
   if(!open) return null;
   return html`
     <div class="auth-backdrop" onClick=${onClose}>
-      <div class="auth-card" style="text-align:center" onClick=${e=>e.stopPropagation()}>
-        <div class="auth-ico" style="margin:0 auto 16px"><${Icon} name="sparkles" size=22 /></div>
+      <div class="auth-card u-center" onClick=${e=>e.stopPropagation()}>
+        <div class="auth-ico u-ico-c"><${Icon} name="sparkles" size=22 /></div>
         <h2 class="auth-h">Welcome to GTMstack</h2>
         <p class="auth-sub">You are signed in. Every tool you run now saves to your history.</p>
         <button class="auth-btn" onClick=${onClose}>Start exploring</button>
@@ -2320,7 +2379,7 @@ function App(){
             <span class="si-name">${t.name}</span>
           </div>`; })}
       </nav>
-      <div class="side-foot" style="position:relative">
+      <div class="side-foot u-relative">
         ${me && !me.anon ? html`
           ${menu && html`<div class="user-menu">
             <button onClick=${()=>{ setRuns(true); setMenu(false); }}><${Icon} name="clock" size=15 /> Your runs</button>
@@ -2332,7 +2391,7 @@ function App(){
           </button>`
         : html`
           <button class="signin-btn" onClick=${()=>{ setAuthErr(''); setAuth(true); }}><${Icon} name="user" size=15 /> Sign in</button>
-          <div style="margin-top:11px;line-height:1.55">Preview your go-to-market before you spend on it.</div>`}
+          <div class="u-mt11 u-lh155">Preview your go-to-market before you spend on it.</div>`}
       </div>
     </aside>
 
@@ -2340,16 +2399,16 @@ function App(){
       <div class="topbar">
         <span class="tb-ic"><${Icon} name=${meta.icon} size=15 /></span>
         <span class="tb-name">${meta.name}</span>
-        <span class="tb-desc" style="margin-left:2px">· ${meta.desc}</span>
+        <span class="tb-desc u-ml2">· ${meta.desc}</span>
       </div>
 
-      <div style=${tool==='home'    ? '' : 'display:none'}><${HomeTool} onLaunch=${launch} /></div>
-      <div style=${tool==='persona' ? '' : 'display:none'}><${PersonaTool} seed=${seed} /></div>
-      <div style=${tool==='extract' ? '' : 'display:none'}><${ExtractTool} seed=${seed} /></div>
-      <div style=${tool==='signals' ? '' : 'display:none'}><${SignalsTool} seed=${seed} /></div>
-      <div style=${tool==='clean'   ? '' : 'display:none'}><${CleanTool} seed=${seed} /></div>
+      <div hidden=${tool!=='home'}><${HomeTool} onLaunch=${launch} /></div>
+      <div hidden=${tool!=='persona'}><${PersonaTool} seed=${seed} /></div>
+      <div hidden=${tool!=='extract'}><${ExtractTool} seed=${seed} /></div>
+      <div hidden=${tool!=='signals'}><${SignalsTool} seed=${seed} /></div>
+      <div hidden=${tool!=='clean'}><${CleanTool} seed=${seed} /></div>
       ${tool==='competitor' && html`<div><${CompetitorTool} /></div>`}
-      <div style=${tool==='connectors' ? '' : 'display:none'}><${ConnectorsTool} /></div>
+      <div hidden=${tool!=='connectors'}><${ConnectorsTool} /></div>
     </main>
     <${Auth} open=${authOpen} initialErr=${authErr} onClose=${()=>setAuth(false)} />
     <${RunsModal} open=${runsOpen} onClose=${()=>setRuns(false)} />
