@@ -40,7 +40,7 @@
     --outline-gray-1:#EDEDED; --outline-gray-2:var(--ds-border-subtle); --outline-gray-3:#C7C7C7; --outline-gray-4:#999999;
     --outline-blue-1:#A7D7FD; --outline-green-1:#A6EFC0; --outline-red-1:#FDC2C2; --outline-amber-1:#FBDB73;
     --menu-bar:var(--ds-sidebar-bg); --menu-cards:var(--ds-sidebar-panel); --menu-line:var(--ds-sidebar-border); --menu-ink-9:var(--ds-sidebar-text-strong); --menu-ink-6:var(--ds-sidebar-text); --menu-ink-4:var(--ds-sidebar-text-muted);
-    --sidebar-w:252px;
+    --sidebar-w:224px;
   }
 
   *{box-sizing:border-box}
@@ -53,34 +53,35 @@
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--outline-gray-3);border-radius:4px}
 
-  .glass-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:var(--ds-radius-card)}
+  /* One UI canonical component layer — must match one-ui/tokens/one-ui.components.css */
+  .glass-card{background:var(--ds-bg-card);border:1px solid var(--ds-border-subtle);border-radius:var(--ds-radius-card);box-shadow:var(--ds-shadow-card)}
 
   /* ── buttons / controls ── */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:13px;font-weight:500;
-       border-radius:var(--ds-radius-control);padding:9px 15px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:13px;font-weight:600;line-height:1;
+       min-height:40px;padding:10px 16px;border-radius:var(--ds-radius-control);cursor:pointer;border:1px solid transparent;white-space:nowrap;transition:.14s}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-primary{background:var(--ink-gray-9);color:#fff}
   .btn-primary:not(:disabled):hover{background:#000}
   .btn-ghost{background:var(--surface-cards);border-color:var(--outline-gray-3);color:var(--ink-gray-8)}
   .btn-ghost:hover{background:var(--surface-gray-2)}
-  .btn-lg{padding:12px 20px;font-size:14px}
-  .btn-sm{padding:6px 11px;font-size:12px}
-  .input{width:100%;font-family:inherit;font-size:14px;padding:12px 14px;border:1px solid var(--outline-gray-3);
-         border-radius:9px;background:var(--surface-white);color:var(--ink-gray-9);outline:none;transition:.15s}
+  .btn-lg{min-height:46px;padding:12px 20px;font-size:14px}
+  .btn-sm{min-height:32px;padding:6px 12px;font-size:12px}
+  .input{width:100%;font-family:inherit;font-size:14px;padding:10px 13px;border:1px solid var(--ds-border-subtle);
+         border-radius:var(--ds-radius-control);background:var(--ds-bg-card);color:var(--ds-text-strong);outline:none;transition:.14s}
   .input:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
   select.input{cursor:pointer;-webkit-appearance:none;appearance:none}
   .copy-area{width:100%;min-height:158px;resize:vertical;font-family:inherit;font-size:14.5px;line-height:1.6;
              padding:14px;border:1px solid var(--outline-gray-3);border-radius:11px;background:var(--surface-white);
              color:var(--ink-gray-9);outline:none;transition:.15s}
   .copy-area:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
-  .seg{display:inline-flex;background:var(--surface-gray-2);border-radius:8px;padding:3px;gap:2px;flex-wrap:wrap}
+  .seg{display:inline-flex;background:var(--ds-bg-app);border-radius:var(--ds-radius-control);padding:3px;gap:2px;flex-wrap:wrap}
   .seg button{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-gray-6);
               padding:6px 11px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
   .seg button.on{background:var(--surface-cards);color:var(--ink-gray-9);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 
   /* ── pills ── */
-  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:9999px;font-size:11.5px;font-weight:500;
-        line-height:1.15;padding:4px 10px;white-space:nowrap;border:1px solid transparent}
+  .pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--ds-radius-pill);font-size:11.5px;font-weight:500;
+        line-height:1.15;white-space:nowrap;border:1px solid transparent}
   .pill-blue{background:var(--surface-blue-1);color:var(--ink-blue-2);border-color:var(--outline-blue-1)}
   .pill-green{background:var(--surface-green-1);color:var(--ink-green-2);border-color:var(--outline-green-1)}
   .pill-amber{background:var(--surface-amber-1);color:var(--ink-amber-2);border-color:var(--outline-amber-1)}
