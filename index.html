@@ -7,39 +7,57 @@
 <meta name="description" content="Preview how developers react to your go-to-market copy before you launch, then mine real audience language to sharpen every message." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
   /* ── Frappe Design System tokens (light surface + dark sidebar) ── */
   :root{
-    --surface-white:#FFFFFF; --surface-cards:#FFFFFF;
-    --surface-gray-1:#F8F8F8; --surface-gray-2:#F3F3F3; --surface-gray-3:#EDEDED; --surface-gray-4:#E2E2E2;
+    --ds-font-sans:'Geist Variable','Geist','Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --ds-font-mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --ds-bg-app:#F8F8F8; --ds-bg-card:#FFFFFF;
+    --ds-text-strong:#171717; --ds-text-main:#383838; --ds-text-muted:#6B6B6B; --ds-text-faint:#707070;
+    --ds-border-subtle:#E2E2E2;
+    --ds-sidebar-bg:#0F0F0F; --ds-sidebar-panel:#1C1C1C; --ds-sidebar-border:#232323;
+    --ds-sidebar-text-strong:#F8F8F8; --ds-sidebar-text:#999999; --ds-sidebar-text-muted:#707070;
+    --ds-radius-control:8px; --ds-radius-card:12px; --ds-radius-pill:9999px;
+    --ds-space-1:4px; --ds-space-2:8px; --ds-space-3:12px; --ds-space-4:16px; --ds-space-5:20px; --ds-space-6:24px; --ds-space-8:32px; --ds-space-10:40px;
+    --ds-accent:#6846E3; --ds-accent-2:#0070CC; --ds-accent-soft:#F0EBFF;
+    --ds-status-info:#0070CC; --ds-status-info-soft:#F2F9FF;
+    --ds-status-success:#137949; --ds-status-success-soft:#F2FDF4;
+    --ds-status-warning:#B35309; --ds-status-warning-soft:#FDFAED;
+    --ds-status-danger:#CC2929; --ds-status-danger-soft:#FFF7F7;
+    --ds-focus-ring:0 0 0 3px var(--ds-accent-soft);
+    --ds-shadow-card:0 1px 2px rgba(23, 23, 23, 0.05);
+    --ds-shadow-overlay:0 16px 40px rgba(23, 23, 23, 0.16);
+
+    --surface-white:var(--ds-bg-card); --surface-cards:var(--ds-bg-card);
+    --surface-gray-1:var(--ds-bg-app); --surface-gray-2:#F3F3F3; --surface-gray-3:#EDEDED; --surface-gray-4:#E2E2E2;
     --surface-blue-1:#F2F9FF; --surface-blue-2:#E6F4FF;
     --surface-green-1:#F2FDF4; --surface-red-1:#FFF7F7; --surface-amber-1:#FDFAED; --surface-violet-1:#F0EBFF;
-    --ink-gray-9:#171717; --ink-gray-8:#383838; --ink-gray-7:#525252; --ink-gray-6:#525252;
-    --ink-gray-5:#6B6B6B; --ink-gray-4:#707070; --ink-gray-3:#717171;
-    --ink-blue-2:#0070CC; --ink-green-2:#137949; --ink-red-3:#CC2929; --ink-amber-2:#B35309; --ink-violet-1:#6846E3;
-    --outline-gray-1:#EDEDED; --outline-gray-2:#E2E2E2; --outline-gray-3:#C7C7C7; --outline-gray-4:#999999;
+    --ink-gray-9:var(--ds-text-strong); --ink-gray-8:var(--ds-text-main); --ink-gray-7:#525252; --ink-gray-6:#525252;
+    --ink-gray-5:var(--ds-text-muted); --ink-gray-4:var(--ds-text-faint); --ink-gray-3:#717171;
+    --ink-blue-2:var(--ds-accent-2); --ink-green-2:#137949; --ink-red-3:#CC2929; --ink-amber-2:#B35309; --ink-violet-1:var(--ds-accent);
+    --outline-gray-1:#EDEDED; --outline-gray-2:var(--ds-border-subtle); --outline-gray-3:#C7C7C7; --outline-gray-4:#999999;
     --outline-blue-1:#A7D7FD; --outline-green-1:#A6EFC0; --outline-red-1:#FDC2C2; --outline-amber-1:#FBDB73;
-    --menu-bar:#0F0F0F; --menu-cards:#1C1C1C; --menu-line:#232323; --menu-ink-9:#F8F8F8; --menu-ink-6:#999999; --menu-ink-4:#6B6B6B;
+    --menu-bar:var(--ds-sidebar-bg); --menu-cards:var(--ds-sidebar-panel); --menu-line:var(--ds-sidebar-border); --menu-ink-9:var(--ds-sidebar-text-strong); --menu-ink-6:var(--ds-sidebar-text); --menu-ink-4:var(--ds-sidebar-text-muted);
     --sidebar-w:252px;
   }
 
   *{box-sizing:border-box}
-  html{font-family:'Poppins',system-ui,-apple-system,sans-serif}
+  html{font-family:var(--ds-font-sans)}
   body{margin:0;background:var(--surface-gray-1);color:var(--ink-gray-9);font-size:14px;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-  .mono{font-family:'Geist Mono',ui-monospace,monospace}
+  .mono{font-family:var(--ds-font-mono)}
   a{color:inherit;text-decoration:none}
   ::-webkit-scrollbar{width:8px;height:8px}
   ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:var(--outline-gray-3);border-radius:4px}
 
-  .glass-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:12px}
+  .glass-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:var(--ds-radius-card)}
 
   /* ── buttons / controls ── */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:13px;font-weight:500;
-       border-radius:8px;padding:9px 15px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+       border-radius:var(--ds-radius-control);padding:9px 15px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-primary{background:var(--ink-gray-9);color:#fff}
   .btn-primary:not(:disabled):hover{background:#000}
@@ -385,7 +403,7 @@
   .sig-meta span{display:inline-flex;align-items:center;gap:3px}
   .sig-stats{display:flex;gap:18px;padding:12px 18px;border-bottom:1px solid var(--outline-gray-2);flex-wrap:wrap}
   .sig-stat{display:flex;flex-direction:column;gap:1px}
-  .sig-stat b{font-size:15px;font-weight:600;color:var(--ink-gray-9);font-family:'Geist Mono',monospace}
+  .sig-stat b{font-size:15px;font-weight:600;color:var(--ink-gray-9);font-family:var(--ds-font-mono)}
   .sig-stat span{font-size:11px;color:var(--ink-gray-5)}
 
   .sig-body{padding:7px 8px;display:flex;flex-direction:column;max-height:344px;overflow-y:auto}
@@ -443,7 +461,7 @@
   .deliver-b{padding:4px 16px 16px;border-top:1px solid var(--outline-gray-2);display:flex;flex-direction:column;gap:16px}
   .dlv-block .dlv-lab{font-size:11.5px;font-weight:600;color:var(--ink-gray-7);display:flex;align-items:center;gap:6px;margin:12px 0 7px}
   .code-blk{position:relative;background:#0F0F0F;border-radius:10px;padding:13px 14px;overflow-x:auto}
-  .code-blk pre{margin:0;font-family:'Geist Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.6;
+  .code-blk pre{margin:0;font-family:var(--ds-font-mono);font-size:11.5px;line-height:1.6;
                 color:#E8E8E8;white-space:pre;overflow-wrap:normal}
   .code-blk .tok{color:#7FD1B9}
   .copy-mini{position:absolute;top:9px;right:9px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
@@ -453,7 +471,7 @@
 
   .job-strip{display:flex;align-items:center;gap:11px;padding:12px 15px;border:1px solid var(--outline-blue-1);
              background:var(--surface-blue-1);border-radius:11px;margin-bottom:16px;flex-wrap:wrap}
-  .job-strip .js-id{font-family:'Geist Mono',monospace;font-size:11.5px;color:var(--ink-gray-6)}
+  .job-strip .js-id{font-family:var(--ds-font-mono);font-size:11.5px;color:var(--ink-gray-6)}
   .bulk-item{border:1px solid var(--outline-gray-2);border-radius:12px;margin-bottom:14px;overflow:hidden;background:var(--surface-cards)}
   .bulk-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none}
   .bulk-head:hover{background:var(--surface-gray-1)}
