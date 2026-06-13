@@ -44,3 +44,5 @@ Accent colors are for active nav states, primary actions, focused controls, char
 ## Drift Guard
 
 When adding new UI, map it to the local `--ds-*` tokens first, then to any framework-specific tokens. If a component needs a new token, add it here before using one-off colors or radii.
+
+For LLM-generated screens, components, layouts, modals, drawers, AI output blocks, and personalized workspaces, follow [UI_GENERATION_CONTEXT.md](UI_GENERATION_CONTEXT.md). That file is the suite-level contract for context-aware UI generation and gold-standard consistency checks.
