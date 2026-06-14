@@ -31,7 +31,7 @@ def _from() -> str:
 
 def _html(link: str) -> str:
     return (
-        '<div style="font-family:system-ui,sans-serif;font-size:15px;color:#171717">'
+        '<div style="font-family:\'Zoho Puvi\',sans-serif;font-size:15px;color:#171717">'
         "<p>Click to sign in to GTMstack:</p>"
         f'<p><a href="{link}" style="display:inline-block;padding:10px 16px;'
         'background:#6846E3;color:#fff;border-radius:8px;text-decoration:none">'

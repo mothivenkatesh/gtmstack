@@ -6,8 +6,8 @@ One UI is the shared design system for the GTMstack / India Payments / Agentic S
 
 | Token | Default | Use |
 | --- | --- | --- |
-| `--ds-font-sans` | Geist Variable / Geist / Inter / system UI | All product UI text |
-| `--ds-font-mono` | Geist Mono / SF Mono / monospace | Code, IDs, small metadata |
+| `--ds-font-sans` | Zoho Puvi | All product UI text |
+| `--ds-font-mono` | Zoho Puvi | Code, IDs, and small metadata with no separate monospace family |
 | `--ds-bg-app` | `#F8F8F8` | App workspace background |
 | `--ds-bg-card` | `#FFFFFF` | Cards, panels, modals |
 | `--ds-text-strong` | `#171717` | Headings and high-emphasis text |
@@ -73,6 +73,7 @@ When deadlines are tight, define the bare minimum for each foundation so it unbl
 - Use the `--ds-space-*` scale for spacing. Default to a 4px base grid and avoid arbitrary one-off padding values.
 - Desktop content areas use a 12-column grid with stable gutter and edge margins. When a sidebar is present, sidebar width is fixed and the remaining content area owns the 12 columns.
 - Choose grid behavior by context: full-width content for dashboards and comparison views; centered/narrow content for forms, focused review, docs, and single-object editing.
+- Use Zoho Puvi only across product UI, display text, code labels, metrics, and metadata. Do not load external, legacy suite, or separate monospace font families.
 - Use `14px` as the default product UI text size.
 - Use `28px` for app page titles and `15px` to `16px` for card titles.
 - Cards should be white with a 1px subtle border and 12px radius.
