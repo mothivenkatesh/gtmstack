@@ -1,6 +1,6 @@
 # Unified Product Design System
 
-One UI is the shared design system for the GTMstack / India Payments / Agentic Stack product suite. Product screens should share the same shell, type, card, control, and spacing rules while keeping their own accent color.
+One UI is the shared design system for the GTMstack / India Payments / Agentic Stack product suite. Product screens should share the same shell, type, card, control, spacing rules, and unified accent color.
 
 ## Core Tokens
 
@@ -35,8 +35,8 @@ One UI is the shared design system for the GTMstack / India Payments / Agentic S
 | `--ds-line-height-*` | `16px` to `28px` | Coupled line heights on the 4px scale |
 | `--ds-icon-size-sm/md` | `20px` / `24px` | Compact controls and navigation/feature icons |
 | `--ds-control-height-*` | `32px` / `36px` / `44px` | Small, default, and mobile-safe controls |
-| `--ds-accent` | app-specific | Primary actions and active states |
-| `--ds-accent-soft` | app-specific tint | Focus rings and selected surfaces |
+| `--ds-accent` | `#0070CC` | Primary actions and active states |
+| `--ds-accent-soft` | `#F2F9FF` | Focus rings and selected surfaces |
 | `--ds-status-*` | info / success / warning / danger | Semantic status text and soft backgrounds |
 | `--ds-focus-ring` | `0 0 0 3px var(--ds-accent-soft)` | Focus and selected control outlines |
 | `--ds-shadow-card` | subtle 1px shadow | Optional card separation |
@@ -58,13 +58,12 @@ Build and extend One UI in this order so later decisions do not create structura
 
 When deadlines are tight, define the bare minimum for each foundation so it unblocks the next layer, then refine in versioned updates.
 
-## App Accents
+## Unified Accent
 
-| App | Accent | Soft accent |
+| Token | Value | Use |
 | --- | --- | --- |
-| GTMstack | `#6846E3` | `#F0EBFF` |
-| India Payments | `#0070CC` | `#F2F9FF` |
-| Agentic Stack | `#00AA45` | `#ECFDF3` |
+| `--ds-accent` | `#0070CC` | Primary actions, active navigation, focused controls, selected states, and primary chart series |
+| `--ds-accent-soft` | `#F2F9FF` | Focus rings, selected surfaces, AI presence backgrounds, and low-emphasis active states |
 
 ## Product Shell
 
