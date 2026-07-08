@@ -54,6 +54,12 @@ from _clean import (  # noqa: E402
     clean as clean_validate, to_csv as clean_csv, to_json as clean_json)
 from _plays import (  # noqa: E402
     list_plays as plays_list, run_play as plays_run)
+from _groups import list_groups as report_groups  # noqa: E402
+from _report import (  # noqa: E402
+    run_report, reports_index, latest_report, get_report)
+from _monitor import (  # noqa: E402
+    overview as monitor_overview, run_monitor, staleness_hours)
+from _mentions import recent as monitor_recent  # noqa: E402
 
 app = Flask(__name__, static_folder=HERE, static_url_path="")
 CORS(app)
@@ -108,6 +114,80 @@ def signals_lookup_route():
         body.get("unit") or "person",
     )
     return jsonify(payload), status
+
+
+@app.get("/api/report")
+def report_read():
+    """Read side for the Reports tab: groups, a report index, or one report."""
+    if request.args.get("groups"):
+        return jsonify(groups=report_groups())
+    if request.args.get("id"):
+        return jsonify(get_report(request.args["id"]) or {"error": "not found"})
+    gid = request.args.get("group")
+    if gid and request.args.get("list"):
+        return jsonify(reports=reports_index(gid))
+    if gid:
+        return jsonify(latest_report(gid) or {"error": "no report yet", "group_id": gid})
+    return jsonify(groups=report_groups(), reports=reports_index())
+
+
+@app.post("/api/report")
+def report_run():
+    """Run a group's report now (the launchd CLI calls run_report directly)."""
+    secret = os.getenv("CRON_SECRET")
+    if secret and request.headers.get("X-Cron-Secret") != secret:
+        return jsonify(error="unauthorized"), 401
+    body = request.get_json(silent=True) or {}
+    payload, status = run_report(
+        body.get("group", ""),
+        body.get("sources") or None,
+        float(body.get("budget_s") or 45),
+        body.get("use_llm"),
+    )
+    return jsonify(payload), status
+
+
+@app.get("/api/monitor")
+def monitor_read():
+    """Read side for the Monitor panel: overview, one group's mentions, or the
+    staleness watchdog value."""
+    if request.args.get("staleness"):
+        return jsonify(hours=staleness_hours())
+    gid = request.args.get("group")
+    if gid:
+        return jsonify(group_id=gid, mentions=monitor_recent(gid, 200))
+    return jsonify(monitor_overview())
+
+
+@app.post("/api/monitor")
+def monitor_run():
+    """Run the competitive monitor now. CRON_SECRET-gated like the report."""
+    secret = os.getenv("CRON_SECRET")
+    if secret and request.headers.get("X-Cron-Secret") != secret:
+        return jsonify(error="unauthorized"), 401
+    body = request.get_json(silent=True) or {}
+    summary = run_monitor(only=body.get("only"), catchup=bool(body.get("catchup")))
+    return jsonify(summary)
+
+
+@app.get("/api/groups")
+def groups_read():
+    return jsonify(groups=report_groups())
+
+
+@app.post("/api/groups")
+def groups_write():
+    """Create or edit a keyword group. CRON_SECRET-gated writes (read-only on the
+    hosted deploy). Hand-editing api/_store/groups.json is the documented interim."""
+    secret = os.getenv("CRON_SECRET")
+    if secret and request.headers.get("X-Cron-Secret") != secret:
+        return jsonify(error="unauthorized"), 401
+    from _groups import save_group, delete_group
+    body = request.get_json(silent=True) or {}
+    if body.get("delete"):
+        return jsonify(ok=delete_group(body.get("id", "")))
+    saved = save_group(body)
+    return (jsonify(group=saved), 200) if saved else (jsonify(error="bad group"), 400)
 
 
 @app.post("/api/jobs")

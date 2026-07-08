@@ -7,7 +7,8 @@
 <meta name="description" content="Preview how developers react to your go-to-market copy before you launch, then mine real audience language to sharpen every message." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:FILL,GRAD,opsz,wght@0,200,24,300&display=block" rel="stylesheet" />
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
   /* ── Frappe Design System tokens (light surface + dark sidebar) ── */
@@ -26,10 +27,16 @@
   }
 
   *{box-sizing:border-box}
-  html{font-family:'Poppins',system-ui,-apple-system,sans-serif}
+  html{font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
   body{margin:0;background:var(--surface-gray-1);color:var(--ink-gray-9);font-size:14px;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-  .mono{font-family:'Geist Mono',ui-monospace,monospace}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  /* Material Symbols Sharp: line icons, 24px, wght 300, GRAD 200, opsz 24 */
+  .msi{font-family:'Material Symbols Sharp';font-weight:normal;font-style:normal;line-height:1;
+       letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;
+       word-wrap:normal;direction:ltr;vertical-align:-0.125em;
+       font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 200,'opsz' 24;
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   a{color:inherit;text-decoration:none}
   ::-webkit-scrollbar{width:8px;height:8px}
   ::-webkit-scrollbar-track{background:transparent}
@@ -38,7 +45,7 @@
   .glass-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:12px}
 
   /* ── buttons / controls ── */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:13px;font-weight:500;
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:14px;font-weight:500;
        border-radius:8px;padding:9px 15px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-primary{background:var(--ink-gray-9);color:#fff}
@@ -50,8 +57,11 @@
   .input{width:100%;font-family:inherit;font-size:14px;padding:12px 14px;border:1px solid var(--outline-gray-3);
          border-radius:9px;background:var(--surface-white);color:var(--ink-gray-9);outline:none;transition:.15s}
   .input:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
-  select.input{cursor:pointer;-webkit-appearance:none;appearance:none}
-  .copy-area{width:100%;min-height:158px;resize:vertical;font-family:inherit;font-size:14.5px;line-height:1.6;
+  select.input{cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:32px;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23525252' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center}
+  select.input:hover{border-color:var(--outline-gray-4)}
+  .copy-area{width:100%;min-height:158px;resize:vertical;font-family:inherit;font-size:14px;line-height:1.6;
              padding:14px;border:1px solid var(--outline-gray-3);border-radius:11px;background:var(--surface-white);
              color:var(--ink-gray-9);outline:none;transition:.15s}
   .copy-area:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
@@ -61,7 +71,7 @@
   .seg button.on{background:var(--surface-cards);color:var(--ink-gray-9);box-shadow:0 1px 2px rgba(0,0,0,.06)}
 
   /* ── pills ── */
-  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:9999px;font-size:11.5px;font-weight:500;
+  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:9999px;font-size:12px;font-weight:500;
         line-height:1.15;padding:4px 10px;white-space:nowrap;border:1px solid transparent}
   .pill-blue{background:var(--surface-blue-1);color:var(--ink-blue-2);border-color:var(--outline-blue-1)}
   .pill-green{background:var(--surface-green-1);color:var(--ink-green-2);border-color:var(--outline-green-1)}
@@ -77,19 +87,19 @@
   .side-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(150deg,#0070CC,#6846E3);
              display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
   .side-name{font-size:16px;font-weight:600;letter-spacing:-.01em;color:var(--menu-ink-9);line-height:1.1}
-  .side-name .tag{display:block;font-size:11px;font-weight:500;color:var(--menu-ink-4);letter-spacing:.01em;margin-top:2px}
+  .side-name .tag{display:block;font-size:12px;font-weight:500;color:var(--menu-ink-4);letter-spacing:.01em;margin-top:2px}
   .side-nav{flex:1;overflow-y:auto;padding:8px 10px}
-  .side-label{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--menu-ink-4);
+  .side-label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--menu-ink-4);
               padding:14px 10px 7px}
   .side-item{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--menu-ink-6);
-             font-size:13.5px;font-weight:500;transition:.13s;position:relative}
+             font-size:14px;font-weight:500;transition:.13s;position:relative}
   .side-item:hover{background:var(--menu-cards);color:var(--menu-ink-9)}
   .side-item.on{background:var(--menu-cards);color:var(--menu-ink-9)}
   .side-item.on::before{content:"";position:absolute;left:-10px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;
              background:linear-gradient(#0070CC,#6846E3)}
-  .side-item .si-ic{flex-shrink:0;color:inherit;opacity:.92}
+  .side-item .si-ic{flex-shrink:0;color:inherit;opacity:1}
   .side-item .si-star{margin-left:auto;color:#F4B740}
-  .side-foot{padding:14px 18px;border-top:1px solid var(--menu-line);font-size:11px;line-height:1.55;color:var(--menu-ink-4)}
+  .side-foot{padding:14px 18px;border-top:1px solid var(--menu-line);font-size:12px;line-height:1.55;color:var(--menu-ink-4)}
 
   .main{margin-left:var(--sidebar-w);min-height:100vh}
   .topbar{position:sticky;top:0;z-index:30;height:56px;display:flex;align-items:center;gap:11px;padding:0 28px;
@@ -97,15 +107,16 @@
   .topbar .tb-ic{width:28px;height:28px;border-radius:7px;background:var(--surface-blue-1);border:1px solid var(--outline-blue-1);
           display:flex;align-items:center;justify-content:center;color:var(--ink-blue-2);flex-shrink:0}
   .topbar .tb-name{font-size:14px;font-weight:600}
-  .topbar .tb-desc{font-size:12.5px;color:var(--ink-gray-5)}
+  .topbar .tb-desc{font-size:12px;color:var(--ink-gray-5)}
   .view{max-width:1000px;margin:0 auto;padding:30px 28px 64px}
+  .view.view-wide{max-width:none}
   .view-head{margin-bottom:24px}
-  .view-h1{font-size:29px;font-weight:600;letter-spacing:-.02em;line-height:1.12;margin:0}
-  .view-sub{font-size:15px;color:var(--ink-gray-6);line-height:1.55;margin:11px 0 0;max-width:720px}
+  .view-h1{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.12;margin:0}
+  .view-sub{font-size:16px;color:var(--ink-gray-6);line-height:1.55;margin:11px 0 0;max-width:720px}
   .field-label{font-size:12px;font-weight:600;color:var(--ink-gray-7);margin-bottom:9px;display:block}
   .stack{display:flex;flex-direction:column;gap:20px}
   .note{display:flex;gap:10px;padding:12px 14px;border-radius:10px;background:var(--surface-amber-1);
-        border:1px solid var(--outline-amber-1);color:var(--ink-amber-2);font-size:12.5px;line-height:1.55}
+        border:1px solid var(--outline-amber-1);color:var(--ink-amber-2);font-size:12px;line-height:1.55}
   .note.note-blue{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2)}
   .errbox{display:flex;gap:12px;padding:16px;border:1px solid var(--outline-red-1);background:var(--surface-red-1);border-radius:12px;color:var(--ink-red-3)}
   .skel{background:var(--surface-gray-2);border-radius:6px;animation:pulse 1.5s ease-in-out infinite}
@@ -119,29 +130,29 @@
          border-radius:10px;background:var(--surface-white);cursor:pointer;transition:.13s;text-align:left}
   .pchip:hover{border-color:var(--outline-gray-4)}
   .pchip.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1)}
-  .pchip .pe{font-size:18px;line-height:1}
-  .pchip .pn{font-size:13px;font-weight:500;color:var(--ink-gray-8)}
+  .pchip .pe{font-size:20px;line-height:1}
+  .pchip .pn{font-size:14px;font-weight:500;color:var(--ink-gray-8)}
   .pchip.on .pn{color:var(--ink-blue-2)}
   .pchip .pck{color:var(--ink-blue-2);opacity:0;transition:.13s}
   .pchip.on .pck{opacity:1}
 
   /* ── persona results ── */
   .gauge{display:flex;align-items:center;gap:26px;padding:22px 26px}
-  .gauge-num{font-size:48px;font-weight:600;line-height:.95;letter-spacing:-.02em}
+  .gauge-num{font-size:20px;font-weight:600;line-height:.95;letter-spacing:-.02em}
   .gauge-bar{height:10px;border-radius:6px;background:var(--surface-gray-2);overflow:hidden}
   .gauge-fill{height:100%;border-radius:6px;transition:width .5s ease}
   .pcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(296px,1fr));gap:14px}
   .pcard{padding:17px 18px;display:flex;flex-direction:column;gap:11px}
   .pcard-head{display:flex;align-items:flex-start;gap:11px}
-  .pcard-emoji{font-size:25px;line-height:1.1}
-  .pcard-name{font-size:14.5px;font-weight:600;color:var(--ink-gray-9)}
-  .pcard-tag{font-size:11.5px;color:var(--ink-gray-5);line-height:1.4;margin-top:2px}
+  .pcard-emoji{font-size:20px;line-height:1.1}
+  .pcard-name{font-size:14px;font-weight:600;color:var(--ink-gray-9)}
+  .pcard-tag{font-size:12px;color:var(--ink-gray-5);line-height:1.4;margin-top:2px}
   .scorebar{height:7px;border-radius:5px;background:var(--surface-gray-2);overflow:hidden}
   .scorefill{height:100%;border-radius:5px;transition:width .5s ease}
-  .score-meta{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--ink-gray-5);font-weight:500}
+  .score-meta{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--ink-gray-5);font-weight:500}
   .quote{background:var(--surface-gray-1);border-left:3px solid var(--outline-gray-3);border-radius:0 8px 8px 0;
-         padding:11px 13px;font-size:13px;line-height:1.55;color:var(--ink-gray-8);font-style:italic}
-  .kv{display:flex;gap:9px;font-size:12.5px;line-height:1.5;color:var(--ink-gray-7)}
+         padding:11px 13px;font-size:14px;line-height:1.55;color:var(--ink-gray-8);font-style:italic}
+  .kv{display:flex;gap:9px;font-size:12px;line-height:1.5;color:var(--ink-gray-7)}
   .kv-ic{flex-shrink:0;margin-top:1px}
   .kv b{color:var(--ink-gray-9);font-weight:600}
 
@@ -150,8 +161,8 @@
   @media(max-width:760px){ .kpi-grid{grid-template-columns:repeat(2,1fr)} }
   .kpi{padding:16px;display:flex;flex-direction:column;gap:8px}
   .kpi-top{display:flex;align-items:center;justify-content:space-between}
-  .kpi-label{font-size:11.5px;font-weight:600;color:var(--ink-gray-5)}
-  .kpi-value{font-size:23px;font-weight:600;color:var(--ink-gray-9);line-height:1.1}
+  .kpi-label{font-size:12px;font-weight:600;color:var(--ink-gray-5)}
+  .kpi-value{font-size:20px;font-weight:600;color:var(--ink-gray-9);line-height:1.1}
   .chip{padding:6px;border-radius:7px;background:var(--surface-gray-1);display:inline-flex;color:var(--ink-blue-2)}
   .track{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--outline-gray-3);background:var(--surface-white);
          color:var(--ink-gray-7);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;transition:.15s}
@@ -159,13 +170,13 @@
   .track.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2);font-weight:500}
   .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--outline-gray-2);flex-wrap:wrap}
   .search{display:flex;align-items:center;gap:8px;border:1px solid var(--outline-gray-3);border-radius:8px;padding:0 10px;background:var(--surface-white)}
-  .search input{border:none;outline:none;font-family:inherit;font-size:13px;padding:8px 0;background:transparent;color:var(--ink-gray-9);width:140px}
+  .search input{border:none;outline:none;font-family:inherit;font-size:14px;padding:8px 0;background:transparent;color:var(--ink-gray-9);width:140px}
   .tbody{padding:10px 8px;max-height:56vh;overflow-y:auto}
   .cue{display:flex;gap:14px;padding:7px 12px;border-radius:6px}
   .cue:hover{background:var(--surface-gray-1)}
   .cue-ts{flex-shrink:0;color:var(--ink-blue-2);font-size:12px;width:52px;padding-top:2px}
   .cue-text{color:var(--ink-gray-8);font-size:14px;line-height:1.55}
-  .plain{padding:8px 14px;color:var(--ink-gray-8);font-size:14.5px;line-height:1.75;white-space:pre-wrap}
+  .plain{padding:8px 14px;color:var(--ink-gray-8);font-size:14px;line-height:1.75;white-space:pre-wrap}
   mark{background:#FFF1A8;color:inherit;border-radius:2px;padding:0 1px}
 
   /* ── home / templates ── */
@@ -176,39 +187,39 @@
   .hc-top{display:flex;align-items:center;gap:11px;margin-bottom:13px}
   .hc-ic{width:36px;height:36px;border-radius:9px;background:linear-gradient(150deg,#0070CC,#6846E3);
          display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
-  .hc-cat{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-gray-5)}
+  .hc-cat{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-gray-5)}
   .hc-title{font-size:16px;font-weight:600;color:var(--ink-gray-9);line-height:1.32;margin:0 0 7px}
-  .hc-desc{font-size:13px;line-height:1.55;color:var(--ink-gray-6);margin:0;flex:1}
+  .hc-desc{font-size:14px;line-height:1.55;color:var(--ink-gray-6);margin:0;flex:1}
   .hc-apps{display:flex;align-items:center;gap:11px;margin-top:15px}
   .hc-app{display:inline-flex}
   .hc-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--outline-gray-1)}
-  .hc-eg{font-size:11.5px;color:var(--ink-gray-5);min-width:0;overflow-wrap:anywhere}
+  .hc-eg{font-size:12px;color:var(--ink-gray-5);min-width:0;overflow-wrap:anywhere}
   .hc-eg b{color:var(--ink-gray-7);font-weight:600}
-  .hc-go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;
+  .hc-go{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
          color:var(--ink-gray-7);transition:.14s;white-space:nowrap}
 
   /* ── multi-step plays ── */
   .home-sec{margin-top:30px}
-  .home-sec-h{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--ink-gray-9);margin-bottom:4px}
+  .home-sec-h{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink-gray-9);margin-bottom:4px}
   .home-sec-h .hs-ic{display:inline-flex;color:var(--ink-violet-1)}
-  .home-sec-sub{font-size:12.5px;color:var(--ink-gray-5);margin:0 0 14px;line-height:1.55;max-width:680px}
+  .home-sec-sub{font-size:12px;color:var(--ink-gray-5);margin:0 0 14px;line-height:1.55;max-width:680px}
   .play-card:hover{border-color:var(--ink-violet-1)}
   .play-card .hc-ic{background:linear-gradient(150deg,#6846E3,#A855F7)}
-  .play-back{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--ink-gray-6);
+  .play-back{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-gray-6);
              cursor:pointer;background:none;border:none;padding:0;margin-bottom:16px;font-family:inherit}
   .play-back:hover{color:var(--ink-blue-2)}
   .step{display:flex;gap:14px}
   .step-rail{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
   .step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-            font-size:12.5px;font-weight:600;flex-shrink:0;background:var(--surface-blue-1);
+            font-size:12px;font-weight:600;flex-shrink:0;background:var(--surface-blue-1);
             color:var(--ink-blue-2);border:1px solid var(--outline-blue-1)}
   .step-dot.err{background:var(--surface-red-1);color:var(--ink-red-3);border-color:var(--outline-red-1)}
   .step-line{flex:1;width:2px;background:var(--outline-gray-2);margin:5px 0;min-height:14px}
   .step-body{flex:1;min-width:0;padding-bottom:22px}
   .step-label{font-size:14px;font-weight:600;color:var(--ink-gray-9)}
-  .step-sum{font-size:12.5px;color:var(--ink-gray-6);margin-top:2px;line-height:1.5;overflow-wrap:anywhere}
+  .step-sum{font-size:12px;color:var(--ink-gray-6);margin-top:2px;line-height:1.5;overflow-wrap:anywhere}
   .tprev{margin-top:11px;padding:12px 14px;background:var(--surface-gray-1);border:1px solid var(--outline-gray-2);
-         border-radius:9px;font-size:13px;line-height:1.65;color:var(--ink-gray-7);white-space:pre-wrap;
+         border-radius:9px;font-size:14px;line-height:1.65;color:var(--ink-gray-7);white-space:pre-wrap;
          max-height:170px;overflow:auto;overflow-wrap:anywhere}
   /* signals evidence (inside a play step) */
   .ev-chips{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0 13px}
@@ -217,63 +228,63 @@
            border:1px solid var(--outline-gray-2);border-radius:10px}
   .ev-ic{flex-shrink:0;color:var(--ink-gray-5);margin-top:1px}
   .ev-body{flex:1;min-width:0}
-  .ev-meta{font-size:10.5px;color:var(--ink-gray-4);text-transform:uppercase;letter-spacing:.03em;
+  .ev-meta{font-size:12px;color:var(--ink-gray-4);text-transform:uppercase;letter-spacing:.03em;
            margin-bottom:3px;display:flex;gap:8px;flex-wrap:wrap}
-  .ev-text{font-size:13px;color:var(--ink-gray-7);line-height:1.55;overflow-wrap:anywhere}
-  .ev-eng{font-size:11px;color:var(--ink-gray-4);margin-top:5px}
+  .ev-text{font-size:14px;color:var(--ink-gray-7);line-height:1.55;overflow-wrap:anywhere}
+  .ev-eng{font-size:12px;color:var(--ink-gray-4);margin-top:5px}
   /* teardown patterns (inside a play step) */
-  .td-sum{font-size:13.5px;color:var(--ink-gray-7);line-height:1.6;margin:11px 0 2px}
+  .td-sum{font-size:14px;color:var(--ink-gray-7);line-height:1.6;margin:11px 0 2px}
   .td-facet{margin-top:15px}
-  .td-facet-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;
+  .td-facet-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;text-transform:uppercase;
               letter-spacing:.04em;color:var(--ink-gray-5);margin-bottom:8px}
   .td-facet-h .fi{display:inline-flex;color:var(--ink-violet-1)}
   .td-list{display:flex;flex-direction:column;gap:7px;margin:0;padding:0;list-style:none}
-  .td-list li{display:flex;gap:9px;font-size:13px;line-height:1.55;color:var(--ink-gray-7);overflow-wrap:anywhere}
+  .td-list li{display:flex;gap:9px;font-size:14px;line-height:1.55;color:var(--ink-gray-7);overflow-wrap:anywhere}
   .td-list li::before{content:'';flex-shrink:0;width:6px;height:6px;border-radius:50%;
                       background:var(--ink-violet-1);margin-top:6px}
-  .td-cadence{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-gray-6);margin-top:15px}
+  .td-cadence{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-gray-6);margin-top:15px}
   .td-steal{margin-top:16px;padding:13px 15px;border-radius:11px;
             background:linear-gradient(150deg,rgba(104,70,227,.07),rgba(168,85,247,.07));
             border:1px solid rgba(104,70,227,.22)}
-  .td-steal-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.04em;
+  .td-steal-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.04em;
               text-transform:uppercase;color:var(--ink-violet-1);margin-bottom:5px}
-  .td-steal-t{font-size:13.5px;color:var(--ink-gray-8);line-height:1.6;overflow-wrap:anywhere}
+  .td-steal-t{font-size:14px;color:var(--ink-gray-8);line-height:1.6;overflow-wrap:anywhere}
   /* reliability: per-insight citations + confidence + thin-evidence flag */
   .td-li-body{display:flex;flex-direction:column;gap:5px;min-width:0}
   .td-it{overflow-wrap:anywhere}
-  .td-unv{margin-left:7px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+  .td-unv{margin-left:7px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
           color:var(--ink-gray-5);background:rgba(0,0,0,.05);padding:1px 6px;border-radius:5px;white-space:nowrap}
   .td-cites{display:flex;flex-wrap:wrap;gap:5px}
-  .td-cite{font-size:10.5px;color:var(--ink-violet-1);background:rgba(104,70,227,.07);
+  .td-cite{font-size:12px;color:var(--ink-violet-1);background:rgba(104,70,227,.07);
            border:1px solid rgba(104,70,227,.18);padding:1px 7px;border-radius:6px;white-space:nowrap;cursor:default}
-  .td-thin{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#b45309;
+  .td-thin{display:flex;align-items:center;gap:7px;font-size:12px;color:#b45309;
            background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.22);padding:8px 11px;border-radius:9px;margin:11px 0 2px}
-  .td-audit{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-gray-5);margin:14px 0 0;overflow-wrap:anywhere}
+  .td-audit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-gray-5);margin:14px 0 0;overflow-wrap:anywhere}
   /* trends (agent 14): velocity badge + top-voice rows */
   .tr-vel{font-weight:700;color:var(--ink-violet-1)}
   .tr-voices{display:flex;flex-direction:column;gap:8px}
-  .tr-voice{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-gray-7);min-width:0}
+  .tr-voice{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--ink-gray-7);min-width:0}
   .tr-voice .ev-ic{flex-shrink:0}
   .tr-voice .vn{font-weight:600;color:var(--ink-gray-8);white-space:nowrap}
   .tr-voice .vw{color:var(--ink-gray-5);font-size:12px;overflow-wrap:anywhere;min-width:0}
   /* content performance (agent 12): best-time rows + cross-run trend */
   .cp-times{display:flex;flex-direction:column;gap:6px}
-  .cp-time{display:flex;gap:9px;font-size:13px;color:var(--ink-gray-7);flex-wrap:wrap}
+  .cp-time{display:flex;gap:9px;font-size:14px;color:var(--ink-gray-7);flex-wrap:wrap}
   .cp-time .cw{font-weight:600;color:var(--ink-gray-8);min-width:84px}
   .cp-time .cm{color:var(--ink-gray-5);font-size:12px}
-  .cp-trend{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-gray-6);margin-top:15px;overflow-wrap:anywhere}
+  .cp-trend{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-gray-6);margin-top:15px;overflow-wrap:anywhere}
   /* competitor intelligence — frappe-style cards */
   .ci-wrap{display:flex;flex-direction:column;gap:14px;margin-top:6px}
   .ci-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:10px;padding:17px 19px}
   .ci-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
   @media(max-width:720px){ .ci-grid2{grid-template-columns:1fr} }
-  .ci-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-gray-5);margin:0 0 13px}
+  .ci-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-gray-5);margin:0 0 13px}
   .ci-h .fi{color:var(--ink-violet-1);display:inline-flex}
   .brand-logo{border-radius:4px;flex-shrink:0;object-fit:contain;background:#fff;vertical-align:middle}
   .ci-thead,.ci-trow{display:grid;grid-template-columns:24px minmax(104px,1.5fr) minmax(88px,1.25fr) 44px 88px;gap:11px;align-items:center;min-width:0}
-  .ci-thead{font-size:10px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-gray-4);padding-bottom:9px;border-bottom:1px solid var(--outline-gray-1)}
+  .ci-thead{font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-gray-4);padding-bottom:9px;border-bottom:1px solid var(--outline-gray-1)}
   .ci-thead .rt{text-align:right}
-  .ci-trow{padding:10px 0;border-bottom:1px solid var(--outline-gray-1);font-size:13px}
+  .ci-trow{padding:10px 0;border-bottom:1px solid var(--outline-gray-1);font-size:14px}
   .ci-trow:last-child{border-bottom:none;padding-bottom:0}
   .ci-rank{font-size:12px;color:var(--ink-gray-4);font-variant-numeric:tabular-nums}
   .ci-rank.r1{color:var(--ink-violet-1);font-weight:700}
@@ -284,15 +295,15 @@
   .ci-bar{flex:1;height:7px;border-radius:5px;background:var(--surface-gray-3);min-width:20px}
   .ci-bar>i{display:block;height:100%;border-radius:5px;background:var(--ink-violet-1)}
   .ci-pct{font-size:12px;color:var(--ink-gray-7);font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:500}
-  .ci-num{text-align:right;font-size:12.5px;color:var(--ink-gray-7);font-variant-numeric:tabular-nums}
-  .ci-li{justify-self:end;font-size:12.5px;color:var(--ink-gray-7);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ci-num{text-align:right;font-size:12px;color:var(--ink-gray-7);font-variant-numeric:tabular-nums}
+  .ci-li{justify-self:end;font-size:12px;color:var(--ink-gray-7);display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-variant-numeric:tabular-nums}
   .ci-li.muted{color:var(--ink-gray-4)}
   .ci-li .lic{color:#0A66C2;display:inline-flex;flex-shrink:0}
-  .ci-foot{font-size:11.5px;color:var(--ink-gray-4);margin:12px 0 0;line-height:1.5}
+  .ci-foot{font-size:12px;color:var(--ink-gray-4);margin:12px 0 0;line-height:1.5}
   .ci-quad svg{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
   .ci-prov{font-size:12px;color:var(--ink-gray-5);margin:0 0 12px;line-height:1.5}
   .ci-ov{display:flex;flex-direction:column;gap:11px}
-  .ci-ov-row{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--ink-gray-7);min-width:0}
+  .ci-ov-row{display:flex;align-items:flex-start;gap:9px;font-size:14px;color:var(--ink-gray-7);min-width:0}
   .ci-ov-row .vn{font-weight:600;color:var(--ink-gray-8);white-space:nowrap}
   .ci-ov-row .vb{color:var(--ink-gray-5);font-size:12px;overflow-wrap:anywhere;min-width:0}
   /* connectors tab */
@@ -300,26 +311,26 @@
   .conn-card{padding:18px;display:flex;flex-direction:column;gap:11px}
   .conn-top{display:flex;align-items:center;justify-content:space-between}
   .conn-ic{color:var(--ink-violet-1);display:inline-flex}
-  .conn-cat{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-gray-5)}
-  .conn-name{font-size:15px;font-weight:600;color:var(--ink-gray-9);margin:0}
+  .conn-cat{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-gray-5)}
+  .conn-name{font-size:16px;font-weight:600;color:var(--ink-gray-9);margin:0}
   .conn-btn{align-self:flex-start;gap:8px;opacity:.75;cursor:not-allowed}
-  .conn-soon{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-gray-5);background:rgba(0,0,0,.05);padding:1px 6px;border-radius:5px}
+  .conn-soon{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-gray-5);background:rgba(0,0,0,.05);padding:1px 6px;border-radius:5px}
   /* competitor intelligence: opinionated insights */
   .ci-ins{display:flex;flex-direction:column;gap:11px}
   .ci-ins-row{display:flex;gap:10px;align-items:flex-start;min-width:0}
   .ci-ins-dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;margin-top:6px;background:var(--ink-violet-1)}
   .ci-ins-dot.win{background:var(--ink-green-2)}
   .ci-ins-dot.gap{background:#f59e0b}
-  .ci-ins-h{font-weight:600;color:var(--ink-gray-9);font-size:13.5px;overflow-wrap:anywhere}
-  .ci-ins-d{color:var(--ink-gray-6);font-size:12.5px;line-height:1.5;overflow-wrap:anywhere}
+  .ci-ins-h{font-weight:600;color:var(--ink-gray-9);font-size:14px;overflow-wrap:anywhere}
+  .ci-ins-d{color:var(--ink-gray-6);font-size:12px;line-height:1.5;overflow-wrap:anywhere}
 
   /* ── accounts: auth modal + user chip ── */
   .auth-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.32);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
   .auth-card{position:relative;background:#fff;border:1px solid var(--outline-gray-2);border-radius:14px;box-shadow:0 12px 48px rgba(15,23,42,.16);width:100%;max-width:400px;padding:34px 34px 26px}
-  .auth-mark{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink-gray-9);font-size:15px;margin-bottom:18px}
+  .auth-mark{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:var(--ink-gray-9);font-size:16px;margin-bottom:18px}
   .auth-mark .m{width:30px;height:30px;border-radius:8px;background:var(--ink-violet-1);color:#fff;display:inline-flex;align-items:center;justify-content:center}
   .auth-ico{width:46px;height:46px;border-radius:50%;background:var(--surface-violet-1);color:var(--ink-violet-1);display:flex;align-items:center;justify-content:center;margin:0 0 16px}
-  .auth-h{font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--ink-gray-9);margin:0 0 7px}
+  .auth-h{font-size:20px;font-weight:600;letter-spacing:-.01em;color:var(--ink-gray-9);margin:0 0 7px}
   .auth-sub{font-size:14px;color:var(--ink-gray-5);line-height:1.55;margin:0 0 20px}
   .auth-sub b{color:var(--ink-gray-8)}
   .auth-label{font-size:12px;font-weight:600;color:var(--ink-gray-7);margin:0 0 7px;display:block}
@@ -329,34 +340,34 @@
   .auth-btn:hover{background:#5a3bd0}
   .auth-btn:disabled{opacity:.55;cursor:not-allowed}
   .auth-note{font-size:12px;color:var(--ink-gray-5);line-height:1.5;margin:16px 0 0}
-  .auth-err{font-size:12.5px;color:var(--ink-red-3);margin:9px 0 0;line-height:1.45}
-  .auth-legal{font-size:11px;color:var(--ink-gray-4);text-align:center;margin:18px 0 0;line-height:1.5}
-  .auth-x{position:absolute;top:13px;right:15px;background:none;border:none;color:var(--ink-gray-4);cursor:pointer;font-size:22px;line-height:1}
-  .auth-link{color:var(--ink-violet-1);background:none;border:none;font-family:inherit;font-size:13px;cursor:pointer;padding:0;margin-top:12px}
-  .auth-runrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--outline-gray-1);font-size:13px}
+  .auth-err{font-size:12px;color:var(--ink-red-3);margin:9px 0 0;line-height:1.45}
+  .auth-legal{font-size:12px;color:var(--ink-gray-4);text-align:center;margin:18px 0 0;line-height:1.5}
+  .auth-x{position:absolute;top:13px;right:15px;background:none;border:none;color:var(--ink-gray-4);cursor:pointer;font-size:20px;line-height:1}
+  .auth-link{color:var(--ink-violet-1);background:none;border:none;font-family:inherit;font-size:14px;cursor:pointer;padding:0;margin-top:12px}
+  .auth-runrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--outline-gray-1);font-size:14px}
   .auth-runrow:last-child{border-bottom:none}
   .auth-runrow .rt{color:var(--ink-gray-9);font-weight:600;text-transform:capitalize}
   .auth-runrow .rs{color:var(--ink-gray-5);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .auth-runrow .ra{color:var(--ink-gray-4);font-size:11.5px;white-space:nowrap}
-  .auth-empty{text-align:center;color:var(--ink-gray-5);font-size:13px;padding:24px 0;line-height:1.6}
+  .auth-runrow .ra{color:var(--ink-gray-4);font-size:12px;white-space:nowrap}
+  .auth-empty{text-align:center;color:var(--ink-gray-5);font-size:14px;padding:24px 0;line-height:1.6}
   /* user chip + menu in the dark sidebar foot */
   .user-chip{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;cursor:pointer;color:var(--menu-ink-6);padding:5px;border-radius:9px;transition:.13s}
   .user-chip:hover{background:var(--menu-cards)}
   .user-mono{width:30px;height:30px;border-radius:50%;background:var(--ink-violet-1);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;text-transform:uppercase}
   .user-meta{min-width:0;flex:1}
-  .user-email{font-size:12.5px;color:var(--menu-ink-9);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .user-act{font-size:11px;color:var(--menu-ink-4)}
-  .signin-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;border-radius:9px;background:var(--ink-violet-1);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .user-email{font-size:12px;color:var(--menu-ink-9);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-act{font-size:12px;color:var(--menu-ink-4)}
+  .signin-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;border-radius:9px;background:var(--ink-violet-1);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .signin-btn:hover{background:#5a3bd0}
   .user-menu{position:absolute;bottom:60px;left:14px;right:14px;background:var(--menu-cards);border:1px solid var(--menu-line);border-radius:10px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-  .user-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--menu-ink-6);padding:11px 14px;font-family:inherit;font-size:13px;cursor:pointer}
+  .user-menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:none;color:var(--menu-ink-6);padding:11px 14px;font-family:inherit;font-size:14px;cursor:pointer}
   .user-menu button:hover{background:var(--menu-bar);color:var(--menu-ink-9)}
 
   /* ── live signals ── */
   .conn-strip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px 14px;margin-bottom:16px;
               background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:11px}
-  .conn-strip .cs-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-gray-5);margin-right:2px}
-  .conn{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:8px;font-size:12.5px;font-weight:500;
+  .conn-strip .cs-label{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-gray-5);margin-right:2px}
+  .conn{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:500;
         border:1px solid var(--outline-gray-2);background:var(--surface-gray-1);color:var(--ink-gray-7)}
   .conn .cn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--outline-gray-4)}
   .conn.ready{background:var(--surface-green-1);border-color:var(--outline-green-1);color:var(--ink-green-2)}
@@ -364,7 +375,7 @@
 
   .sig-srcs{display:flex;gap:9px;flex-wrap:wrap}
   .sig-src{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid var(--outline-gray-3);
-           border-radius:10px;background:var(--surface-white);cursor:pointer;transition:.13s;font-size:13px;font-weight:500;
+           border-radius:10px;background:var(--surface-white);cursor:pointer;transition:.13s;font-size:14px;font-weight:500;
            color:var(--ink-gray-7);user-select:none}
   .sig-src:hover{border-color:var(--outline-gray-4)}
   .sig-src.on{color:#fff;border-color:transparent}
@@ -378,15 +389,15 @@
   .sig-ava{width:46px;height:46px;border-radius:11px;flex-shrink:0;position:relative;overflow:hidden;
            display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:16px;letter-spacing:.02em}
   .sig-id{min-width:0;flex:1}
-  .sig-plat{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
-  .sig-name{font-size:15.5px;font-weight:600;color:var(--ink-gray-9);line-height:1.25;overflow-wrap:anywhere}
-  .sig-headline{font-size:12.5px;color:var(--ink-gray-6);line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
-  .sig-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-gray-5);margin-top:7px}
+  .sig-plat{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+  .sig-name{font-size:16px;font-weight:600;color:var(--ink-gray-9);line-height:1.25;overflow-wrap:anywhere}
+  .sig-headline{font-size:12px;color:var(--ink-gray-6);line-height:1.45;margin-top:3px;overflow-wrap:anywhere}
+  .sig-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--ink-gray-5);margin-top:7px}
   .sig-meta span{display:inline-flex;align-items:center;gap:3px}
   .sig-stats{display:flex;gap:18px;padding:12px 18px;border-bottom:1px solid var(--outline-gray-2);flex-wrap:wrap}
   .sig-stat{display:flex;flex-direction:column;gap:1px}
-  .sig-stat b{font-size:15px;font-weight:600;color:var(--ink-gray-9);font-family:'Geist Mono',monospace}
-  .sig-stat span{font-size:11px;color:var(--ink-gray-5)}
+  .sig-stat b{font-size:16px;font-weight:600;color:var(--ink-gray-9);font-family:'IBM Plex Mono',monospace}
+  .sig-stat span{font-size:12px;color:var(--ink-gray-5)}
 
   .sig-body{padding:7px 8px;display:flex;flex-direction:column;max-height:344px;overflow-y:auto}
   .sig-act{display:flex;gap:11px;padding:10px 11px;border-radius:8px;transition:.12s}
@@ -394,21 +405,21 @@
   .sig-act-ic{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
               background:var(--surface-gray-2);color:var(--ink-gray-6);margin-top:1px}
   .sig-act-main{min-width:0;flex:1}
-  .sig-act-text{font-size:13px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere}
-  .sig-act-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ink-gray-5);margin-top:5px}
+  .sig-act-text{font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere}
+  .sig-act-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-gray-5);margin-top:5px}
   .sig-act-meta .dotsep{width:2px;height:2px;border-radius:50%;background:var(--outline-gray-4)}
   .sig-act-eng{display:inline-flex;align-items:center;gap:4px;color:var(--ink-gray-6);font-weight:500}
 
   .sig-empty{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:18px}
   .sig-empty .se-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
                     background:var(--surface-gray-2);color:var(--ink-gray-5)}
-  .sig-empty .se-title{font-size:13.5px;font-weight:600;color:var(--ink-gray-8)}
+  .sig-empty .se-title{font-size:14px;font-weight:600;color:var(--ink-gray-8)}
   .sig-empty .se-note{font-size:12px;color:var(--ink-gray-5);line-height:1.55}
   @media(max-width:560px){ .sig-grid{grid-template-columns:1fr} }
 
   /* ── signals: units, people roster, keyword feed, delivery, jobs ── */
   .sig-hint{font-size:12px;color:var(--ink-gray-5);margin-top:8px;line-height:1.5}
-  .sec-h{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink-gray-8);
+  .sec-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--ink-gray-8);
          margin:22px 0 12px;text-transform:uppercase;letter-spacing:.04em}
   .sec-h .sec-ic{display:inline-flex;color:var(--ink-gray-5)}
   .sec-h .sec-n{margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0;color:var(--ink-gray-5)}
@@ -420,8 +431,8 @@
   .rost-ava{width:36px;height:36px;border-radius:9px;flex-shrink:0;overflow:hidden;position:relative;
             display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
   .rost-id{min-width:0;flex:1}
-  .rost-name{font-size:13px;font-weight:600;color:var(--ink-gray-9);overflow-wrap:anywhere;line-height:1.2}
-  .rost-sub{font-size:11px;color:var(--ink-gray-5);display:inline-flex;align-items:center;gap:4px;margin-top:2px}
+  .rost-name{font-size:14px;font-weight:600;color:var(--ink-gray-9);overflow-wrap:anywhere;line-height:1.2}
+  .rost-sub{font-size:12px;color:var(--ink-gray-5);display:inline-flex;align-items:center;gap:4px;margin-top:2px}
 
   .feed{display:flex;flex-direction:column;gap:0;border:1px solid var(--outline-gray-2);border-radius:12px;
         overflow:hidden;background:var(--surface-cards)}
@@ -431,36 +442,195 @@
   .feed-plat{width:30px;height:30px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;
              justify-content:center;color:#fff}
   .feed-main{min-width:0;flex:1}
-  .feed-text{font-size:13px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere}
-  .feed-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;color:var(--ink-gray-5);margin-top:6px}
+  .feed-text{font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere}
+  .feed-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--ink-gray-5);margin-top:6px}
   .feed-meta .feed-au{font-weight:600;color:var(--ink-gray-7)}
   .feed-eng{display:inline-flex;align-items:center;gap:4px;color:var(--ink-gray-6);font-weight:500}
 
   .deliver{margin-top:16px;border:1px solid var(--outline-gray-2);border-radius:12px;overflow:hidden;background:var(--surface-cards)}
-  .deliver-h{display:flex;align-items:center;gap:9px;padding:13px 16px;cursor:pointer;font-size:13px;
+  .deliver-h{display:flex;align-items:center;gap:9px;padding:13px 16px;cursor:pointer;font-size:14px;
              font-weight:600;color:var(--ink-gray-8);user-select:none}
   .deliver-h:hover{background:var(--surface-gray-1)}
   .deliver-b{padding:4px 16px 16px;border-top:1px solid var(--outline-gray-2);display:flex;flex-direction:column;gap:16px}
-  .dlv-block .dlv-lab{font-size:11.5px;font-weight:600;color:var(--ink-gray-7);display:flex;align-items:center;gap:6px;margin:12px 0 7px}
+  .dlv-block .dlv-lab{font-size:12px;font-weight:600;color:var(--ink-gray-7);display:flex;align-items:center;gap:6px;margin:12px 0 7px}
   .code-blk{position:relative;background:#0F0F0F;border-radius:10px;padding:13px 14px;overflow-x:auto}
-  .code-blk pre{margin:0;font-family:'Geist Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.6;
+  .code-blk pre{margin:0;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;line-height:1.6;
                 color:#E8E8E8;white-space:pre;overflow-wrap:normal}
   .code-blk .tok{color:#7FD1B9}
   .copy-mini{position:absolute;top:9px;right:9px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
-             color:#D4D4D4;border-radius:7px;padding:5px 8px;font-size:11px;font-family:inherit;cursor:pointer;
+             color:#D4D4D4;border-radius:7px;padding:5px 8px;font-size:12px;font-family:inherit;cursor:pointer;
              display:inline-flex;align-items:center;gap:5px;transition:.12s}
   .copy-mini:hover{background:rgba(255,255,255,.12);color:#fff}
 
   .job-strip{display:flex;align-items:center;gap:11px;padding:12px 15px;border:1px solid var(--outline-blue-1);
              background:var(--surface-blue-1);border-radius:11px;margin-bottom:16px;flex-wrap:wrap}
-  .job-strip .js-id{font-family:'Geist Mono',monospace;font-size:11.5px;color:var(--ink-gray-6)}
+  .job-strip .js-id{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-gray-6)}
   .bulk-item{border:1px solid var(--outline-gray-2);border-radius:12px;margin-bottom:14px;overflow:hidden;background:var(--surface-cards)}
   .bulk-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none}
   .bulk-head:hover{background:var(--surface-gray-1)}
-  .bulk-q{font-size:13.5px;font-weight:600;color:var(--ink-gray-9);overflow-wrap:anywhere}
+  .bulk-q{font-size:14px;font-weight:600;color:var(--ink-gray-9);overflow-wrap:anywhere}
   .bulk-sum{font-size:12px;color:var(--ink-gray-5);margin-left:auto;flex-shrink:0}
   .bulk-body{padding:14px 16px;border-top:1px solid var(--outline-gray-2)}
   @media(max-width:560px){ .sig-grid{grid-template-columns:1fr} .roster{grid-template-columns:1fr} }
+
+  /* ── tables (Airtable/Notion-like grid) ── */
+  .tbl-th{position:sticky;top:0;background:var(--surface-cards);z-index:3;cursor:pointer;user-select:none;
+          padding:6px;text-align:left;color:var(--ink-gray-5);font-weight:600;white-space:nowrap}
+  .tbl-th:hover{background:var(--surface-gray-1)}
+  .tbl-td{padding:6px;min-width:0;overflow-wrap:anywhere;border-top:1px solid var(--outline-gray-1);vertical-align:top}
+  .cell-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+  .tbl-grouphead{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface-gray-1);
+                 cursor:pointer;border-top:1px solid var(--outline-gray-2)}
+  .tbl-menu{position:absolute;z-index:20;top:calc(100% + 6px);left:0;background:var(--surface-cards);
+            border:1px solid var(--outline-gray-2);border-radius:12px;padding:6px;min-width:180px;
+            max-height:340px;overflow-y:auto;overscroll-behavior:contain;
+            box-shadow:0 0 0 1px rgba(0,0,0,.03),0 4px 10px rgba(0,0,0,.06),0 12px 32px rgba(0,0,0,.12);
+            animation:menuIn .12s ease-out;transform-origin:top}
+  @keyframes menuIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+  .search-mini{width:100%;border:1px solid var(--outline-gray-2);border-radius:6px;padding:3px 6px;
+               font-size:12px;font-family:inherit;background:var(--surface-white);color:var(--ink-gray-9)}
+  /* in-place cell editor: sized to the cell so clicking does NOT enlarge the row
+     (Google Sheets / Airtable behaviour). Small padding, 12px, subtle focus ring. */
+  .cell-edit{width:100%;box-sizing:border-box;font-family:inherit;font-size:12px;padding:2px 4px;margin:-1px 0;
+             border:1px solid var(--ink-blue-2);border-radius:4px;background:var(--surface-white);
+             color:var(--ink-gray-9);outline:none;line-height:1.4}
+  textarea.cell-edit{resize:vertical;min-height:46px;line-height:1.45}
+  /* every editing surface in the Tables feature stays 12px so clicking a cell
+     never jumps the text size (inline editors + the row/field detail modals) */
+  .tbl-frame input,.tbl-frame select,.tbl-frame textarea{font-size:12px}
+  .tbl-modal .input,.tbl-modal select,.tbl-modal textarea{font-size:12px}
+  /* a11y: a visible keyboard focus ring app-wide (was missing) */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+  textarea:focus-visible, [tabindex]:focus-visible, .iconbtn:focus-visible{
+    outline:2px solid var(--ink-blue-2); outline-offset:1px; border-radius:5px}
+  /* a bare, keyboard-focusable icon button (replaces click-only <span> icons) */
+  .iconbtn{background:none;border:none;margin:0;padding:3px;cursor:pointer;color:var(--ink-gray-6);
+           display:inline-flex;align-items:center;line-height:0;border-radius:5px}
+  .iconbtn:hover{background:var(--surface-gray-2);color:var(--ink-gray-9)}
+  .iconbtn:disabled{opacity:.5;cursor:default}
+
+  /* bordered grid: a framed table with row + column separators. The whole table
+     context is a uniform 12px per the type spec (cells, headers, list, board). */
+  .tbl-frame{border:1px solid var(--outline-gray-2);border-radius:10px;font-size:12px;display:inline-block;min-width:100%;vertical-align:top}
+  .board-wrap{font-size:12px}
+  /* separate (not collapse): collapse makes sticky headers flicker + drop borders
+     on scroll in Chrome; separate + spacing 0 keeps the same look but scrolls clean */
+  .tbl-frame table{border-collapse:separate;border-spacing:0}
+  .tbl-frame table,.tbl-th,.tbl-td,.list-title,.board-card,.board-card-title{font-size:12px}
+  .tbl-th{border-right:1px solid var(--outline-gray-1);border-bottom:1px solid var(--outline-gray-2)}
+  .tbl-td{border-right:1px solid var(--outline-gray-1)}
+  .tbl-th:last-child, .tbl-td:last-child{border-right:none}
+  /* frozen gutter + primary column (Airtable): they stay pinned while the rest
+     of the grid scrolls horizontally. Fixed gutter width so the hover swap from
+     row number to actions never jitters the column. */
+  /* z-index layers: body cells 0, sticky-left body cells 2, header row 3, sticky
+     corners 4. Clear separation stops the corner from flickering under scroll. */
+  .tbl-actcol{box-sizing:border-box;padding:6px;
+              position:sticky;left:0;background:var(--surface-cards);z-index:2}
+  th.tbl-actcol{z-index:4}
+  .tbl-sticky1{position:sticky;left:64px;background:var(--surface-cards);z-index:2;
+               border-right:1px solid var(--outline-gray-1)}
+  th.tbl-sticky1{z-index:4}
+  /* drag-and-drop reordering indicators */
+  .tbl-drop-col{box-shadow:inset 3px 0 0 var(--ink-blue-2)}
+  tr.tbl-droprow td{border-top:2px solid var(--ink-blue-2)}
+  .tbl-rowdrag{cursor:grab}
+  .tbl-rowdrag:active{cursor:grabbing}
+  .tbl-th{user-select:none}
+  /* column resize grip on the right edge of each header */
+  .col-resize{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;z-index:6;touch-action:none}
+  .col-resize::after{content:"";position:absolute;top:0;right:2px;width:2px;height:100%;background:transparent;transition:background .1s}
+  .col-resize:hover::after{background:var(--ink-blue-2)}
+  /* row actions are always legible (color, not a near-invisible opacity), and
+     darken on row hover; delete goes red on hover */
+  .tbl-row-acts{display:inline-flex;gap:6px}
+  .tbl-row-acts .iconbtn{color:var(--ink-gray-5)}
+  tr:hover .tbl-row-acts .iconbtn{color:var(--ink-gray-8)}
+  .tbl-row-acts .acts-del:hover{color:var(--ink-red-3)}
+  .tbl-newrow{display:flex;align-items:center;gap:6px;width:100%;padding:8px 12px;color:var(--ink-gray-5);
+              cursor:pointer;border:none;border-top:1px solid var(--outline-gray-2);font-size:12px;
+              background:none;font-family:inherit;text-align:left}
+  .tbl-newrow:hover{background:var(--surface-gray-1);color:var(--ink-gray-8)}
+  .tbl-mi{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;
+          white-space:nowrap;width:100%;background:none;border:none;font-family:inherit;text-align:left;
+          color:var(--ink-gray-8);line-height:1.3}
+  .tbl-mi:hover{background:var(--surface-gray-2)}
+  .tbl-mi:active{background:var(--surface-gray-3)}
+  .tbl-mi-label{display:flex;align-items:center;gap:7px;padding:4px 10px 2px;font-size:11px;font-weight:600;
+                text-transform:uppercase;letter-spacing:.04em;color:var(--ink-gray-5)}
+  .tbl-mi-sep{height:1px;background:var(--outline-gray-2);margin:5px 0}
+  /* the active checkmark sits flush right, like a native menu */
+  .tbl-mi .msi:last-child, .tbl-mi iconify-icon:last-child{margin-left:auto;color:var(--ink-blue-2)}
+  .tbl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.32);display:flex;align-items:flex-start;
+               justify-content:center;padding:8vh 16px;z-index:60}
+  .tbl-modal{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:14px;
+             padding:20px;width:100%;max-width:440px;max-height:80vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+  .fld{display:block;font-size:12px;color:var(--ink-gray-6);margin-bottom:12px}
+  .fld input,.fld select{display:block;width:100%;margin-top:4px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  /* compact single-row table toolbar (Notion-style) */
+  .tbl-bar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .tbar-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--outline-gray-2);
+            border-radius:8px;background:var(--surface-white);color:var(--ink-gray-7);font-size:12px;
+            font-family:inherit;cursor:pointer;white-space:nowrap;line-height:1.2}
+  .tbar-btn:hover{background:var(--surface-gray-1)}
+  .tbar-btn.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2)}
+  /* toolbar controls are UI chrome, not table data, so they sit at the 14px base
+     (Table / List / Board / JSON / Group / Fields / Search / New) */
+  .tbl-bar .seg button,.tbl-bar .tbar-btn,.tbl-bar .btn,.tbl-bar .search input{font-size:14px}
+  .tbl-bar .tbar-btn{padding:6px 10px}
+  /* Airtable-style two-pane: inner view sidebar + full-bleed grid */
+  .tbl-shell{display:flex;height:calc(100vh - 56px);overflow:hidden}
+  .tbl-viewbar{width:212px;flex-shrink:0;border-right:1px solid var(--outline-gray-2);background:var(--surface-gray-1);
+               display:flex;flex-direction:column;gap:10px;padding:14px 10px;overflow-y:auto}
+  .tbl-vb-title{font-size:15px;font-weight:600;color:var(--ink-gray-9);margin:0;cursor:text;padding:3px 7px;border-radius:6px;
+                display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit}
+  .tbl-vb-title:hover{background:var(--surface-gray-3)}
+  .tbl-vb-search{background:var(--surface-white);border-color:var(--outline-gray-2)}
+  .tbl-vb-search input{width:100%}
+  .tbl-vb-list{display:flex;flex-direction:column;gap:2px}
+  .tbl-vitem{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;border:none;background:none;
+             font-family:inherit;font-size:14px;color:var(--ink-gray-7);cursor:pointer;text-align:left;width:100%}
+  .tbl-vitem:hover{background:var(--surface-gray-3)}
+  .tbl-vitem.on{background:var(--surface-blue-1);color:var(--ink-blue-2);font-weight:600}
+  .tbl-mainpane{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--surface-white)}
+  .tbl-frame{background:var(--surface-white)}
+  .tbl-mainpane .tbl-bar{margin:0;padding:9px 16px;border-bottom:1px solid var(--outline-gray-2);flex-shrink:0}
+  .tbl-scroll{flex:1;overflow:auto;padding:14px 16px}
+  .tbl-foot{flex-shrink:0;border-top:1px solid var(--outline-gray-2);padding:7px 16px;font-size:12px;color:var(--ink-gray-5)}
+  /* row-number gutter: number at rest, actions on hover (Airtable) */
+  /* number and actions occupy the SAME grid cell and cross-fade on hover (opacity,
+     not display) so moving the cursor across rows never triggers a reflow */
+  .gutter-stack{display:grid;place-items:center start}
+  .gutter-stack > *{grid-area:1/1}
+  .tbl-rownum{color:var(--ink-gray-5);font-size:11px;font-variant-numeric:tabular-nums;padding-left:2px;
+              opacity:1;transition:opacity .1s}
+  .tbl-actcol .tbl-row-acts{opacity:0;pointer-events:none;transition:opacity .1s}
+  tr:hover .tbl-rownum{opacity:0}
+  tr:hover .tbl-actcol .tbl-row-acts{opacity:1;pointer-events:auto}
+  /* list view */
+  .list-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border-top:1px solid var(--outline-gray-2)}
+  .list-row:first-child{border-top:none}
+  .list-row:hover{background:var(--surface-gray-1)}
+  .list-title{background:none;border:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink-gray-9);
+              cursor:pointer;text-align:left;padding:0;min-width:130px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .list-title:hover{color:var(--ink-violet-1)}
+  .list-props{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;min-width:0;font-size:12px}
+  .list-prop{display:inline-flex;align-items:center;gap:5px}
+  .list-plabel{color:var(--ink-gray-5);font-size:12px}
+  /* board / kanban view */
+  .board-wrap{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
+  .board-lane{flex:0 0 260px;background:var(--surface-gray-1);border:1px solid var(--outline-gray-2);border-radius:10px;padding:8px}
+  .board-lane.drop-over{border-color:var(--ink-blue-2);background:var(--surface-blue-1)}
+  .board-lanehead{display:flex;align-items:center;gap:8px;padding:2px 4px 8px}
+  .board-cards{display:flex;flex-direction:column;gap:8px}
+  .board-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:8px;padding:9px 10px;cursor:grab;
+              box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .board-card:active{cursor:grabbing}
+  .board-card-title{background:none;border:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink-gray-9);
+                    cursor:pointer;text-align:left;padding:0;flex:1;overflow-wrap:anywhere}
+  .board-card-title:hover{color:var(--ink-violet-1)}
+  .board-field{margin-top:6px;font-size:12px}
 
   /* ── responsive: sidebar becomes top strip ── */
   @media(max-width:900px){
@@ -474,7 +644,7 @@
     .side-item.on{box-shadow:inset 0 0 0 1px var(--menu-line)}
     .side-foot{display:none}
     .main{margin-left:0}
-    .view-h1{font-size:24px}
+    .view-h1{font-size:20px}
   }
   @media(max-width:560px){
     .view{padding:22px 16px 48px} .topbar{padding:0 16px}
@@ -495,25 +665,48 @@ const API_BASE = location.protocol === 'file:' ? 'http://localhost:5000' : '';
 /* ── solid icon set: Phosphor via Iconify. Fill weight for areal glyphs,
       Bold weight for inherently linear ones (check, plus, arrows, hash, code).
       One name→id map drives the whole app. Never reintroduce outline/stroke icons. ── */
+/* Material Symbols Rounded ligature names (line style, wght 300 / GRAD 200 / opsz 24).
+   Brand logos + the chess knight have no Material equivalent, so they stay on
+   Phosphor via Iconify, switched to the LINE (regular) weight to match. An id
+   containing ':' renders through iconify-icon; anything else is a Material ligature. */
 const ICONS = {
-  captions:'ph:closed-captioning-fill', youtube:'ph:youtube-logo-fill', search:'ph:magnifying-glass-fill',
-  copy:'ph:copy-fill', download:'ph:download-simple-fill', clock:'ph:clock-fill', type:'ph:text-t-fill',
-  list:'ph:list-bullets-fill', zap:'ph:lightning-fill', alert:'ph:warning-circle-fill', check:'ph:check-bold',
-  globe:'ph:globe-fill', hash:'ph:hash-bold', film:'ph:film-strip-fill', loader:'ph:spinner-gap-bold',
-  plus:'ph:plus-bold', languages:'ph:translate-fill', book:'ph:book-open-fill', pen:'ph:pencil-simple-fill',
-  code:'ph:code-bold', target:'ph:target-fill', users:'ph:users-fill', sparkles:'ph:sparkle-fill',
-  message:'ph:chat-circle-fill', house:'ph:house-fill',
-  arrowLeft:'ph:arrow-left-bold', play:'ph:play-fill',
-  wrench:'ph:wrench-fill', cpu:'ph:cpu-fill', github:'ph:github-logo-fill', star:'ph:star-fill',
-  arrowRight:'ph:arrow-right-bold', radar:'ph:broadcast-fill', linkedin:'ph:linkedin-logo-fill',
-  twitter:'ph:x-logo-fill', refresh:'ph:arrows-clockwise-bold', mapPin:'ph:map-pin-fill',
-  externalLink:'ph:arrow-square-out-bold', plug:'ph:plug-fill', userSearch:'ph:user-focus-fill',
-  reddit:'ph:reddit-logo-fill', building:'ph:buildings-fill', webhook:'ph:webhooks-logo-fill',
-  rss:'ph:rss-fill', sealCheck:'ph:seal-check-fill', upload:'ph:upload-simple-fill',
-  mail:'ph:envelope-fill', broom:'ph:broom-fill', chartLine:'ph:chart-line-up-fill',
-  minus:'ph:minus-bold', user:'ph:user-fill', signout:'ph:sign-out-fill',
+  captions:'closed_caption', youtube:'ph:youtube-logo', search:'search',
+  copy:'content_copy', download:'download', clock:'schedule', type:'title',
+  list:'format_list_bulleted', zap:'bolt', alert:'error', check:'check',
+  globe:'language', hash:'tag', film:'movie', loader:'progress_activity',
+  plus:'add', languages:'translate', book:'menu_book', pen:'edit',
+  code:'code', target:'target', users:'group', sparkles:'auto_awesome',
+  message:'chat_bubble', house:'home',
+  arrowLeft:'arrow_back', play:'play_arrow',
+  wrench:'build', cpu:'memory', github:'ph:github-logo', star:'star',
+  arrowRight:'arrow_forward', radar:'radar', linkedin:'ph:linkedin-logo',
+  twitter:'ph:x-logo', refresh:'refresh', mapPin:'location_on',
+  externalLink:'open_in_new', plug:'power', userSearch:'frame_person',
+  reddit:'ph:reddit-logo', building:'apartment', webhook:'webhook',
+  rss:'rss_feed', sealCheck:'verified', upload:'upload',
+  mail:'mail', broom:'mop', chartLine:'monitoring',
+  minus:'remove', user:'person', signout:'logout',
+  newspaper:'newspaper', knight:'ph:horse', calendar:'calendar_month',
+  binoculars:'travel_explore', quora:'format_quote', trustpilot:'star',
+  capterra:'storefront', g2:'military_tech', review:'star',
+  sheet:'table', comment:'comment', archive:'archive',
+  textAa:'text_fields', tag:'label', funnel:'filter_alt', eye:'visibility', eyeSlash:'visibility_off',
+  caretDown:'keyboard_arrow_down', caretRight:'keyboard_arrow_right', caretUp:'keyboard_arrow_up',
+  trash:'delete', dots:'more_horiz', copyRow:'file_copy',
+  close:'close', columns:'view_column', kanban:'view_kanban', rows:'table_rows',
 };
-const Icon = ({name, size=16, cls=''}) => html`<iconify-icon class=${cls} icon=${ICONS[name]||name} width=${size} height=${size}></iconify-icon>`;
+/* Icon size scale (user decision): 24px page-level, 20px nav/toolbar, 16px dense
+   inline (grid headers, menus, chips). The legacy size prop snaps to the nearest
+   tier, so call sites keep their relative hierarchy without pixel-exact sizes.
+   htm passes attribute values as strings, hence the coercion. */
+const Icon = ({name, size, cls=''}) => {
+  const id = ICONS[name] || name;
+  const n = parseInt(size, 10) || 16;
+  const px = n >= 22 ? 24 : n >= 15 ? 20 : 16;
+  return id.includes(':')
+    ? html`<iconify-icon class=${cls} icon=${id} width=${px} height=${px}></iconify-icon>`
+    : html`<span class=${'msi'+(cls?' '+cls:'')} style=${'font-size:'+px+'px'} aria-hidden="true">${id}</span>`;
+};
 
 /* ── tool registry + sidebar nav ── */
 const TOOLS = {
@@ -523,9 +716,11 @@ const TOOLS = {
   signals: {icon:'radar',     name:'Signals',           desc:'The data intelligence layer for AI agents'},
   clean:   {icon:'sealCheck', name:'NoBounce',          desc:'Validate and de-dupe an email list for agents'},
   competitor: {icon:'chartLine', name:'Competitor Intel', desc:'Share of voice vs your competitors'},
+  tables:     {icon:'sheet',      name:'Tables',           desc:'GTM Pipeline'},
+  reports:    {icon:'newspaper',  name:'Reports',          desc:'Daily signal briefs + the competitive monitor'},
   connectors: {icon:'plug',      name:'Connectors',       desc:'Wire your CRM, sequencer, and messaging'},
 };
-const NAV = ['home', 'persona', 'extract', 'signals', 'clean', 'competitor', 'connectors'];
+const NAV = ['home', 'persona', 'extract', 'signals', 'clean', 'competitor', 'tables', 'reports', 'connectors'];
 
 /* ── persona constants (mirrors api/_personas.py for instant, offline render) ── */
 const PERSONAS = [
@@ -558,18 +753,36 @@ function PersonaResult(d){
         <div class="glass-card gauge">
           <div style="text-align:center;flex-shrink:0">
             <div class="gauge-num" style=${`color:${toneHex[tn]}`}>${d.overall}</div>
-            <div style="font-size:11px;color:var(--ink-gray-5);margin-top:3px">out of 100</div>
+            <div style="font-size:12px;color:var(--ink-gray-5);margin-top:3px">out of 100</div>
           </div>
           <div style="flex:1;min-width:210px">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-              <span class=${'pill pill-'+tn} style="font-size:13px;padding:5px 12px">${d.verdict}</span>
+              <span class=${'pill pill-'+tn} style="font-size:14px;padding:5px 12px">${d.verdict}</span>
               <span class="pill pill-gray"><${Icon} name=${d.engine==='ai'?'sparkles':'cpu'} size=12 /> ${d.engine==='ai'?'Live AI reactions':'Built-in model'}</span>
               <span class="pill pill-gray">${ctypeLabel(d.content_type)}</span>
             </div>
             <div class="gauge-bar"><div class="gauge-fill" style=${`width:${d.overall}%;background:${toneHex[tn]}`}></div></div>
-            <div style="font-size:12.5px;color:var(--ink-gray-6);line-height:1.55;margin-top:10px">${overallNote(d.overall)}</div>
+            <div style="font-size:12px;color:var(--ink-gray-6);line-height:1.55;margin-top:10px">${overallNote(d.overall)}</div>
           </div>
         </div>
+
+        ${d.structure && html`
+        <div class="glass-card" style="padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <span style="font-weight:600;font-size:14px">Structure of a strong ${d.structure.label}</span>
+            <span class=${'pill pill-'+tone(d.structure.score)}>${d.structure.have} of ${d.structure.total} parts</span>
+          </div>
+          <div class="gauge-bar" style="margin-bottom:12px"><div class="gauge-fill" style=${`width:${d.structure.score}%;background:${toneHex[tone(d.structure.score)]}`}></div></div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            ${d.structure.parts.map(p=>html`
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px">
+                <span style=${`color:${p.present?'var(--ink-green-2)':'var(--ink-gray-4)'};flex-shrink:0;margin-top:1px`}><${Icon} name=${p.present?'check':'minus'} size=14/></span>
+                <div style="min-width:0;overflow-wrap:anywhere"><b style=${p.present?'':'color:var(--ink-gray-6)'}>${p.label}</b>
+                  <span style="color:var(--ink-gray-5)"> — ${p.note}</span></div>
+              </div>`)}
+          </div>
+          ${d.structure.missing.length>0 && html`<div style="font-size:12px;color:var(--ink-amber-2);margin-top:11px"><${Icon} name="wrench" size=12/> To complete this ${d.structure.label}: ${d.structure.missing.join(', ')}</div>`}
+        </div>`}
 
         <div class="pcard-grid">
           ${d.results.map(r=>{ const t=tone(r.score); return html`
@@ -594,7 +807,7 @@ function PersonaResult(d){
             </div>`; })}
         </div>
 
-        <p style="font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:2px 0 0">
+        <p style="font-size:12px;color:var(--ink-gray-4);text-align:center;margin:2px 0 0">
           Reactions are simulated to help you sharpen copy, not a substitute for real users.
           Connect an AI key to upgrade from the built-in model to live reactions.
         </p>
@@ -692,7 +905,7 @@ function TeardownResult(o){
         <div class="td-steal-t">${o.steal}</div>
       </div>`}
       ${o.audit&&html`<p class="td-audit"><${Icon} name="sealCheck" size=12 /> ${o.audit}</p>`}
-      <p style="font-size:11.5px;color:var(--ink-gray-4);margin:8px 0 0">
+      <p style="font-size:12px;color:var(--ink-gray-4);margin:8px 0 0">
         Every pattern cites the posts it was drawn from. Connect an AI key for the full live teardown.
       </p>
     </div>`;
@@ -941,7 +1154,7 @@ function PersonaTool({seed}){
     ${error && html`<div class="errbox" style="margin-bottom:18px">
       <${Icon} name="alert" size=18 />
       <div><div style="font-weight:600;margin-bottom:2px">Couldn’t run the preview</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div style="font-size:14px;opacity:.85">${error}</div></div>
     </div>`}
 
     ${loading && !data && html`
@@ -1039,7 +1252,7 @@ function ExtractTool({seed}){
     ${error && html`<div class="errbox" style="margin-bottom:18px">
       <${Icon} name="alert" size=18 />
       <div><div style="font-weight:600;margin-bottom:2px">Couldn’t fetch that transcript</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div style="font-size:14px;opacity:.85">${error}</div></div>
     </div>`}
 
     ${loading && !data && html`<div class="kpi-grid" style="margin-bottom:18px">
@@ -1068,15 +1281,15 @@ function ExtractTool({seed}){
       </div>
 
       <div class="glass-card" style="padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <span style="font-size:11.5px;font-weight:600;color:var(--ink-gray-5)">TRACKS</span>
+        <span style="font-size:12px;font-weight:600;color:var(--ink-gray-5)">TRACKS</span>
         <div style="display:flex;gap:7px;flex-wrap:wrap;flex:1">
           ${data.tracks.map(t=>html`<button class=${'track'+(t.code===data.code&&!data.translated_to?' on':'')} onClick=${()=>run({lang:t.code})}>
-            ${t.code} <span class=${'pill '+(t.kind==='manual'?'pill-green':'pill-blue')} style="padding:1px 6px;font-size:10px">${t.kind==='manual'?'manual':'ASR'}</span>
+            ${t.code} <span class=${'pill '+(t.kind==='manual'?'pill-green':'pill-blue')} style="padding:1px 6px;font-size:12px">${t.kind==='manual'?'manual':'ASR'}</span>
           </button>`)}
         </div>
         <div style="display:flex;align-items:center;gap:7px">
           <${Icon} name="globe" size=14 />
-          <select class="input" style="width:auto;padding:7px 26px 7px 10px;font-size:12.5px" value=${tlang} onChange=${e=>setTlang(e.target.value)}>
+          <select class="input" style="width:auto;padding:7px 26px 7px 10px;font-size:12px" value=${tlang} onChange=${e=>setTlang(e.target.value)}>
             ${TRANSLATE_TARGETS.map(([c,n])=>html`<option value=${c}>${n}</option>`)}
           </select>
           <button class="btn btn-ghost btn-sm" disabled=${loading||!tlang} onClick=${()=>run({translate:tlang})}>Translate</button>
@@ -1099,13 +1312,13 @@ function ExtractTool({seed}){
           </div>
         </div>
         <div class="tbody" ref=${bodyRef}>
-          ${filtered.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:13px">No lines match “${query}”.</div>`}
+          ${filtered.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:14px">No lines match “${query}”.</div>`}
           ${view==='stamped'
             ? filtered.map(c=>html`<div class="cue"><span class="cue-ts mono">${c.ts}</span><span class="cue-text">${hl(c.text)}</span></div>`)
             : html`<div class="plain">${query ? hl(plainText) : plainText}</div>`}
         </div>
       </div>
-      <p style="font-size:11px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
+      <p style="font-size:12px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
         video <span class="mono">${data.video_id}</span> · ${data.tracks.length} track(s) available · fetched for you, no API key
       </p>`}
 
@@ -1124,10 +1337,15 @@ const SIG_META = {
   linkedin: {label:'LinkedIn', icon:'linkedin', color:'#0A66C2'},
   x:        {label:'X',        icon:'twitter',  color:'#0F0F0F'},
   youtube:  {label:'YouTube',  icon:'youtube',  color:'#FF0000'},
+  trustpilot:{label:'TrustPilot', icon:'trustpilot', color:'#00B67A'},
+  quora:    {label:'Quora',    icon:'quora',    color:'#B92B27'},
+  capterra: {label:'Capterra', icon:'capterra', color:'#FF9D28'},
+  g2:       {label:'G2',       icon:'g2',       color:'#FF492C'},
 };
-const SIG_ORDER = ['github', 'reddit', 'linkedin', 'x', 'youtube'];
+const SIG_ORDER = ['github', 'reddit', 'linkedin', 'x', 'youtube', 'trustpilot', 'quora', 'capterra', 'g2'];
 const ACT_ICON = {post:'pen', comment:'message', reply:'message', share:'refresh', repost:'refresh', like:'star',
-  commit:'code', pr:'code', issue:'alert', star:'star', fork:'refresh', create:'plus', release:'zap', video:'film'};
+  commit:'code', pr:'code', issue:'alert', star:'star', fork:'refresh', create:'plus', release:'zap', video:'film',
+  review:'review', answer:'quora'};
 
 /* Three lookup units. Each has its own source set + framing. Person resolves a
    single footprint; company adds the people who work there; keyword is a live
@@ -1141,7 +1359,7 @@ const UNIT_META = {
             ph:'A company name or domain, e.g. stripe.com',
             bulkPh:'One company name or domain per line', cta:'Map the company',
             hint:'The company footprint per source, plus the people who work there.'},
-  keyword: {icon:'hash',       label:'Keyword', sources:['github','x','reddit','youtube'],
+  keyword: {icon:'hash',       label:'Keyword', sources:['github','x','reddit','youtube','trustpilot','quora'],
             ph:'A topic or phrase to track, e.g. model context protocol',
             bulkPh:'One topic or phrase per line', cta:'Track mentions',
             hint:'A live mentions feed: what is being said about this right now.'},
@@ -1327,7 +1545,7 @@ function BulkItem({item, onPick}){
       <span class="bulk-sum">${sum}</span>
     </div>
     ${open && !item.error && html`<div class="bulk-body"><${UnitResult} payload=${p} onPick=${onPick} /></div>`}
-    ${item.error && html`<div class="bulk-body" style="font-size:12.5px;color:var(--ink-red-3)">${item.error}</div>`}
+    ${item.error && html`<div class="bulk-body" style="font-size:12px;color:var(--ink-red-3)">${item.error}</div>`}
   </div>`;
 }
 
@@ -1336,7 +1554,7 @@ function SignalsTool({seed}){
   const [query, setQuery]     = useState('');
   const [bulk, setBulk]       = useState(false);
   const [bulkText, setBulkT]  = useState('');
-  const [sel, setSel]         = useState({github:true, reddit:true, linkedin:true, x:true});
+  const [sel, setSel]         = useState({});   // empty = all of the unit's sources on; a key set false turns one off
   const [adv, setAdv]         = useState(false);
   const [handles, setHandles] = useState({github:'', reddit:'', linkedin:'', x:''});
   const [webhook, setWebhook] = useState('');
@@ -1353,13 +1571,13 @@ function SignalsTool({seed}){
   }, []);
 
   const um = UNIT_META[unit];
-  const chosen = um.sources.filter(s=>sel[s]);
+  const chosen = um.sources.filter(s=>sel[s] !== false);   // every unit source on unless explicitly toggled off
   const isBulk = data && data.items;
 
   function pickUnit(u){
     if(u === unit) return;
     setUnit(u); setData(null); setJob(null); setError(null); setBulk(false);
-    setSel({github:true, reddit:true, linkedin:true, x:true});
+    setSel({});   // {} means every source for the new unit is on by default
     if(u !== 'person') setAdv(false);
   }
 
@@ -1369,7 +1587,7 @@ function SignalsTool({seed}){
       const parsed = parseQuery(query);
       if(parsed.kind === 'empty' && !advHandle) return {error:'Enter a handle or a profile URL.'};
       if(parsed.kind === 'name' && !advHandle){ setAdv(true);
-        return {error:"That looks like a full name. Signals looks people up by handle or profile link, not by display name. Paste a profile URL, or add exact handles below."}; }
+        return {error:"That looks like a topic or full name. People are looked up by handle or profile link. To see live mentions of it, search it as a keyword."}; }
       if(parsed.kind === 'email' && !advHandle)
         return {error:"Email lookup needs an enrichment source we have not wired yet. Paste a profile URL or type a handle for now."};
       if(parsed.kind === 'url-unknown' && !advHandle)
@@ -1428,6 +1646,21 @@ function SignalsTool({seed}){
         headers:{'Content-Type':'application/json'}, body: JSON.stringify(b.body)});
       const j = await r.json();
       if(!r.ok) setError(j.error || 'Lookup failed.'); else setData(j);
+    }catch(e){ setError('Could not reach Signals. Is the local server running on :5000?'); }
+    setLoading(false);
+  }
+
+  /* bridge: run the current query as a Keyword lookup (offered when a person/company
+     search of a topic phrase comes back empty or errors) */
+  async function searchAsKeyword(){
+    const q = query.trim(); if(!q) return;
+    setUnit('keyword'); setBulk(false); setAdv(false); setSel({});
+    setError(null); setJob(null); setLoading(true); setData(null);
+    try{
+      const r = await fetch(`${API_BASE}/api/signals`, {method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({unit:'keyword', query:q, sources: UNIT_META.keyword.sources})});
+      const j = await r.json();
+      if(!r.ok) setError(j.error||'Lookup failed.'); else setData(j);
     }catch(e){ setError('Could not reach Signals. Is the local server running on :5000?'); }
     setLoading(false);
   }
@@ -1500,7 +1733,7 @@ function SignalsTool({seed}){
   function copySnippet(){ navigator.clipboard.writeText(apiSnippet()); setCopied(true); setTimeout(()=>setCopied(false),1400); }
 
   const summary = data && !isBulk && html`
-    <div style="font-size:13px;color:var(--ink-gray-6)">
+    <div style="font-size:14px;color:var(--ink-gray-6)">
       ${unit==='keyword'
         ? html`<b style="color:var(--ink-gray-9)">${(data.feed||[]).length}</b> live mentions across ${data.summary.platforms_found} of ${data.summary.platforms_searched} sources`
         : html`<b style="color:var(--ink-gray-9)">${data.summary.platforms_found}</b> of ${data.summary.platforms_searched} sources matched${
@@ -1563,9 +1796,9 @@ function SignalsTool({seed}){
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px">
         <span class="field-label" style="margin:0">Look in</span>
         <div class="sig-srcs">
-          ${um.sources.map(s=>{ const m = SIG_META[s]; const on = sel[s];
+          ${um.sources.map(s=>{ const m = SIG_META[s]; const on = sel[s] !== false;
             return html`<span class=${'sig-src' + (on ? ' on' : '')} style=${on ? `background:${m.color}` : ''}
-              onClick=${()=>setSel(p=>({...p, [s]:!p[s]}))}>
+              onClick=${()=>setSel(p=>({...p, [s]: p[s]===false}))}>
               <span class="ss-ic"><${Icon} name=${m.icon} size=14 /></span> ${m.label}
               ${on && html`<span class="ss-ck"><${Icon} name="check" size=13 /></span>`}
             </span>`; })}
@@ -1621,17 +1854,19 @@ function SignalsTool({seed}){
 
     ${error && html`<div class="errbox" style="margin:18px 0">
       <${Icon} name="alert" size=18 />
-      <div><div style="font-weight:600;margin-bottom:2px">Couldn't run that lookup</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div style="flex:1;min-width:0"><div style="font-weight:600;margin-bottom:2px">Couldn't run that lookup</div>
+      <div style="font-size:14px;opacity:.85">${error}</div>
+      ${unit!=='keyword' && query.trim() && html`<button class="btn btn-primary btn-sm" style="margin-top:10px" onClick=${searchAsKeyword}>
+        <${Icon} name="hash" size=13 /> Search "${query.trim()}" as a keyword</button>`}</div>
     </div>`}
 
     ${job && html`<div class="job-strip" style="margin-top:18px">
       <span class="pill ${job.status==='done'?'pill-green':job.status==='error'?'pill-amber':'pill-blue'}">
         <${Icon} name=${job.status==='done'?'check':job.status==='error'?'alert':'loader'} size=12 cls=${job.status==='running'||job.status==='queued'?'spin':''} />
         ${job.status}</span>
-      <span style="font-size:12.5px;color:var(--ink-gray-7)">Async ${job.kind} job</span>
+      <span style="font-size:12px;color:var(--ink-gray-7)">Async ${job.kind} job</span>
       <span class="js-id">${job.id ? job.id.slice(0,12) : ''}</span>
-      ${job.webhook && html`<span style="font-size:11.5px;color:var(--ink-gray-5)"><${Icon} name="webhook" size=11 /> webhook set</span>`}
+      ${job.webhook && html`<span style="font-size:12px;color:var(--ink-gray-5)"><${Icon} name="webhook" size=11 /> webhook set</span>`}
     </div>`}
 
     ${loading && !job && !data && html`<div class="sig-grid" style="margin-top:18px">
@@ -1650,7 +1885,7 @@ function SignalsTool({seed}){
 
     ${isBulk && html`
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0 14px">
-        <div style="font-size:13px;color:var(--ink-gray-6)">
+        <div style="font-size:14px;color:var(--ink-gray-6)">
           Batch of <b style="color:var(--ink-gray-9)">${data.count}</b> ${data.unit} lookups</div>
         <span style="flex:1"></span>
         <button class="btn btn-ghost btn-sm" onClick=${()=>exportResult('csv')}><${Icon} name="download" size=13 /> Export CSV</button>
@@ -1794,7 +2029,7 @@ function CleanTool({seed}){
     ${error && html`<div class="errbox" style="margin:18px 0">
       <${Icon} name="alert" size=18 />
       <div><div style="font-weight:600;margin-bottom:2px">Couldn't clean that list</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div style="font-size:14px;opacity:.85">${error}</div></div>
     </div>`}
 
     ${loading && !data && html`<div class="kpi-grid" style="margin:18px 0">
@@ -1831,9 +2066,9 @@ function CleanTool({seed}){
           </div>
         </div>
         <div class="tbody" ref=${bodyRef}>
-          ${shown.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:13px">No addresses to show${q?html` for “${query}”`:''}.</div>`}
+          ${shown.length===0 && html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5);font-size:14px">No addresses to show${q?html` for “${query}”`:''}.</div>`}
           ${shown.map(r=>html`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--outline-gray-1)">
-            <span class="mono" style="flex:1;min-width:0;font-size:12.5px;overflow-wrap:anywhere">${r.email}</span>
+            <span class="mono" style="flex:1;min-width:0;font-size:12px;overflow-wrap:anywhere">${r.email}</span>
             ${r.typo_suggestion && html`<span class="pill pill-amber">did you mean ${r.typo_suggestion}?</span>`}
             ${r.disposable && html`<span class="pill pill-red">disposable</span>`}
             ${r.role_based && html`<span class="pill pill-gray">role</span>`}
@@ -1842,7 +2077,7 @@ function CleanTool({seed}){
           </div>`)}
         </div>
       </div>
-      <p style="font-size:11px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
+      <p style="font-size:12px;color:var(--ink-gray-4);margin-top:10px;text-align:center">
         ${sm.validated.toLocaleString()} validated · ${sm.smtp_checked?'with SMTP probe':'MX + heuristics, no mailbox contacted'} · download is agent-ready CSV or JSON
       </p>`}
 
@@ -1974,7 +2209,7 @@ const CONNECTORS = [
 ];
 
 function CompetitorTool(){
-  return html`<${PlayRunner} card=${COMPETITOR_CARD} />`;
+  return html`<${PlayRunner} card=${COMPETITOR_CARD} autoRun=${false} />`;
 }
 
 function ConnectorsTool(){
@@ -1982,7 +2217,7 @@ function ConnectorsTool(){
   <div class="view">
     <div class="view-head">
       <h1 class="view-h1">Wire the tools your Runs write back to</h1>
-      <p class="view-sub">Connectors are how a Run routes a scored, drafted action into your stack: your CRM, your sequencer, your inbox. This is the Phase-2 layer that unlocks the contact-axis Runs (Champion Job-Change, Lead-Scoring, and the rest). Not wired yet.</p>
+      <p class="view-sub">Connectors are how a Run routes a scored, drafted action into your stack: your CRM, your sequencer, your inbox. Not wired yet.</p>
     </div>
     <div class="conn-grid">
       ${CONNECTORS.map(c=>html`
@@ -1993,14 +2228,14 @@ function ConnectorsTool(){
           </div>
           <h3 class="conn-name">${c.name}</h3>
           <button class="btn btn-ghost btn-sm conn-btn" disabled>
-            Connect <span class="conn-soon">Phase 2</span>
+            Connect <span class="conn-soon">Soon</span>
           </button>
         </div>`)}
     </div>
   </div>`;
 }
 
-function PlayRunner({card, onBack}){
+function PlayRunner({card, onBack, autoRun=true}){
   const seed = {};
   card.inputs.forEach(f=>{ seed[f.key] = f.default!=null ? f.default
     : (f.options ? (f.options[0][0]!=null?f.options[0][0]:f.options[0]) : ''); });
@@ -2028,8 +2263,10 @@ function PlayRunner({card, onBack}){
     setLoad(false);
   }
 
-  /* Auto-run on open with the sample so one click shows a full result. */
-  useEffect(()=>{ run(seed); }, []);
+  /* Auto-run on open with the sample so one card click shows a full result.
+     Disabled for standalone tools (e.g. Competitor Intel) where a heavy scan
+     should only start when the user clicks Run. */
+  useEffect(()=>{ if(autoRun) run(seed); }, []);
 
   /* When a result lands and its tail is below the fold, scroll to it so the
      multi-step output is what the user sees, not the form they just submitted.
@@ -2069,7 +2306,7 @@ function PlayRunner({card, onBack}){
     ${error && html`<div class="errbox" style="margin-bottom:18px">
       <${Icon} name="alert" size=18 />
       <div><div style="font-weight:600;margin-bottom:2px">Couldn’t run the play</div>
-      <div style="font-size:13px;opacity:.85">${error}</div></div>
+      <div style="font-size:14px;opacity:.85">${error}</div></div>
     </div>`}
 
     ${loading && !res && html`
@@ -2150,7 +2387,7 @@ function HomeTool({onLaunch}){
       </div>
     </div>
 
-    <p style="font-size:11.5px;color:var(--ink-gray-4);text-align:center;margin:22px 0 0">
+    <p style="font-size:12px;color:var(--ink-gray-4);text-align:center;margin:22px 0 0">
       Every tool here is also an API an agent can call, not just a screen to click.
     </p>
   </div>`;
@@ -2243,10 +2480,1204 @@ function WelcomeModal({open, onClose}){
     </div>`;
 }
 
+/* ── Daily Report: scheduled keyword-group signal briefs (api/_report.py) ── */
+function agoFrom(iso){
+  if(!iso) return '';
+  const t = Date.parse(iso); if(isNaN(t)) return '';
+  const s = Math.max(0,(Date.now()-t)/1000);
+  if(s<3600) return Math.round(s/60)+'m ago';
+  if(s<86400) return Math.round(s/3600)+'h ago';
+  return Math.round(s/86400)+'d ago';
+}
+const SENT_PILL = {positive:'pill-green', negative:'pill-red', neutral:'pill-gray'};
+const platIcon = p => p==='x' ? 'twitter' : p;
+
+/* ════════════════════════ TABLES (Airtable/Notion-like, JSON-first) ════════════════════════ */
+const TBL_KEY = 'gtmstack.tables.v1';
+const TBL_VIEW_KEY = 'gtmstack.tables.view';
+const TBL_COLORS = new Set(['blue','green','amber','red','gray']);
+const newId = () => 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pillFor = c => TBL_COLORS.has(c) ? 'pill-'+c : 'pill-gray';
+const optOf = (col,id) => (col.options||[]).find(o=>o.id===id) || null;
+function fmtDate(iso){
+  if(!iso) return '';
+  try{ return new Intl.DateTimeFormat('en',{month:'short',day:'numeric',year:'numeric'}).format(new Date(iso)); }
+  catch(e){ return String(iso); }
+}
+function dateBand(iso){
+  if(!iso || Number.isNaN(Date.parse(iso))) return '';
+  const d = new Date(iso), t = new Date(); t.setHours(0,0,0,0);
+  if(d < t) return 'overdue';
+  if((d - t) <= 7*864e5) return 'soon';
+  return '';
+}
+/* Rendered text of a cell, so global search hits labels not ids. */
+function cellText(v, col){
+  if(v==null) return '';
+  if(col.type==='select') return optOf(col,v)?.label || String(v);
+  if(col.type==='multi_select') return (Array.isArray(v)?v:[]).map(id=>optOf(col,id)?.label||id).join(' ');
+  if(col.type==='date') return fmtDate(v);
+  if(col.type==='checkbox') return v ? 'yes' : 'no';
+  return String(v);
+}
+function emptyValueFor(col){
+  if(col.type==='multi_select') return [];
+  if(col.type==='number') return null;
+  if(col.type==='checkbox') return false;
+  return '';
+}
+const _isEmpty = v => v==null || v==='' || (Array.isArray(v) && v.length===0);
+/* Per-type behaviour. render/editor live in Cell (dispatch on type); TYPE_META
+   stays pure data: an icon, a matches(cell,filter,col) and a compare(a,b,col)
+   that always sorts empties last (the sort wrapper re-pins on desc). */
+const TYPE_META = {
+  text: {icon:'textAa',
+    matches:(v,q)=>String(v??'').toLowerCase().includes(String(q).toLowerCase()),
+    compare:(a,b)=>String(a??'').localeCompare(String(b??''))},
+  longtext: {icon:'textAa',
+    matches:(v,q)=>String(v??'').toLowerCase().includes(String(q).toLowerCase()),
+    compare:(a,b)=>String(a??'').localeCompare(String(b??''))},
+  url: {icon:'globe',
+    matches:(v,q)=>String(v??'').toLowerCase().includes(String(q).toLowerCase()),
+    compare:(a,b)=>String(a??'').localeCompare(String(b??''))},
+  number: {icon:'hash',
+    matches:(v,q)=>{
+      const s=String(q).trim();
+      let m;
+      if((m=s.match(/^>\s*(-?\d+\.?\d*)$/))) return typeof v==='number' && v>parseFloat(m[1]);
+      if((m=s.match(/^<\s*(-?\d+\.?\d*)$/))) return typeof v==='number' && v<parseFloat(m[1]);
+      if((m=s.match(/^(-?\d+\.?\d*)\s*-\s*(-?\d+\.?\d*)$/))) return typeof v==='number' && v>=parseFloat(m[1]) && v<=parseFloat(m[2]);
+      return String(v??'').includes(s);
+    },
+    compare:(a,b)=>(a==null?0:a)-(b==null?0:b)},
+  select: {icon:'tag',
+    matches:(v,q,col)=> Array.isArray(q) ? q.includes(v) : (optOf(col,v)?.label||String(v??'')).toLowerCase().includes(String(q).toLowerCase()),
+    compare:(a,b,col)=>{
+      const ix=id=>{ const i=(col.options||[]).findIndex(o=>o.id===id); return i<0?(col.options||[]).length:i; };
+      return ix(a)-ix(b);
+    }},
+  multi_select: {icon:'list',
+    matches:(v,q,col)=>{ const arr=Array.isArray(v)?v:[];
+      return Array.isArray(q) ? arr.some(id=>q.includes(id))
+        : arr.some(id=>(optOf(col,id)?.label||id).toLowerCase().includes(String(q).toLowerCase())); },
+    compare:(a,b)=>((Array.isArray(a)?a.length:0)-(Array.isArray(b)?b.length:0))},
+  date: {icon:'calendar',
+    matches:(v,q)=>String(v??'').includes(String(q)),
+    compare:(a,b)=>{ const pa=Date.parse(a), pb=Date.parse(b);
+      if(Number.isNaN(pa)&&Number.isNaN(pb)) return 0;
+      if(Number.isNaN(pa)) return 1; if(Number.isNaN(pb)) return -1; return pa-pb; }},
+  checkbox: {icon:'check',
+    matches:(v,q)=>{ const s=String(q).toLowerCase();
+      if(['true','yes','1'].includes(s)) return v===true;
+      if(['false','no','0'].includes(s)) return v===false; return true; },
+    compare:(a,b)=>(a?1:0)-(b?1:0)},
+};
+const SAMPLE = {
+  name:'GTM Pipeline',
+  cols:[
+    {key:'merchant', label:'Merchant', type:'text', hidden:false, width:180},
+    {key:'stage', label:'Stage', type:'select', hidden:false, width:150, options:[
+      {id:'lead',label:'Lead',color:'gray'},{id:'demo',label:'Demo booked',color:'blue'},
+      {id:'trial',label:'Trial',color:'amber'},{id:'live',label:'Live',color:'green'},
+      {id:'churned',label:'Churned',color:'red'}]},
+    {key:'channels', label:'Products', type:'multi_select', hidden:false, width:220, options:[
+      {id:'pg',label:'Payment Gateway',color:'blue'},{id:'payouts',label:'Payouts',color:'green'},
+      {id:'relay',label:'Relay',color:'amber'},{id:'secureid',label:'Secure ID',color:'gray'}]},
+    {key:'partner', label:'Partner', type:'text', hidden:false, width:150},
+    {key:'gmv', label:'Monthly GMV (L)', type:'number', hidden:false, width:130},
+    {key:'nextStep', label:'Next step', type:'longtext', hidden:true, width:260},
+    {key:'signed', label:'Signed', type:'checkbox', hidden:false, width:90},
+    {key:'lastTouch', label:'Last touch', type:'date', hidden:false, width:140},
+    {key:'url', label:'Deal doc', type:'url', hidden:false, width:160}
+  ],
+  rows:[
+    {_id:'r1', merchant:'Zylker D2C', stage:'trial', channels:['pg','relay'], partner:'Growth360', gmv:42, nextStep:'Ship the recon agent template, then confirm outcome-based pricing above 30L GMV.', signed:false, lastTouch:'2026-06-28', url:'https://docs.example.com/zylker'},
+    {_id:'r2', merchant:'RocketPay NBFC', stage:'live', channels:['payouts','relay'], partner:'Direct', gmv:180, nextStep:'Loan-recovery voice agent live. Track EMI-bounce branch conversion weekly.', signed:true, lastTouch:'2026-07-01', url:'https://docs.example.com/rocketpay'},
+    {_id:'r3', merchant:'Meesho Ops', stage:'demo', channels:['pg','payouts'], partner:'Direct', gmv:0, nextStep:'Automate daily bank recon (refunds + payouts) via Relay into Oracle. Commercials deferred.', signed:false, lastTouch:'2026-06-20', url:''},
+    {_id:'r4', merchant:'OSW Cart', stage:'lead', channels:['relay'], partner:'Zostel voice partner', gmv:9, nextStep:'Cart-voice recovery pilot. Qualify GMV before white-glove onboarding.', signed:false, lastTouch:'2026-06-05', url:''},
+    {_id:'r5', merchant:'FlexyPe', stage:'churned', channels:['pg'], partner:'Direct', gmv:0, nextStep:'Blocked on status-callback recon dispute. Hold until Madras HC hearing outcome.', signed:false, lastTouch:'2026-05-30', url:''},
+    {_id:'r6', merchant:'Byspeed', stage:'trial', channels:['pg','secureid'], partner:'IT agency', gmv:31, nextStep:'Onboarding series in progress. Push Secure ID 1-click KYC next.', signed:false, lastTouch:'2026-07-02', url:''},
+    {_id:'r7', merchant:'Jaipur Handmade', stage:'demo', channels:['relay','pg'], partner:'Reddit inbound', gmv:14, nextStep:'From the Jaipur Reddit thread. COD to prepaid via OCC next.', signed:false, lastTouch:'2026-07-05', url:'https://example.com/jaipur'},
+    {_id:'r8', merchant:'SMB Cohort A', stage:'lead', channels:['pg'], partner:'Event batch', gmv:6, nextStep:'Batch of 12 SMBs from the D2C event. Group onboarding.', signed:false, lastTouch:'2026-07-08', url:''}
+  ]
+};
+const TBL_TYPES = [
+  {id:'text',label:'Text'},{id:'longtext',label:'Long text'},{id:'number',label:'Number'},
+  {id:'select',label:'Select'},{id:'multi_select',label:'Multi-select'},{id:'date',label:'Date'},
+  {id:'checkbox',label:'Checkbox'},{id:'url',label:'URL'}
+];
+const TBL_PALETTE = ['blue','green','amber','red','gray'];
+/* a filesystem-safe unique column key from a label */
+function uniqueKey(base, cols){
+  let k = String(base||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'') || 'field';
+  const used = new Set(cols.map(c=>c.key)); let n=k, i=2;
+  while(used.has(n)){ n=k+'_'+i; i++; }
+  return n;
+}
+/* migrate a cell value when its column type changes, so no data is silently lost */
+function coerceValue(v, toType){
+  if(toType==='number'){ const n=parseFloat(v); return Number.isFinite(n)?n:null; }
+  if(toType==='checkbox') return !!v && v!=='false' && v!=='0';
+  if(toType==='multi_select') return Array.isArray(v) ? v : (_isEmpty(v)?[]:[String(v)]);
+  if(toType==='select') return Array.isArray(v) ? (v[0]??'') : (_isEmpty(v)?'':String(v));
+  if(toType==='date'){ const s=String(v??''); return Number.isNaN(Date.parse(s))?'':s.slice(0,10); }
+  if(Array.isArray(v)) return v.join(', ');
+  if(v==null) return ''; if(typeof v==='boolean') return v?'true':'';
+  return String(v);
+}
+
+function validateDb(obj){
+  try{
+    if(!obj || typeof obj!=='object' || Array.isArray(obj)) return {ok:false, err:'The JSON must be an object with cols and rows.'};
+    if(!Array.isArray(obj.cols) || !Array.isArray(obj.rows)) return {ok:false, err:'Both cols and rows must be arrays.'};
+    const seen=new Set();
+    for(const c of obj.cols){
+      if(!c || typeof c.key!=='string' || !c.key) return {ok:false, err:'Every column needs a non-empty key.'};
+      if(seen.has(c.key)) return {ok:false, err:'Duplicate column key: '+c.key}; seen.add(c.key);
+      if(!TYPE_META[c.type]) return {ok:false, err:'Unknown column type: '+String(c.type)};
+      if(typeof c.label!=='string' || !c.label) c.label=c.key;
+      c.hidden=!!c.hidden; c.width=Number(c.width)||160;
+      if(c.type==='select'||c.type==='multi_select'){
+        if(!Array.isArray(c.options)) c.options=[];
+        c.options=c.options.map(o=>({id:String(o.id), label:String(o.label??o.id), color:TBL_COLORS.has(o.color)?o.color:'gray'}));
+      }
+    }
+    const rows=obj.rows.map(r=>({...r, _id:(r&&r._id)||newId()}));
+    return {ok:true, db:{name:String(obj.name||'Table'), cols:obj.cols, rows}};
+  }catch(e){ return {ok:false, err:'Could not read that JSON.'}; }
+}
+
+/* ── Competitive monitor panel (lives inside the Reports tab) ── */
+const TRACK_PILL = {ok:'pill-green', quiet:'pill-gray', blocked:'pill-red',
+  error:'pill-red', timeout:'pill-amber', needs_connection:'pill-amber'};
+const TRACK_LABEL = {ok:'live', quiet:'quiet', blocked:'blocked', error:'error',
+  timeout:'timed out', needs_connection:'not connected'};
+
+const lines = a => (a||[]).join('\n');
+const toList = s => (s||'').split(/[\n,]/).map(x=>x.trim()).filter(Boolean);
+
+function GroupEditor({group, onSaved}){
+  const seed = g => ({...g, _kw:lines(g.keywords), _comp:lines(g.competitors),
+    _subs:lines(g.subreddits), _rev:lines(g.review_brands), _quora:lines(g.quora_questions)});
+  const [f,setF]=useState(seed(group));
+  const [busy,setBusy]=useState(false);
+  const [msg,setMsg]=useState('');
+  useEffect(()=>{ setF(seed(group)); setMsg(''); },[group&&group.id]);
+  function set(k,v){ setF(o=>({...o,[k]:v})); }
+  async function save(){
+    setBusy(true); setMsg('');
+    const body={ id:f.id, name:f.name, window_days:Number(f.window_days)||10,
+      include_comments:!!f.include_comments,
+      keywords:toList(f._kw), competitors:toList(f._comp),
+      subreddits:toList(f._subs), review_brands:toList(f._rev),
+      quora_questions:toList(f._quora) };
+    try{
+      const r=await fetch(`${API_BASE}/api/groups`,{method:'POST',
+        headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.status===401) setMsg('Editing is disabled on the hosted site. Edit api/_store/groups.json on the Mac.');
+      else { const j=await r.json(); if(j.error) setMsg(j.error); else { setMsg('Saved.'); onSaved&&onSaved(); } }
+    }catch(e){ setMsg('Save failed.'); }
+    setBusy(false);
+  }
+  const ta=(label,key,ph)=>html`<label style="display:block;margin-bottom:8px">
+    <span style="font-size:12px;color:var(--ink-gray-6)">${label}</span>
+    <textarea rows=2 value=${f[key]!==undefined?f[key]:''} onInput=${e=>set(key,e.target.value)}
+      placeholder=${ph} style="width:100%;margin-top:3px;padding:7px;border:1px solid var(--outline-gray-2);border-radius:7px;font-size:12px;font-family:inherit;resize:vertical"></textarea></label>`;
+  return html`<div style="padding:4px 2px">
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px">
+      <label style="font-size:12px;color:var(--ink-gray-6)">Window (days)
+        <input type="number" min=1 max=90 value=${f.window_days} onInput=${e=>set('window_days',e.target.value)}
+          style="width:64px;margin-left:6px;padding:5px;border:1px solid var(--outline-gray-2);border-radius:6px"/></label>
+      <label style="font-size:12px;color:var(--ink-gray-6);display:flex;align-items:center;gap:6px">
+        <input type="checkbox" checked=${!!f.include_comments} onChange=${e=>set('include_comments',e.target.checked)}/> include Reddit comments</label>
+    </div>
+    ${ta('Keywords (one per line or comma-separated)','_kw','razorpay\\npayment gateway india')}
+    ${ta('Competitor brands','_comp','razorpay, payu, ccavenue')}
+    ${ta('Subreddits','_subs','developersIndia, IndiaStartups')}
+    ${ta('Review brands (G2/Capterra/TrustPilot)','_rev','cashfree, razorpay')}
+    ${ta('Quora question URLs (the reliable Quora path)','_quora','https://www.quora.com/...')}
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+      <button onClick=${save} disabled=${busy} class="pill pill-blue" style="cursor:pointer;border:none">
+        <${Icon} name=${busy?'loader':'check'} size=12 cls=${busy?'spin':''}/> ${busy?'Saving...':'Save group'}</button>
+      ${msg && html`<span style="font-size:12px;color:${msg==='Saved.'?'var(--ink-green-2)':'var(--ink-gray-6)'}">${msg}</span>`}
+    </div>
+  </div>`;
+}
+
+function MonitorPanel(){
+  const [ov,setOv]=useState(null);
+  const [gid,setGid]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState('');
+  const [note,setNote]=useState('');
+  const [edit,setEdit]=useState(false);
+
+  useEffect(()=>{ load(); },[]);
+  async function load(){
+    try{
+      const j = await fetch(`${API_BASE}/api/monitor`).then(r=>r.json());
+      setOv(j); if(j.groups && j.groups[0] && !gid) setGid(j.groups[0].id);
+    }catch(e){ setErr('Could not load the monitor (is the backend running?).'); }
+  }
+  async function runNow(){
+    setBusy(true); setErr(''); setNote('');
+    try{
+      const r = await fetch(`${API_BASE}/api/monitor`,{method:'POST',
+        headers:{'Content-Type':'application/json'}, body:JSON.stringify({only:gid})});
+      if(r.status===401){ setErr('Run-now is disabled on the hosted site. The 9am job on the Mac populates this (it needs the local session + residential IP).'); }
+      else { const j=await r.json(); if(j.error) setErr(j.error);
+        else { setNote(`Scan done: ${j.total||0} found, ${j.inserted||0} new in ${j.elapsed_s||0}s.`); await load(); } }
+    }catch(e){ setErr('Run failed.'); }
+    setBusy(false);
+  }
+
+  if(!ov) return html`<div class="glass-card" style="padding:24px;color:var(--ink-gray-5)">
+    ${err||'Loading the monitor...'}</div>`;
+
+  const g = (ov.groups||[]).find(x=>x.id===gid) || (ov.groups||[])[0];
+  const mentions = (ov.mentions && g && ov.mentions[g.id]) || [];
+  const lr = ov.last_run;
+  const grpRun = lr && (lr.groups||[]).find(x=>x.group_id===(g&&g.id));
+  const ts = mentions.reduce((a,m)=>{a[m.sentiment]=(a[m.sentiment]||0)+1;return a;},{});
+  const staleH = lr && lr.finished_at ? ((Date.now()-new Date(lr.finished_at))/3.6e6) : null;
+  const stale = staleH!==null && staleH>26;
+  const sheetGid = grpRun && grpRun.sheets && grpRun.sheets.gid;
+  const sheetLink = ov.sheet_url ? (ov.sheet_url + (sheetGid!=null?('#gid='+sheetGid):'')) : '';
+
+  return html`<div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      ${(ov.groups||[]).map(x=>html`<button onClick=${()=>setGid(x.id)}
+        class=${'pill '+(x.id===(g&&g.id)?'pill-blue':'pill-gray')} style="cursor:pointer;border:1px solid var(--outline-gray-2)">
+        ${x.name}<span style="opacity:.6"> · ${x.window_days}d</span></button>`)}
+      <span style="flex:1"></span>
+      ${sheetLink && html`<a href=${sheetLink} target="_blank" rel="noopener" class="pill pill-gray" style="text-decoration:none;border:1px solid var(--outline-gray-2)"><${Icon} name="sheet" size=12/> Google Sheet</a>`}
+      <button onClick=${runNow} disabled=${busy} class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)">
+        <${Icon} name=${busy?'loader':'refresh'} size=13 cls=${busy?'spin':''} /> ${busy?'Scanning...':'Run now'}</button>
+    </div>
+
+    ${err && html`<div class="glass-card" style="padding:12px;margin-bottom:12px;color:var(--ink-red-3)"><${Icon} name="alert" size=14/> ${err}</div>`}
+    ${note && html`<div class="glass-card" style="padding:12px;margin-bottom:12px;color:var(--ink-green-2)"><${Icon} name="check" size=14/> ${note}</div>`}
+
+    ${!lr ? html`<div class="glass-card" style="padding:14px;margin-bottom:14px;color:var(--ink-gray-6);font-size:12px">
+        No run recorded yet. The monitor runs daily at 9am IST on the Mac. Below is whatever is already in the store.</div>`
+      : stale ? html`<div class="glass-card" style="padding:12px;margin-bottom:14px;color:var(--ink-amber-2)">
+        <${Icon} name="alert" size=14/> Last run was ${Math.round(staleH)}h ago (over 26h). Check the Mac is awake and logged in.</div>`
+      : html`<div style="font-size:12px;color:var(--ink-gray-5);margin-bottom:12px">Last scan ${agoFrom(lr.finished_at)} · ${lr.total||0} mentions, ${lr.inserted||0} new · ${lr.elapsed_s}s</div>`}
+
+    ${grpRun && grpRun.track_status && html`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px">
+      ${Object.entries(grpRun.track_status).map(([src,st])=>html`
+        <span class=${'pill '+(TRACK_PILL[st]||'pill-gray')}><${Icon} name=${platIcon(src)} size=11/> ${src}: ${TRACK_LABEL[st]||st}</span>`)}
+    </div>`}
+
+    ${grpRun && (grpRun.spikes||[]).length>0 && html`<div class="glass-card" style="padding:13px;margin-bottom:16px;border-left:3px solid var(--ink-red-3)">
+      <div style="font-weight:600;color:var(--ink-red-3);margin-bottom:4px"><${Icon} name="zap" size=14/> Moment marketing: a competitor is taking heat</div>
+      ${grpRun.spikes.map(sp=>html`<div style="font-size:14px;color:var(--ink-gray-7)">${sp.brand}: ${sp.last24} negative mentions in 24h (baseline ${sp.daily_baseline}/day)</div>`)}
+    </div>`}
+
+    <div class="glass-card" style="padding:0;margin-bottom:16px">
+      <div onClick=${()=>setEdit(o=>!o)} style="display:flex;align-items:center;gap:8px;padding:12px 15px;cursor:pointer">
+        <${Icon} name="wrench" size=14/> <span style="font-weight:600;font-size:14px">Edit what ${g&&g.name} tracks</span>
+        <span style="flex:1"></span><${Icon} name=${edit?'minus':'plus'} size=13/>
+      </div>
+      ${edit && g && html`<div style="padding:0 15px 14px"><${GroupEditor} group=${g} onSaved=${load}/></div>`}
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="glass-card kpi"><div class="kpi-label">Mentions in store</div><div class="kpi-value">${mentions.length}</div></div>
+      <div class="glass-card kpi"><div class="kpi-label">Positive</div><div class="kpi-value" style="color:var(--ink-green-2)">${ts.positive||0}</div></div>
+      <div class="glass-card kpi"><div class="kpi-label">Negative</div><div class="kpi-value" style="color:var(--ink-red-3)">${ts.negative||0}</div></div>
+      <div class="glass-card kpi"><div class="kpi-label">Neutral</div><div class="kpi-value">${ts.neutral||0}</div></div>
+    </div>
+
+    ${!ov.sheets_configured && html`<div style="font-size:12px;color:var(--ink-gray-5);margin-bottom:12px"><${Icon} name="alert" size=12/> Google Sheets export is off. Set GOOGLE_SA_JSON + GTMSTACK_SHEET_URL to push rows to a shared sheet.</div>`}
+
+    <div class="glass-card" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-weight:600">Recent mentions</span>
+        <span style="font-size:12px;color:var(--ink-gray-5)">Instagram + Facebook are out of scope (not compliantly scrapeable). G2 needs a licensed API.</span>
+      </div>
+      ${mentions.length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions stored yet for ${g&&g.name}.</div>`
+      : mentions.slice(0,80).map(m=>html`
+        <div style="padding:11px 0;border-top:1px solid var(--outline-gray-2)">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
+            <span class="pill pill-gray"><${Icon} name=${platIcon(m.platform)} size=12/> ${m.platform}</span>
+            ${m.kind && m.kind!=='post' && html`<span class="pill pill-gray"><${Icon} name=${m.kind==='comment'?'comment':'review'} size=11/> ${m.kind}</span>`}
+            <span class=${'pill '+(SENT_PILL[m.sentiment]||'pill-gray')}>${m.sentiment||'?'}</span>
+            ${m.enrich_mode==='model' && html`<span class="pill pill-blue" title="tagged by the model"><${Icon} name="sparkles" size=10/> model</span>`}
+            ${m.company && m.company!=='Unknown' && html`<span class="pill pill-blue"><${Icon} name="building" size=11/> ${m.company}</span>`}
+            ${m.brand && html`<span class="pill pill-gray">${m.brand}</span>`}
+            ${m.rating && html`<span class="pill pill-amber"><${Icon} name="star" size=10/> ${m.rating}</span>`}
+            ${m.author && html`<span style="font-size:12px;color:var(--ink-gray-6)">${m.author}</span>`}
+            ${m.post_ts && html`<span style="font-size:12px;color:var(--ink-gray-5)">· ${agoFrom(m.post_ts)}</span>`}
+            ${m.from_archive && html`<span class="pill pill-gray" title="from a Wayback snapshot"><${Icon} name="archive" size=10/> as-of ${m.snapshot_ts||'archive'}</span>`}
+          </div>
+          <div style="font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere">${(m.body||m.text||'').slice(0,300)}</div>
+          ${m.url && html`<a href=${m.url} target="_blank" rel="noopener" style="font-size:12px;color:var(--ink-violet-1);text-decoration:none"><${Icon} name="externalLink" size=11 /> open</a>`}
+        </div>`)}
+    </div>
+  </div>`;
+}
+
+function ReportsTool(){
+  const [mode,setMode]=useState('briefs');
+  const [groups,setGroups]=useState([]);
+  const [gid,setGid]=useState(null);
+  const [rep,setRep]=useState(null);
+  const [busy,setBusy]=useState(false);
+  const [err,setErr]=useState('');
+  const [showLog,setShowLog]=useState(false);
+
+  useEffect(()=>{ fetch(`${API_BASE}/api/report?groups=1`).then(r=>r.json())
+    .then(j=>{ const gs=j.groups||[]; setGroups(gs); if(gs[0]) setGid(gs[0].id); })
+    .catch(()=>setErr('Could not load groups (is the backend running?).')); },[]);
+  useEffect(()=>{ if(gid) loadLatest(gid); },[gid]);
+
+  async function loadLatest(id){
+    setErr('');
+    try{
+      const j = await fetch(`${API_BASE}/api/report?group=${encodeURIComponent(id)}`).then(r=>r.json());
+      setRep(j && !j.error ? j : null);
+    }catch(e){ setErr('Could not load the report.'); }
+  }
+  async function runNow(){
+    if(!gid) return; setBusy(true); setErr('');
+    try{
+      const r = await fetch(`${API_BASE}/api/report`,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({group:gid, budget_s:45})});
+      if(r.status===401){ setErr('Run-now is disabled on the hosted site. The 8am job populates this tab.'); }
+      else { const j=await r.json(); if(j.error) setErr(j.error); else setRep(j); }
+    }catch(e){ setErr('Run failed.'); }
+    setBusy(false);
+  }
+
+  const g = groups.find(x=>x.id===gid);
+  const s = (rep && rep.sentiment) || {positive:0,negative:0,neutral:0};
+
+  return html`
+  <div class="view">
+    <div class="view-head">
+      <h1 class="view-h1">${mode==='monitor'?'Competitive monitor':'Daily signal briefs, one per keyword group'}</h1>
+      <p class="view-sub">${mode==='monitor'
+        ? html`Every morning at 9am IST the monitor scans Reddit, Quora, review sites (TrustPilot, Capterra), and X for competitor and Cashfree mentions, tags sentiment and company, and pushes deduped rows to a Google Sheet. The store here is the source of truth.`
+        : html`Every morning at 9am IST a Carlsen-ordered scan reads each group across GitHub, YouTube, Reddit, X, and LinkedIn, tags sentiment and the author's company, and files the brief here. Pick a group, or run one now.`}</p>
+    </div>
+
+    <div style="display:inline-flex;gap:4px;padding:3px;border:1px solid var(--outline-gray-2);border-radius:9px;margin-bottom:16px">
+      <button onClick=${()=>setMode('briefs')} class=${'pill '+(mode==='briefs'?'pill-blue':'pill-gray')} style="cursor:pointer;border:none"><${Icon} name="newspaper" size=12/> Daily briefs</button>
+      <button onClick=${()=>setMode('monitor')} class=${'pill '+(mode==='monitor'?'pill-blue':'pill-gray')} style="cursor:pointer;border:none"><${Icon} name="binoculars" size=12/> Competitive monitor</button>
+    </div>
+
+    ${mode==='monitor' ? html`<${MonitorPanel} />` : html`<div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      ${groups.map(x=>html`<button onClick=${()=>setGid(x.id)}
+        class=${'pill '+(x.id===gid?'pill-blue':'pill-gray')} style="cursor:pointer;border-width:1px;border-style:solid">
+        ${x.name}</button>`)}
+      <span style="flex:1"></span>
+      <button onClick=${runNow} disabled=${busy} class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)">
+        <${Icon} name=${busy?'loader':'refresh'} size=13 cls=${busy?'spin':''} /> ${busy?'Running...':'Run now'}</button>
+    </div>
+
+    ${err && html`<div class="glass-card" style="padding:13px;margin-bottom:14px;color:var(--ink-red-3)"><${Icon} name="alert" size=14/> ${err}</div>`}
+
+    ${!rep ? html`
+      <div class="glass-card" style="padding:34px;text-align:center;color:var(--ink-gray-5)">
+        <${Icon} name="newspaper" size=26 /><div style="margin-top:10px">No brief for ${(g&&g.name)||'this group'} yet.</div>
+        <div style="margin-top:4px;font-size:12px">It runs daily at 8am IST. Or hit Run now.</div>
+      </div>`
+    : html`
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <span class="pill pill-gray">${(rep.totals.sources_hit||[]).join(', ')||'no sources'}</span>
+        <span style="font-size:12px;color:var(--ink-gray-5)">generated ${agoFrom(rep.generated_at)}</span>
+        ${rep.engine && rep.engine!=='none' && html`<span class=${'pill '+(rep.engine==='ai'?'pill-green':'pill-gray')}>engine: ${rep.engine}</span>`}
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="glass-card kpi"><div class="kpi-label">Mentions</div><div class="kpi-value">${rep.totals.mentions}</div></div>
+        <div class="glass-card kpi"><div class="kpi-label">Positive</div><div class="kpi-value" style="color:var(--ink-green-2)">${s.positive}</div></div>
+        <div class="glass-card kpi"><div class="kpi-label">Negative</div><div class="kpi-value" style="color:var(--ink-red-3)">${s.negative}</div></div>
+        <div class="glass-card kpi"><div class="kpi-label">Neutral</div><div class="kpi-value">${s.neutral}</div></div>
+      </div>
+
+      ${rep.synthesis && rep.synthesis.summary && html`
+        <div class="glass-card" style="padding:16px;margin-bottom:16px">
+          <div style="font-weight:600;margin-bottom:6px">What is moving</div>
+          <div style="color:var(--ink-gray-7);line-height:1.55">${rep.synthesis.summary}</div>
+        </div>`}
+
+      ${(rep.share_of_voice||[]).length>0 && html`
+        <div class="glass-card" style="padding:16px;margin-bottom:16px">
+          <div style="font-weight:600;margin-bottom:10px">Share of voice</div>
+          <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:12px">
+            <thead><tr style="text-align:left;color:var(--ink-gray-5)">
+              <th style="padding:4px 6px">Brand</th><th>Mentions</th><th>Engagement</th><th>Reach</th></tr></thead>
+            <tbody>${rep.share_of_voice.map(r=>html`<tr style="border-top:1px solid var(--outline-gray-2)">
+              <td style="padding:6px">${r.brand}${r.you?html` <span class="pill pill-blue">you</span>`:''}</td>
+              <td>${r.mentions}</td><td>${(r.engagement||0).toLocaleString()}</td><td>${r.reach_pct}%</td></tr>`)}</tbody>
+          </table>
+        </div>`}
+
+      <div class="glass-card" style="padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;margin-bottom:10px">Top mentions</div>
+        ${(rep.top_posts||[]).length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions surfaced.</div>`
+        : rep.top_posts.map(p=>html`
+          <div style="padding:11px 0;border-top:1px solid var(--outline-gray-2)">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
+              <span class="pill pill-gray"><${Icon} name=${platIcon(p.platform)} size=12 /> ${p.platform}</span>
+              <span class=${'pill '+(SENT_PILL[p.sentiment]||'pill-gray')}>${p.sentiment}</span>
+              ${p.company && p.company!=='Unknown' && html`<span class="pill pill-blue"><${Icon} name="building" size=11/> ${p.company}</span>`}
+              ${p.profile_url ? html`<a href=${p.profile_url} target="_blank" rel="noopener" style="font-size:12px;color:var(--ink-violet-1);text-decoration:none">${p.author?('@'+p.author):'author'}</a>`
+                : html`<span style="font-size:12px;color:var(--ink-gray-6)">${p.author||''}</span>`}
+              ${p.ago && html`<span style="font-size:12px;color:var(--ink-gray-5)">· ${p.ago}</span>`}
+            </div>
+            <div style="font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere">${(p.text||'').slice(0,280)}</div>
+            ${p.url && html`<a href=${p.url} target="_blank" rel="noopener" style="font-size:12px;color:var(--ink-violet-1);text-decoration:none"><${Icon} name="externalLink" size=11 /> open</a>`}
+          </div>`)}
+      </div>
+
+      ${(rep.strategy_log||[]).length>0 && html`
+        <div class="glass-card" style="padding:0;margin-bottom:16px">
+          <div onClick=${()=>setShowLog(o=>!o)} style="display:flex;align-items:center;gap:8px;padding:13px 16px;cursor:pointer">
+            <${Icon} name="knight" size=15 /> <span style="font-weight:600">Carlsen scan log</span>
+            <span style="flex:1"></span><${Icon} name=${showLog?'minus':'plus'} size=13 />
+          </div>
+          ${showLog && html`<div style="padding:0 16px 14px">
+            <div style="font-size:12px;color:var(--ink-gray-5);margin-bottom:8px">The move order: safe sources first, LinkedIn (the king) last and sequential, resigned on a challenge.</div>
+            ${rep.strategy_log.map(m=>html`<div style="font-family:ui-monospace,monospace;font-size:12px;padding:3px 0;color:var(--ink-gray-7)">
+              ${m.move==='clock' ? html`<span style="color:var(--ink-amber-2)">clock · ${m.note}</span>`
+              : html`${m.is_king?html`<${Icon} name="knight" size=11/> `:''}${m.move}: ${m.note?m.note:`${m.found} found, ${m.fails} fail, ${m.keywords} kw, ${m.budget_s}s`}`}
+            </div>`)}
+          </div>`}
+        </div>`}
+    `}
+    </div>`}
+  </div>`;
+}
+
+/* ── column create/edit modal (name, type, and select options) ── */
+function FieldEditor({col, onSave, onClose}){
+  const [draft,setDraft]=useState(()=> col
+    ? {label:col.label, type:col.type, format:col.format||'', options:(col.options||[]).map(o=>({...o}))}
+    : {label:'', type:'text', format:'', options:[]});
+  const setD=(k,v)=> setDraft(o=>({...o,[k]:v}));
+  const needsOpts = draft.type==='select' || draft.type==='multi_select';
+  const addOpt=()=> setDraft(o=>({...o, options:[...(o.options||[]), {id:newId(), label:'Option', color:TBL_PALETTE[(o.options?.length||0)%TBL_PALETTE.length]}]}));
+  const setOpt=(i,k,v)=> setDraft(o=>({...o, options:o.options.map((op,j)=>j===i?{...op,[k]:v}:op)}));
+  const delOpt=i=> setDraft(o=>({...o, options:o.options.filter((_,j)=>j!==i)}));
+  function save(){
+    const def={label:(draft.label||'').trim()||'Untitled', type:draft.type};
+    if(needsOpts) def.options=(draft.options||[]).map(o=>({id:o.id||newId(), label:(o.label||'').trim()||'Option', color:TBL_COLORS.has(o.color)?o.color:'gray'}));
+    if(draft.type==='number' && draft.format) def.format=draft.format;
+    onSave(def);
+  }
+  return html`<div class="tbl-overlay" onMouseDown=${onClose}>
+    <div class="tbl-modal" role="dialog" aria-modal="true" aria-label=${col?'Edit field':'New field'}
+      onMouseDown=${e=>e.stopPropagation()} onKeyDown=${e=>{if(e.key==='Escape')onClose();}}>
+      <div style="font-weight:600;margin-bottom:14px">${col?'Edit field':'New field'}</div>
+      <label class="fld">Name<input class="input" value=${draft.label} autofocus onInput=${e=>setD('label',e.target.value)}/></label>
+      <label class="fld">Type<select class="input" value=${draft.type} onChange=${e=>setD('type',e.target.value)}>
+        ${TBL_TYPES.map(t=>html`<option value=${t.id} selected=${t.id===draft.type}>${t.label}</option>`)}</select></label>
+      ${draft.type==='number' && html`<label class="fld">Format<select class="input" value=${draft.format} onChange=${e=>setD('format',e.target.value)}>
+        <option value="" selected=${!draft.format}>Plain number</option><option value="currency" selected=${draft.format==='currency'}>Currency (₹)</option></select></label>`}
+      ${col && col.type!==draft.type && html`<div style="font-size:12px;color:var(--ink-amber-2);margin:2px 0 8px"><${Icon} name="alert" size=12/> Changing type converts existing values.</div>`}
+      ${needsOpts && html`<div style="margin-top:6px">
+        <div style="font-size:12px;color:var(--ink-gray-6);margin-bottom:6px">Options</div>
+        ${(draft.options||[]).map((o,i)=>html`<div key=${o.id} style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <span class=${'pill '+pillFor(o.color)} style="min-width:54px;text-align:center">${o.label||'…'}</span>
+          <input class="input" style="flex:1" value=${o.label} onInput=${e=>setOpt(i,'label',e.target.value)}/>
+          <select class="input" style="width:92px" value=${o.color} onChange=${e=>setOpt(i,'color',e.target.value)}>
+            ${TBL_PALETTE.map(c=>html`<option value=${c} selected=${c===o.color}>${c}</option>`)}</select>
+          <span style="cursor:pointer;color:var(--ink-gray-5)" onClick=${()=>delOpt(i)}><${Icon} name="trash" size=13/></span></div>`)}
+        <button class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)" onClick=${addOpt}><${Icon} name="plus" size=11/> Add option</button></div>`}
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">
+        <button class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)" onClick=${onClose}>Cancel</button>
+        <button class="pill pill-blue" style="cursor:pointer;border:none" onClick=${save}><${Icon} name="check" size=12/> Save</button></div>
+    </div></div>`;
+}
+
+/* ── per-column header dropdown ── */
+function ColumnMenu({col, filterVal, setFilter, onSortDir, onEdit, onHide, onDelete, onClose}){
+  const item=(icon,label,fn,danger)=>html`<button type="button" class="tbl-mi" role="menuitem"
+    style=${danger?'color:var(--ink-red-3)':''} onClick=${()=>{fn();onClose();}}><${Icon} name=${icon} size=12/> ${label}</button>`;
+  const isSel = col.type==='select' || col.type==='multi_select';
+  const arr = Array.isArray(filterVal) ? filterVal : [];
+  return html`<div class="tbl-menu" role="menu" aria-label=${col.label+' options'} style="left:0;right:auto;min-width:210px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+    <div class="tbl-mi-label"><${Icon} name="funnel" size=12/> Filter</div>
+    ${isSel
+      ? html`<div style="display:flex;flex-wrap:wrap;gap:5px;padding:3px 8px 8px">
+          ${(col.options||[]).map(o=>{ const on=arr.includes(o.id);
+            return html`<button type="button" class=${'pill '+(on?pillFor(o.color):'pill-gray')} style="cursor:pointer;border:none;opacity:${on?1:.55}"
+              onClick=${()=>setFilter(on?arr.filter(x=>x!==o.id):[...arr,o.id])}>${o.label}</button>`; })}
+          ${(col.options||[]).length===0?html`<span style="font-size:12px;color:var(--ink-gray-5)">No options yet.</span>`:''}</div>`
+      : html`<div style="padding:2px 8px 8px"><input class="search-mini" autofocus value=${filterVal||''}
+          placeholder=${col.type==='number'?'e.g. >50 or 10-99':'Contains…'} onInput=${e=>setFilter(e.target.value)}/></div>`}
+    <div class="tbl-mi-sep"></div>
+    ${item('caretUp','Sort ascending',()=>onSortDir('asc'))}
+    ${item('caretDown','Sort descending',()=>onSortDir('desc'))}
+    ${item('pen','Edit field',onEdit)}
+    ${item('eye','Hide field',onHide)}
+    ${item('trash','Delete field',onDelete,true)}
+  </div>`;
+}
+
+/* ── shared value renderer (used by the table Cell, list rows, and board cards
+   so every view shows chips / dates / numbers / links identically) ── */
+function cellDisplay(v, col){
+  if(col.type==='select'){
+    const o=optOf(col,v);
+    return _isEmpty(v) ? '' : html`<span class=${'pill '+pillFor(o?.color)}>${o?.label||v}</span>`;
+  }
+  if(col.type==='multi_select'){
+    const arr=Array.isArray(v)?v:[];
+    return html`<div style="display:flex;gap:4px;flex-wrap:wrap;min-width:0">
+      ${arr.map(id=>{ const o=optOf(col,id); return html`<span class=${'pill '+pillFor(o?.color)}>${o?.label||id}</span>`; })}</div>`;
+  }
+  if(col.type==='date'){
+    if(_isEmpty(v)) return '';
+    const band=dateBand(v);
+    return html`<span style="display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%">
+      <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmtDate(v)}</span>
+      ${band==='overdue'?html`<span class="pill pill-red" style="flex-shrink:0">overdue</span>`
+        :band==='soon'?html`<span class="pill pill-amber" style="flex-shrink:0">soon</span>`:''}</span>`;
+  }
+  if(col.type==='number')
+    return html`<span class="mono">${_isEmpty(v)||!Number.isFinite(Number(v))?'':(col.format==='currency'?'₹':'')+Number(v).toLocaleString()}</span>`;
+  if(col.type==='url')
+    return v ? html`<a href=${v} target="_blank" rel="noopener" style="color:var(--ink-violet-1);text-decoration:none">
+      <${Icon} name="externalLink" size=11/> ${(()=>{ try{return new URL(v).hostname;}catch(e){return v;} })()}</a>` : '';
+  if(col.type==='checkbox')
+    return v ? html`<${Icon} name="check" size=14/>` : html`<span style="color:var(--ink-gray-4)">—</span>`;
+  if(col.type==='longtext')
+    return html`<div class="cell-clamp" title=${v||''}>${v||''}</div>`;
+  return html`<span>${v||''}</span>`;
+}
+
+/* ── one editable cell (renders + edits by column type) ── */
+function Cell({row, col, editing, setEditing, setCellValue, sticky}){
+  const v = row[col.key];
+  const tdCls = 'tbl-td'+(sticky?' tbl-sticky1':'');
+  const isEd = editing && editing.rowId===row._id && editing.key===col.key;
+  const commit = val => { setCellValue(row._id, col.key, val); setEditing(null); };
+  const start = () => { if(col.type!=='checkbox') setEditing({rowId:row._id, key:col.key}); };
+  const onKey = e => { if(e.key==='Enter'){ e.preventDefault(); commit(e.target.value); } if(e.key==='Escape') setEditing(null); };
+
+  if(col.type==='checkbox')
+    return html`<td class=${tdCls} style="width:${col.width}px">
+      <input type="checkbox" aria-label=${col.label} checked=${!!v} onChange=${e=>setCellValue(row._id,col.key,e.target.checked)} style="cursor:pointer"/></td>`;
+
+  if(isEd){
+    let ed;
+    if(col.type==='longtext')
+      ed = html`<textarea class="cell-edit" autofocus rows=3 onBlur=${e=>commit(e.target.value)} onKeyDown=${e=>{if(e.key==='Escape')setEditing(null);}}>${v||''}</textarea>`;
+    else if(col.type==='number')
+      ed = html`<input class="cell-edit" type="number" autofocus value=${v==null?'':v} onBlur=${e=>commit(e.target.value===''?null:Number(e.target.value))} onKeyDown=${e=>{if(e.key==='Enter'){e.preventDefault();commit(e.target.value===''?null:Number(e.target.value));}if(e.key==='Escape')setEditing(null);}}/>`;
+    else if(col.type==='date')
+      ed = html`<input class="cell-edit" type="date" autofocus aria-label=${col.label} value=${v||''} onChange=${e=>commit(e.target.value)} onBlur=${e=>commit(e.target.value)} onKeyDown=${e=>{if(e.key==='Escape')setEditing(null);}}/>`;
+    else if(col.type==='select')
+      ed = html`<select class="cell-edit" autofocus onChange=${e=>commit(e.target.value)}>
+        <option value="">(none)</option>
+        ${(col.options||[]).map(o=>html`<option value=${o.id} selected=${o.id===v}>${o.label}</option>`)}</select>`;
+    else if(col.type==='multi_select')
+      ed = html`<div style="display:flex;gap:4px;flex-wrap:wrap;padding:2px 0">
+        ${(col.options||[]).map(o=>{ const on=(Array.isArray(v)?v:[]).includes(o.id);
+          return html`<span class=${'pill '+(on?pillFor(o.color):'pill-gray')} style="cursor:pointer;opacity:${on?1:.5}"
+            onClick=${()=>{ const cur=Array.isArray(v)?v:[]; setCellValue(row._id,col.key, on?cur.filter(x=>x!==o.id):[...cur,o.id]); }}>${o.label}</span>`; })}
+        <span class="pill pill-gray" style="cursor:pointer" onClick=${()=>setEditing(null)}>done</span></div>`;
+    else
+      ed = html`<input class="cell-edit" autofocus value=${v||''} onBlur=${e=>commit(e.target.value)} onKeyDown=${onKey}/>`;
+    return html`<td class=${tdCls} style="width:${col.width}px">${ed}</td>`;
+  }
+
+  return html`<td class=${tdCls} style="width:${col.width}px;cursor:text" onClick=${start}>${cellDisplay(v, col)}</td>`;
+}
+
+/* ── header (sortable) + per-column filter rows ── */
+function TableHead({visibleCols, sortBy, sortDir, onSort, colFilters, setColFilter, menuKey, setMenuKey,
+                   colMenu, setColMenu, onSortDir, onEditCol, onHideCol, onDeleteCol, onAddColumn,
+                   onMoveCol, dropCol, setDropCol, dragRef, resizeRef, onResizeCol}){
+  return html`<thead>
+    <tr>
+      <th class="tbl-th tbl-actcol" scope="col"><span class="sr-only">Row actions</span></th>
+      ${visibleCols.map((col,ci)=>{
+        const asort = sortBy===col.key ? (sortDir==='asc'?'ascending':'descending') : 'none';
+        const startResize = e => { e.stopPropagation(); e.preventDefault(); resizeRef.current=true;
+          const startX=e.clientX, startW=col.width||160; let raf=null, last=startW;
+          const mm=ev=>{ last=Math.max(80, startW+(ev.clientX-startX)); if(!raf) raf=requestAnimationFrame(()=>{ onResizeCol(col.key,last); raf=null; }); };
+          const mu=()=>{ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu);
+            onResizeCol(col.key,last); setTimeout(()=>{resizeRef.current=false;},0); };
+          document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu); };
+        return html`<th key=${col.key} class=${'tbl-th tbl-thcol'+(dropCol===col.key?' tbl-drop-col':'')}
+          scope="col" aria-sort=${asort} style="width:${col.width}px;padding:0;position:relative"
+          draggable=true
+          onDragStart=${e=>{ if(resizeRef.current){ e.preventDefault(); return; } dragRef.current.col=col.key; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',col.key);}catch(_){} }}
+          onDragEnd=${()=>{ dragRef.current.col=null; setDropCol(null); }}
+          onDragOver=${e=>{ if(dragRef.current.col!=null && dragRef.current.col!==col.key){ e.preventDefault(); if(dropCol!==col.key) setDropCol(col.key); } }}
+          onDrop=${e=>{ e.preventDefault(); const src=dragRef.current.col; if(src){ onMoveCol(src, col.key); } dragRef.current.col=null; setDropCol(null); }}>
+        <div style="display:flex;align-items:center;gap:4px;padding:6px;cursor:grab;user-select:none">
+          <span role="button" tabindex="0" aria-label=${'Sort by '+col.label}
+            style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;flex:1;min-width:0"
+            onClick=${()=>onSort(col.key)} onKeyDown=${e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSort(col.key);}}}>
+            <${Icon} name=${TYPE_META[col.type].icon} size=11/> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${col.label}</span>
+            ${sortBy===col.key ? html`<${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=10/>` : ''}</span>
+          <button type="button" class="iconbtn" aria-label=${col.label+' field options'} aria-haspopup="menu"
+            style="position:relative" draggable=false onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setColMenu(colMenu===col.key?null:col.key)}>
+            <${Icon} name="dots" size=13/>
+            ${colMenu===col.key && html`<${ColumnMenu} col=${col}
+              filterVal=${colFilters[col.key]} setFilter=${v=>setColFilter(col.key, v)}
+              onSortDir=${d=>onSortDir(col.key,d)} onEdit=${()=>onEditCol(col.key)}
+              onHide=${()=>onHideCol(col.key)} onDelete=${()=>onDeleteCol(col.key)} onClose=${()=>setColMenu(null)}/>`}
+          </button>
+        </div>
+        <div class="col-resize" title="Drag to resize" draggable=false onMouseDown=${startResize} onClick=${e=>e.stopPropagation()}></div></th>`;
+      })}
+      <th class="tbl-th" scope="col" style="width:40px;text-align:center">
+        <button type="button" class="iconbtn" aria-label="Add column"
+          onMouseDown=${e=>e.stopPropagation()} onClick=${onAddColumn}><${Icon} name="plus" size=14/></button></th>
+    </tr>
+  </thead>`;
+}
+
+/* ── one collapsible group block (or the single implicit group) ── */
+const TBL_GUTTER = 64, TBL_ADDCOL = 40;
+function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, headProps}){
+  const open = groupByCol ? !collapsed.has(group.id) : true;
+  const {onDeleteRow, onDuplicateRow, onAddRow} = headProps;
+  /* fixed table layout + explicit width: the colgroup is the single source of
+     truth for column widths, so header and body align exactly and resizing a
+     column just changes its col width. */
+  const totalW = TBL_GUTTER + visibleCols.reduce((s,c)=>s+(c.width||160),0) + TBL_ADDCOL;
+  /* a new row in a group pre-fills the grouped column with the group's value */
+  const groupPreset = () => {
+    if(!groupByCol || group.isEmpty) return {};
+    /* group.key is a string bucket key; coerce it back to the column's type so a
+       number-grouped new row stores 42, not "42" (which fails number filters).
+       multi_select keeps its array wrap (coerceValue would double-wrap). */
+    return {[groupByCol.key]: groupByCol.type==='multi_select' ? [group.key] : coerceValue(group.key, groupByCol.type)};
+  };
+  const colspan = visibleCols.length + 2;
+  return html`<div>
+    ${groupByCol && html`<div class="tbl-grouphead" role="button" tabindex="0" aria-expanded=${open}
+      onClick=${()=>toggleCollapse(group.id)} onKeyDown=${e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleCollapse(group.id);}}}>
+      <${Icon} name=${open?'caretDown':'caretRight'} size=12/>
+      ${(groupByCol.type==='select'||groupByCol.type==='multi_select') && !group.isEmpty
+        ? html`<span class=${'pill '+pillFor(optOf(groupByCol,group.key)?.color)}>${group.label}</span>`
+        : html`<span style="font-weight:600">${group.label}</span>`}
+      <span class="pill pill-gray">· ${group.count}</span>
+      ${groupByCol.type==='number' && !group.isEmpty && html`<span style="font-size:12px;color:var(--ink-gray-5)">sum ${(group.sum||0).toLocaleString()} · avg ${Math.round(group.avg||0).toLocaleString()}</span>`}
+    </div>`}
+    ${open && html`<table style=${'table-layout:fixed;width:'+totalW+'px;border-collapse:separate;border-spacing:0;font-size:12px'}>
+      <colgroup>
+        <col style="width:${TBL_GUTTER}px"/>
+        ${visibleCols.map(c=>html`<col key=${c.key} style=${'width:'+(c.width||160)+'px'}/>`)}
+        <col style="width:${TBL_ADDCOL}px"/>
+      </colgroup>
+      <${TableHead} ...${headProps} />
+      <tbody>
+        ${group.rows.map((row,i)=>html`<tr key=${row._id} class=${headProps.dropRow===row._id?'tbl-droprow':''}
+          onDragOver=${e=>{ if(headProps.dragRef.current.row!=null && headProps.dragRef.current.row!==row._id){ e.preventDefault(); if(headProps.dropRow!==row._id) headProps.setDropRow(row._id); } }}
+          onDrop=${e=>{ e.preventDefault(); const src=headProps.dragRef.current.row; if(src){ headProps.onDropRow(src, row); } headProps.dragRef.current.row=null; headProps.setDropRow(null); }}>
+          <td class=${'tbl-td tbl-actcol'+(headProps.canDragRows?' tbl-rowdrag':'')} draggable=${headProps.canDragRows}
+            title=${headProps.canDragRows?'Drag to reorder':'Clear the sort to reorder rows'}
+            onDragStart=${e=>{ headProps.dragRef.current.row=row._id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',row._id);}catch(_){} }}
+            onDragEnd=${()=>{ headProps.dragRef.current.row=null; headProps.setDropRow(null); }}>
+            <div class="gutter-stack">
+              <span class="tbl-rownum">${i+1}</span>
+              <span class="tbl-row-acts">
+                <button type="button" class="iconbtn" aria-label="Duplicate row" onClick=${()=>onDuplicateRow(row._id)}><${Icon} name="copyRow" size=13/></button>
+                <button type="button" class="iconbtn acts-del" aria-label="Delete row" onClick=${()=>onDeleteRow(row._id)}><${Icon} name="trash" size=13/></button>
+              </span>
+            </div></td>
+          ${visibleCols.map((col,ci)=>html`<${Cell} key=${col.key} row=${row} col=${col} sticky=${false} editing=${headProps.editing} setEditing=${headProps.setEditing} setCellValue=${headProps.setCellValue}/>`)}
+          <td class="tbl-td" style="width:40px"></td>
+        </tr>`)}
+        <tr><td colspan=${colspan} style="padding:0">
+          <button type="button" class="tbl-newrow" onClick=${()=>onAddRow(groupPreset())}><${Icon} name="plus" size=12/> New</button></td></tr>
+      </tbody>
+    </table>`}
+  </div>`;
+}
+
+/* ── LIST view: each row a compact card (title + property values) ── */
+function ListView({groups, groupByCol, visibleCols, collapsed, toggleCollapse, onDeleteRow, onDuplicateRow, onAddRow, onEditRow}){
+  const primary = visibleCols[0];
+  const rest = visibleCols.slice(1);
+  const groupPreset = g => (!groupByCol||g.isEmpty) ? {} : {[groupByCol.key]: groupByCol.type==='multi_select'?[g.key]:coerceValue(g.key,groupByCol.type)};
+  return html`<div>
+    ${groups.map(g=>{
+      const open = groupByCol ? !collapsed.has(g.id) : true;
+      return html`<div key=${g.id} style="margin-bottom:${groupByCol?'14px':'0'}">
+        ${groupByCol && html`<div class="tbl-grouphead" role="button" tabindex="0" aria-expanded=${open}
+          onClick=${()=>toggleCollapse(g.id)} onKeyDown=${e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleCollapse(g.id);}}}>
+          <${Icon} name=${open?'caretDown':'caretRight'} size=12/>
+          ${(groupByCol.type==='select'||groupByCol.type==='multi_select') && !g.isEmpty
+            ? html`<span class=${'pill '+pillFor(optOf(groupByCol,g.key)?.color)}>${g.label}</span>`
+            : html`<span style="font-weight:600">${g.label}</span>`}
+          <span class="pill pill-gray">· ${g.count}</span></div>`}
+        ${open && html`<div class="tbl-frame">
+          ${g.rows.map(row=>html`<div key=${row._id} class="list-row">
+            <button type="button" class="list-title" onClick=${()=>onEditRow(row._id, primary?.key)}>
+              ${primary ? (cellText(row[primary.key],primary) || html`<span style="color:var(--ink-gray-5)">Untitled</span>`) : 'Row'}</button>
+            <div class="list-props">
+              ${rest.map(c=>{ const disp=cellDisplay(row[c.key],c);
+                return _isEmpty(row[c.key]) ? '' : html`<span key=${c.key} class="list-prop"><span class="list-plabel">${c.label}</span>${disp}</span>`; })}
+            </div>
+            <span class="tbl-row-acts">
+              <button type="button" class="iconbtn" aria-label="Duplicate row" onClick=${()=>onDuplicateRow(row._id)}><${Icon} name="copyRow" size=13/></button>
+              <button type="button" class="iconbtn acts-del" aria-label="Delete row" onClick=${()=>onDeleteRow(row._id)}><${Icon} name="trash" size=13/></button>
+            </span>
+          </div>`)}
+          <button type="button" class="tbl-newrow" onClick=${()=>onAddRow(groupPreset(g))}><${Icon} name="plus" size=12/> New</button>
+        </div>`}
+      </div>`;
+    })}
+  </div>`;
+}
+
+/* ── BOARD (kanban) view: lanes by a select field, drag a card to restack ── */
+function BoardView({boardCol, rows, visibleCols, setCellValue, onAddRow, onDeleteRow, onEditRow}){
+  const [over,setOver]=useState(null);
+  if(!boardCol) return html`<div class="glass-card" style="padding:26px;text-align:center;color:var(--ink-gray-5)">
+    Board view needs a Select field to stack by. Add one (the + at the end of the header) or pick one from Group.</div>`;
+  const inLane = (row, optId) => boardCol.type==='multi_select'
+    ? (Array.isArray(row[boardCol.key]) && row[boardCol.key].includes(optId))
+    : row[boardCol.key]===optId;
+  const laneValue = optId => optId===null ? emptyValueFor(boardCol) : (boardCol.type==='multi_select'?[optId]:optId);
+  const lanes = [
+    ...(boardCol.options||[]).map(o=>({id:o.id, opt:o, rows:rows.filter(r=>inLane(r,o.id))})),
+    {id:'__empty__', opt:null, rows:rows.filter(r=>_isEmpty(r[boardCol.key]))},
+  ];
+  const cardCols = visibleCols.filter(c=>c.key!==boardCol.key);
+  /* drop = a true MOVE. For multi_select we remove the source tag and add the
+     target tag (keeping every other tag) instead of replacing the whole array,
+     which would silently drop a card's other values. */
+  const drop = (e, optId) => { e.preventDefault(); setOver(null);
+    const raw=e.dataTransfer.getData('text/plain'); if(!raw) return;
+    let id, from=null; try{ const p=JSON.parse(raw); id=p.id; from=p.from; }catch(_){ id=raw; }
+    if(!id) return;
+    if(boardCol.type==='multi_select'){
+      const row=rows.find(r=>r._id===id); const cur=Array.isArray(row&&row[boardCol.key])?row[boardCol.key]:[];
+      let next = from ? cur.filter(x=>x!==from) : cur.slice();
+      if(optId!==null && !next.includes(optId)) next.push(optId);
+      setCellValue(id, boardCol.key, next);
+    } else setCellValue(id, boardCol.key, laneValue(optId));
+  };
+  return html`<div class="board-wrap">
+    ${lanes.map(lane=>html`<div key=${lane.id} class=${'board-lane'+(over===lane.id?' drop-over':'')}
+      onDragOver=${e=>{e.preventDefault(); if(over!==lane.id) setOver(lane.id);}} onDragLeave=${()=>setOver(o=>o===lane.id?null:o)} onDrop=${e=>drop(e, lane.opt?lane.opt.id:null)}>
+      <div class="board-lanehead">
+        ${lane.opt ? html`<span class=${'pill '+pillFor(lane.opt.color)}>${lane.opt.label}</span>` : html`<span style="color:var(--ink-gray-5);font-weight:600">No ${boardCol.label}</span>`}
+        <span class="pill pill-gray">${lane.rows.length}</span></div>
+      <div class="board-cards">
+        ${lane.rows.map(row=>html`<div key=${row._id} class="board-card" draggable=true
+          onDragStart=${e=>{e.dataTransfer.setData('text/plain', JSON.stringify({id:row._id, from:(lane.opt?lane.opt.id:null)})); e.dataTransfer.effectAllowed='move';}}
+          onDragEnd=${()=>setOver(null)}>
+          <div style="display:flex;align-items:flex-start;gap:6px">
+            <button type="button" class="board-card-title" onClick=${()=>onEditRow(row._id, cardCols[0]?.key)}>
+              ${cardCols[0] ? (cellText(row[cardCols[0].key],cardCols[0])||'Untitled') : 'Row'}</button>
+            <button type="button" class="iconbtn acts-del" aria-label="Delete row" onClick=${()=>onDeleteRow(row._id)} style="opacity:.35"><${Icon} name="trash" size=12/></button>
+          </div>
+          ${cardCols.slice(1).map(c=> _isEmpty(row[c.key]) ? '' : html`<div key=${c.key} class="board-field">${cellDisplay(row[c.key],c)}</div>`)}
+        </div>`)}
+        <button type="button" class="tbl-newrow" style="border-top:none;border-radius:8px" onClick=${()=>onAddRow(lane.opt?{[boardCol.key]:laneValue(lane.opt.id)}:{})}><${Icon} name="plus" size=12/> New</button>
+      </div>
+    </div>`)}
+  </div>`;
+}
+
+/* ── row detail editor (opened from a list row or board card) ── */
+function RowEditor({row, cols, onSet, onDelete, onClose}){
+  const field = c => {
+    const v=row[c.key];
+    if(c.type==='checkbox') return html`<input type="checkbox" checked=${!!v} onChange=${e=>onSet(c.key,e.target.checked)} style="margin-top:4px"/>`;
+    if(c.type==='longtext') return html`<textarea class="input" rows=3 value=${v||''} onInput=${e=>onSet(c.key,e.target.value)}></textarea>`;
+    if(c.type==='number') return html`<input class="input" type="number" value=${v==null?'':v} onInput=${e=>onSet(c.key, e.target.value===''?null:Number(e.target.value))}/>`;
+    if(c.type==='date') return html`<input class="input" type="date" value=${v||''} onInput=${e=>onSet(c.key,e.target.value)}/>`;
+    if(c.type==='select') return html`<select class="input" value=${v||''} onChange=${e=>onSet(c.key,e.target.value)}>
+      <option value="">(none)</option>${(c.options||[]).map(o=>html`<option value=${o.id} selected=${o.id===v}>${o.label}</option>`)}</select>`;
+    if(c.type==='multi_select'){ const arr=Array.isArray(v)?v:[];
+      return html`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${(c.options||[]).map(o=>{ const on=arr.includes(o.id);
+        return html`<button type="button" class=${'pill '+(on?pillFor(o.color):'pill-gray')} style="border:none;cursor:pointer;opacity:${on?1:.5}"
+          onClick=${()=>onSet(c.key, on?arr.filter(x=>x!==o.id):[...arr,o.id])}>${o.label}</button>`; })}</div>`; }
+    return html`<input class="input" value=${v||''} onInput=${e=>onSet(c.key,e.target.value)}/>`;
+  };
+  return html`<div class="tbl-overlay" onMouseDown=${onClose}>
+    <div class="tbl-modal" role="dialog" aria-modal="true" aria-label="Edit row"
+      onMouseDown=${e=>e.stopPropagation()} onKeyDown=${e=>{if(e.key==='Escape')onClose();}}>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span style="font-weight:600">Edit row</span><span style="flex:1"></span>
+        <button type="button" class="iconbtn acts-del" aria-label="Delete row" onClick=${()=>{onDelete();onClose();}}><${Icon} name="trash" size=14/></button>
+        <button type="button" class="iconbtn" aria-label="Close" onClick=${onClose}><${Icon} name="close" size=15/></button></div>
+      ${cols.map(c=>html`<label key=${c.key} class="fld">${c.label}${field(c)}</label>`)}
+      <div style="display:flex;justify-content:flex-end;margin-top:14px">
+        <button type="button" class="btn btn-primary btn-sm" onClick=${onClose}>Done</button></div>
+    </div></div>`;
+}
+
+/* ── JSON drawer: view / import / export / load-from-monitor ── */
+function JsonView({db, onApply, onLoadMonitor, busy, note}){
+  const [draft,setDraft]=useState(JSON.stringify(db,null,2));
+  const [err,setErr]=useState('');
+  useEffect(()=>{ setDraft(JSON.stringify(db,null,2)); },[db]);
+  let valid=true; try{ JSON.parse(draft); }catch(e){ valid=false; }
+  function apply(){ let obj; try{ obj=JSON.parse(draft); }catch(e){ setErr('That is not valid JSON.'); return; }
+    const r=validateDb(obj); if(!r.ok){ setErr(r.err); return; } setErr(''); onApply(r.db); }
+  function download(){ const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='tables.json'; a.click(); URL.revokeObjectURL(a.href); }
+  function importFile(e){ const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+    rd.onload=()=>{ setDraft(String(rd.result)); }; rd.readAsText(f); e.target.value=''; }
+  return html`<div class="glass-card" style="padding:16px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <span style="width:9px;height:9px;border-radius:50%;background:${valid?'var(--ink-green-2)':'var(--ink-red-3)'}"></span>
+      <span style="font-size:12px;color:var(--ink-gray-5)">${valid?'valid JSON':'invalid JSON'}</span>
+      <span style="flex:1"></span>
+      <button class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)" onClick=${()=>navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(db,null,2))}><${Icon} name="copy" size=12/> Copy</button>
+      <button class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)" onClick=${download}><${Icon} name="download" size=12/> Download</button>
+      <label class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)"><${Icon} name="upload" size=12/> Import<input type="file" accept=".json" onChange=${importFile} style="display:none"/></label>
+      <button class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)" disabled=${busy} onClick=${onLoadMonitor}><${Icon} name=${busy?'loader':'binoculars'} size=12 cls=${busy?'spin':''}/> Load from monitor</button>
+      <button class="pill pill-blue" style="cursor:pointer;border:none" onClick=${apply}><${Icon} name="check" size=12/> Apply</button>
+    </div>
+    ${err && html`<div class="errbox" style="margin-bottom:10px">${err}</div>`}
+    ${note && html`<div style="font-size:12px;color:var(--ink-green-2);margin-bottom:10px"><${Icon} name="check" size=12/> ${note}</div>`}
+    <textarea class="input" spellcheck="false" value=${draft} onInput=${e=>{setDraft(e.target.value);setErr('');}}
+      style="width:100%;min-height:50vh;font-family:ui-monospace,'IBM Plex Mono',monospace;font-size:12px"></textarea>
+  </div>`;
+}
+
+/* ── the Tables tab ── */
+function TablesTool(){
+  /* boot flags: did stored data exist but fail to load (corrupt), and should the
+     first persist be skipped so we do NOT overwrite that recoverable data */
+  const bootRef = useRef({corrupt:false, skip:false});
+  const [db,setDb]=useState(()=>{
+    try{ const s=localStorage.getItem(TBL_KEY);
+      if(s){ const r=validateDb(JSON.parse(s)); if(r.ok) return r.db;
+        bootRef.current.corrupt=true; bootRef.current.skip=true; }
+    }catch(e){ try{ if(localStorage.getItem(TBL_KEY)){ bootRef.current.corrupt=true; bootRef.current.skip=true; } }catch(_){} }
+    return SAMPLE;
+  });
+  const [view,setView]=useState(()=>{ try{ const v=localStorage.getItem(TBL_VIEW_KEY);
+    return ['table','list','board','json'].includes(v)?v:'table'; }catch(e){ return 'table'; } });
+  const [rowEd,setRowEd]=useState(null);            // row _id open in the detail editor
+  const [groupBy,setGroupBy]=useState('');
+  const [sortBy,setSortBy]=useState(''); const [sortDir,setSortDir]=useState('asc');
+  const [globalQ,setGlobalQ]=useState('');
+  const [colFilters,setColFilters]=useState({});
+  const [collapsed,setCollapsed]=useState(new Set());
+  const [editing,setEditing]=useState(null);
+  const [showCols,setShowCols]=useState(false);
+  const [menuKey,setMenuKey]=useState(null);
+  const [colMenu,setColMenu]=useState(null);        // which header dropdown is open
+  const [groupMenu,setGroupMenu]=useState(false);   // group-by dropdown
+  const [viewMenu,setViewMenu]=useState(false);     // "Grid view" dropdown
+  const [filterMenu,setFilterMenu]=useState(false); // toolbar Filter popover (active-filter summary)
+  const [sortMenu,setSortMenu]=useState(false);     // toolbar Sort menu
+  const [dropRow,setDropRow]=useState(null);        // row id under a row drag
+  const [dropCol,setDropCol]=useState(null);        // col key under a column drag
+  const dragRef=useRef({col:null, row:null});       // dragged id, stashed here not in dataTransfer (getData is read-protected)
+  const resizeRef=useRef(false);                    // true while resizing a column (suppresses the header drag)
+  const [fieldEd,setFieldEd]=useState(null);        // {mode:'new'} | {mode:'edit', key}
+  const [editingName,setEditingName]=useState(false);
+  const [busy,setBusy]=useState(false); const [note,setNote]=useState('');
+
+  /* persist, but skip the first write when boot data was corrupt (so we leave the
+     recoverable bytes on disk); surface a quota/save failure instead of dropping it silently */
+  useEffect(()=>{ if(bootRef.current.skip){ bootRef.current.skip=false; return; }
+    try{ localStorage.setItem(TBL_KEY, JSON.stringify(db)); }
+    catch(e){ setNote('Could not save to browser storage (it may be full). Export your JSON so you do not lose changes.'); } },[db]);
+  /* on mount, tell the user if their saved table could not be read */
+  useEffect(()=>{ if(bootRef.current.corrupt)
+    setNote('Your saved table could not be read, so the sample is shown. Your old data is still in storage; export or overwrite when you are ready.'); },[]);
+  /* persist the chosen view so a reload keeps you on Table / List / Board / JSON */
+  useEffect(()=>{ try{ localStorage.setItem(TBL_VIEW_KEY, view); }catch(e){} },[view]);
+  /* Board stacks by a select field. On entering Board, if the current group is not
+     a select, auto-pick the first select column so lanes make sense; on LEAVING
+     board, restore whatever grouping Table/List had, so a board-only stack choice
+     does not leak into the other views. */
+  const preBoardGroup = useRef('');
+  useEffect(()=>{ if(view!=='board') return;
+    preBoardGroup.current = groupBy;
+    const gc=db.cols.find(c=>c.key===groupBy);
+    if(!gc || (gc.type!=='select' && gc.type!=='multi_select')){
+      const first=db.cols.find(c=>c.type==='select'||c.type==='multi_select');
+      setGroupBy(first?first.key:''); }
+    return ()=>{ setGroupBy(preBoardGroup.current); };
+  },[view]);
+  /* one outside-click handler closes every open popover (filter, header menu, columns) */
+  useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); };
+    document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
+  /* if a grouped/sorted column is deleted, drop the stale reference */
+  useEffect(()=>{ const keys=new Set(db.cols.map(c=>c.key));
+    if(groupBy && !keys.has(groupBy)) setGroupBy('');
+    if(sortBy && !keys.has(sortBy)) setSortBy('');
+  },[db.cols]);
+
+  const visibleCols = useMemo(()=> db.cols.filter(c=>!c.hidden), [db.cols]);
+
+  const filteredRows = useMemo(()=>{
+    const q=globalQ.trim().toLowerCase();
+    return db.rows.filter(row=>{
+      if(q && !visibleCols.some(c=>cellText(row[c.key],c).toLowerCase().includes(q))) return false;
+      for(const c of visibleCols){ const f=colFilters[c.key];
+        const active=Array.isArray(f)?f.length>0:(f!==undefined&&f!=='');
+        if(active && !TYPE_META[c.type].matches(row[c.key],f,c)) return false; }
+      return true;
+    });
+  },[db.rows, db.cols, globalQ, colFilters, visibleCols]);
+
+  const sortedRows = useMemo(()=>{
+    if(!sortBy) return filteredRows;
+    const col=db.cols.find(c=>c.key===sortBy); if(!col) return filteredRows;
+    const cmp=TYPE_META[col.type].compare;
+    const arr=filteredRows.map((r,i)=>[r,i]);
+    arr.sort((A,B)=>{
+      const a=A[0][sortBy], b=B[0][sortBy], ea=_isEmpty(a), eb=_isEmpty(b);
+      if(ea&&eb) return A[1]-B[1];
+      if(ea) return 1; if(eb) return -1;          // empties always last, both dirs
+      let d=cmp(a,b,col); if(d===0) return A[1]-B[1];
+      return sortDir==='desc'?-d:d;
+    });
+    return arr.map(x=>x[0]);
+  },[filteredRows, db.cols, sortBy, sortDir]);
+
+  const groups = useMemo(()=>{
+    if(!groupBy) return [{id:'__all__', label:'', rows:sortedRows, count:sortedRows.length}];
+    const col=db.cols.find(c=>c.key===groupBy); if(!col) return [{id:'__all__',label:'',rows:sortedRows,count:sortedRows.length}];
+    const buckets=new Map();
+    for(const row of sortedRows){ const v=row[groupBy]; let keys;
+      if(col.type==='multi_select') keys=(Array.isArray(v)&&v.length)?v:['__empty__'];
+      else keys=[_isEmpty(v)?'__empty__':String(v)];
+      for(const k of keys){ if(!buckets.has(k)) buckets.set(k,[]); buckets.get(k).push(row); } }
+    let arr=[...buckets.entries()].map(([k,rows])=>{ const isEmpty=k==='__empty__';
+      const label=isEmpty?'(No value)':((col.type==='select'||col.type==='multi_select')?(optOf(col,k)?.label||k):k);
+      const g={id:k, key:k, isEmpty, label, rows, count:rows.length};
+      if(col.type==='number'&&!isEmpty){ const nums=rows.map(r=>r[groupBy]).filter(n=>typeof n==='number'); g.sum=nums.reduce((a,b)=>a+b,0); g.avg=nums.length?g.sum/nums.length:0; }
+      return g; });
+    arr.sort((A,B)=> A.isEmpty?1:B.isEmpty?-1:TYPE_META[col.type].compare(A.key,B.key,col));
+    return arr;
+  },[sortedRows, db.cols, groupBy]);
+
+  const filteredCount = useMemo(()=> new Set(groups.flatMap(g=>g.rows.map(r=>r._id))).size, [groups]);
+  const groupByCol = db.cols.find(c=>c.key===groupBy) || null;
+  /* count only live, visible columns so an orphan/hidden filter never inflates "Clear N" */
+  const activeFilters = visibleCols.reduce((n,c)=>{ const f=colFilters[c.key];
+    return n + (Array.isArray(f)?(f.length?1:0):(f?1:0)); }, 0) + (globalQ.trim()?1:0);
+
+  function onSort(key){ if(sortBy!==key){ setSortBy(key); setSortDir('asc'); }
+    else if(sortDir==='asc') setSortDir('desc'); else { setSortBy(''); setSortDir('asc'); } }
+  const onSortDir=(key,dir)=>{ setSortBy(key); setSortDir(dir); };
+  const setColFilter=(key,val)=> setColFilters(o=>({...o,[key]:val}));
+  const toggleCollapse=id=> setCollapsed(s=>{ const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n; });
+
+  /* ── row CRUD ── */
+  const setCellValue=(rowId,key,val)=> setDb(o=>({...o, rows:o.rows.map(r=>r._id===rowId?{...r,[key]:val}:r)}));
+  const addRow=(presets={})=> setDb(o=>{ const r={_id:newId()}; o.cols.forEach(c=>r[c.key]=emptyValueFor(c));
+    Object.assign(r, presets); return {...o, rows:[...o.rows, r]}; });
+  const deleteRow=id=> setDb(o=>({...o, rows:o.rows.filter(r=>r._id!==id)}));
+  const duplicateRow=id=> setDb(o=>{ const i=o.rows.findIndex(r=>r._id===id); if(i<0) return o;
+    const copy={...o.rows[i], _id:newId()}; const rows=[...o.rows]; rows.splice(i+1,0,copy); return {...o, rows}; });
+  /* drag reorder: moving forward drops AFTER the target, backward drops BEFORE,
+     so the row lands where the indicator shows */
+  const moveRow=(srcId,dstId)=> setDb(o=>{ const rows=[...o.rows];
+    const si=rows.findIndex(r=>r._id===srcId), di=rows.findIndex(r=>r._id===dstId);
+    if(si<0||di<0||si===di) return o;
+    const [r]=rows.splice(si,1); const ni=rows.findIndex(x=>x._id===dstId);
+    rows.splice(si<di?ni+1:ni,0,r); return {...o, rows}; });
+  /* a row dragged into another group adopts that group's value (select only;
+     multi_select fan-out makes adoption ambiguous, so it just reorders) */
+  const onDropRow=(srcId,target)=>{ if(!srcId || srcId===target._id) return;
+    if(groupBy){ const gc=db.cols.find(c=>c.key===groupBy);
+      if(gc && gc.type==='select'){ const src=db.rows.find(r=>r._id===srcId);
+        if(src && src[groupBy]!==target[groupBy]) setCellValue(srcId, groupBy, target[groupBy]); } }
+    moveRow(srcId, target._id); };
+
+  /* ── column CRUD ── */
+  const toggleHidden=key=> setDb(o=>({...o, cols:o.cols.map(c=>c.key===key?{...c,hidden:!c.hidden}:c)}));
+  const addColumn=def=> setDb(o=>{ const col={hidden:false, width:160, ...def, key:uniqueKey(def.key||def.label, o.cols)};
+    return {...o, cols:[...o.cols, col], rows:o.rows.map(r=>({...r,[col.key]:emptyValueFor(col)}))}; });
+  const updateColumn=(key,def)=> setDb(o=>{ const old=o.cols.find(c=>c.key===key); if(!old) return o;
+    const nc={...old, ...def}; const cols=o.cols.map(c=>c.key===key?nc:c);
+    let rows=o.rows;
+    if(def.type && def.type!==old.type) rows=o.rows.map(r=>({...r,[key]:coerceValue(r[key], def.type)}));
+    return {...o, cols, rows}; });
+  const deleteColumn=key=>{ setDb(o=>({...o, cols:o.cols.filter(c=>c.key!==key),
+    rows:o.rows.map(r=>{ const nr={...r}; delete nr[key]; return nr; })}));
+    setColFilters(o=>{ if(!(key in o)) return o; const n={...o}; delete n[key]; return n; }); };
+  const moveColumn=(srcKey,dstKey)=> setDb(o=>{ const cols=[...o.cols];
+    const si=cols.findIndex(c=>c.key===srcKey), di=cols.findIndex(c=>c.key===dstKey);
+    if(si<0||di<0||si===di) return o;
+    const [c]=cols.splice(si,1); const ni=cols.findIndex(x=>x.key===dstKey);
+    cols.splice(si<di?ni+1:ni,0,c); return {...o, cols}; });
+  const setColWidth=(key,w)=> setDb(o=>({...o, cols:o.cols.map(c=>c.key===key?{...c,width:Math.max(80,Math.round(w))}:c)}));
+  const renameTable=name=> setDb(o=>({...o, name:name||'Table'}));
+  /* Save a field edit AND keep colFilters honest: a type change makes the old
+     filter shape meaningless (drop it); an options change can leave orphan ids in
+     a chip filter (prune to surviving ids). Done here because colFilters is
+     separate state the setDb reducer cannot reach. */
+  function saveField(def){
+    if(fieldEd?.mode==='edit'){
+      const key=fieldEd.key, old=db.cols.find(c=>c.key===key);
+      updateColumn(key, def);
+      if(old){
+        if(def.type && def.type!==old.type){
+          setColFilters(o=>{ if(!(key in o)) return o; const n={...o}; delete n[key]; return n; });
+        } else if(def.options){
+          const ids=new Set(def.options.map(o=>o.id));
+          setColFilters(o=>{ const f=o[key]; if(!Array.isArray(f)) return o;
+            const pruned=f.filter(id=>ids.has(id)); return {...o, [key]:pruned}; });
+        }
+      }
+    } else addColumn(def);
+    setFieldEd(null);
+  }
+
+  const clearFilters=()=>{ setGlobalQ(''); setColFilters({}); };
+
+  async function loadMonitor(){
+    setBusy(true); setNote('');
+    try{
+      const j=await fetch(`${API_BASE}/api/monitor`).then(r=>r.json());
+      const groups=j.mentions||{}; const first=Object.keys(groups)[0];
+      const ms=first?groups[first]:[];
+      const platforms=[...new Set(ms.map(m=>m.platform).filter(Boolean))];
+      const cols=[
+        {key:'platform',label:'Platform',type:'select',hidden:false,width:120,options:platforms.map(p=>({id:p,label:p,color:'gray'}))},
+        {key:'kind',label:'Kind',type:'text',hidden:false,width:90},
+        {key:'sentiment',label:'Sentiment',type:'select',hidden:false,width:110,options:[
+          {id:'positive',label:'positive',color:'green'},{id:'negative',label:'negative',color:'red'},{id:'neutral',label:'neutral',color:'gray'}]},
+        {key:'brand',label:'Brand',type:'text',hidden:false,width:110},
+        {key:'company',label:'Company',type:'text',hidden:false,width:130},
+        {key:'body',label:'Text',type:'longtext',hidden:false,width:320},
+        {key:'author',label:'Author',type:'text',hidden:false,width:120},
+        {key:'post_ts',label:'Posted',type:'date',hidden:false,width:130},
+        {key:'url',label:'Link',type:'url',hidden:false,width:120},
+      ];
+      const rows=ms.map(m=>({_id:newId(), platform:m.platform||'', kind:m.kind||'', sentiment:m.sentiment||'',
+        brand:m.brand||'', company:m.company||'', body:(m.body||m.text||''), author:m.author||'',
+        post_ts:(m.post_ts||m.ts||'').slice(0,10), url:m.url||''}));
+      if(!rows.length){ setNote('No mentions in the store yet. Run the monitor first.'); }
+      else { setDb({name:'Monitor mentions', cols, rows}); setGroupBy(''); setSortBy(''); clearFilters();
+        setNote(`Loaded ${rows.length} mentions.`); }
+    }catch(e){ setNote('Could not reach the monitor. Is the backend running?'); }
+    setBusy(false);
+  }
+
+  const headProps={visibleCols, sortBy, sortDir, onSort, onSortDir, colFilters, setColFilter,
+    menuKey, setMenuKey, colMenu, setColMenu, editing, setEditing, setCellValue,
+    onEditCol:key=>setFieldEd({mode:'edit', key}), onHideCol:toggleHidden, onDeleteCol:deleteColumn,
+    onAddColumn:()=>setFieldEd({mode:'new'}), onDeleteRow:deleteRow, onDuplicateRow:duplicateRow, onAddRow:addRow,
+    onMoveCol:moveColumn, dropCol, setDropCol, dropRow, setDropRow, onDropRow, canDragRows: !sortBy,
+    dragRef, resizeRef, onResizeCol:setColWidth};
+  const editingCol = fieldEd?.mode==='edit' ? db.cols.find(c=>c.key===fieldEd.key) : null;
+  const onEditRow = id => setRowEd(id);
+  const rowEdRow = rowEd ? db.rows.find(r=>r._id===rowEd) : null;
+  /* the field the board stacks by: the current group when it is a select */
+  const boardCol = (groupByCol && (groupByCol.type==='select'||groupByCol.type==='multi_select')) ? groupByCol : null;
+  const groupChoices = view==='board' ? visibleCols.filter(c=>c.type==='select'||c.type==='multi_select') : visibleCols;
+
+  const VIEWS = [['table','Table','sheet'],['list','List','rows'],['board','Board','kanban'],['json','JSON','code']];
+  const countStr = activeFilters>0 ? `${filteredCount} of ${db.rows.length} rows` : `${db.rows.length} ${db.rows.length===1?'row':'rows'}`;
+
+  const curView = VIEWS.find(v=>v[0]===view) || VIEWS[0];
+  return html`<div class="tbl-shell">
+    <div class="tbl-mainpane">
+    <div class="tbl-bar">
+      <div style="position:relative">
+        <button type="button" class="tbar-btn on" aria-haspopup="menu" aria-expanded=${viewMenu}
+          onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setViewMenu(o=>!o)}>
+          <${Icon} name=${curView[2]} size=14/> ${curView[1]} <${Icon} name="caretDown" size=12/></button>
+        ${viewMenu && html`<div class="tbl-menu" role="menu" aria-label="Views" style="left:0;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
+          ${VIEWS.map(([id,label,icon])=>html`<button key=${id} type="button" class="tbl-mi" role="menuitemradio" aria-checked=${view===id} onClick=${()=>{setView(id);setViewMenu(false);}}>
+            <${Icon} name=${icon} size=14/> ${label} ${view===id?html`<${Icon} name="check" size=13/>`:''}</button>`)}
+        </div>`}
+      </div>
+      <span style="flex:1"></span>
+      ${view!=='json' && html`
+        <div style="position:relative">
+          <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setShowCols(o=>!o)}><${Icon} name="eyeSlash" size=15/> Hide fields</button>
+          ${showCols && html`<div class="tbl-menu" role="group" aria-label="Show or hide columns" style="left:0;right:auto;min-width:210px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+            ${db.cols.map(c=>html`<div key=${c.key} style="display:flex;align-items:center;gap:8px;padding:4px 2px">
+              <span style="flex:1;font-size:13px"><${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}</span>
+              <button type="button" class=${'pill '+(c.hidden?'pill-gray':'pill-blue')} style="cursor:pointer;border:none" aria-pressed=${!c.hidden} onClick=${()=>toggleHidden(c.key)}>${c.hidden?'Hidden':'Shown'}</button></div>`)}
+          </div>`}
+        </div>
+        <div style="position:relative">
+          <button type="button" class=${'tbar-btn'+(activeFilters>0?' on':'')} aria-expanded=${filterMenu}
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setFilterMenu(o=>!o)}><${Icon} name="funnel" size=15/> Filter${activeFilters>0?' ('+activeFilters+')':''}</button>
+          ${filterMenu && html`<div class="tbl-menu" role="group" aria-label="Active filters" style="left:0;right:auto;min-width:230px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+            ${activeFilters===0
+              ? html`<div style="padding:6px 8px;font-size:12px;color:var(--ink-gray-5)">No filters. Open a field's menu (the dots in its header) to filter it.</div>`
+              : html`${visibleCols.filter(c=>{ const f=colFilters[c.key]; return Array.isArray(f)?f.length:(f!==undefined&&f!==''); }).map(c=>{ const f=colFilters[c.key]; const val=Array.isArray(f)?f.map(id=>optOf(c,id)?.label||id).join(', '):f;
+                  return html`<div key=${c.key} class="tbl-mi" style="cursor:default">
+                    <${Icon} name=${TYPE_META[c.type].icon} size=13/> <b>${c.label}</b> <span style="color:var(--ink-gray-6)">${val}</span>
+                    <button type="button" class="iconbtn" style="margin-left:auto" aria-label="Clear" onClick=${()=>setColFilter(c.key, Array.isArray(f)?[]:'')}><${Icon} name="close" size=13/></button></div>`; })}
+                <button type="button" class="tbl-mi" style="color:var(--ink-red-3);border-top:1px solid var(--outline-gray-2);margin-top:4px;padding-top:8px" onClick=${()=>{clearFilters();setFilterMenu(false);}}><${Icon} name="minus" size=13/> Clear all filters</button>`}
+          </div>`}
+        </div>
+        <div style="position:relative">
+          <button type="button" class=${'tbar-btn'+(groupBy?' on':'')} aria-expanded=${groupMenu}
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setGroupMenu(o=>!o)}>
+            <${Icon} name=${view==='board'?'kanban':'list'} size=15/> ${view==='board'?'Stack':'Group'}${groupBy?': '+(visibleCols.find(c=>c.key===groupBy)?.label||''):''}</button>
+          ${groupMenu && html`<div class="tbl-menu" role="menu" aria-label="Group by" style="left:0;right:auto;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
+            ${view!=='board' ? html`<button type="button" class="tbl-mi" role="menuitemradio" aria-checked=${!groupBy} onClick=${()=>{setGroupBy('');setGroupMenu(false);}}>None ${!groupBy?html`<${Icon} name="check" size=13/>`:''}</button>` : ''}
+            ${groupChoices.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" role="menuitemradio" aria-checked=${groupBy===c.key} onClick=${()=>{setGroupBy(c.key);setGroupMenu(false);}}>
+              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${groupBy===c.key?html`<${Icon} name="check" size=13/>`:''}</button>`)}
+            ${view==='board' && groupChoices.length===0 ? html`<div style="padding:6px 8px;font-size:12px;color:var(--ink-gray-5)">Add a Select field first.</div>` : ''}
+          </div>`}
+        </div>
+        ${view!=='board' && html`<div style="position:relative">
+          <button type="button" class=${'tbar-btn'+(sortBy?' on':'')} aria-expanded=${sortMenu}
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setSortMenu(o=>!o)}>
+            <${Icon} name="rows" size=15/> Sort${sortBy?': '+(visibleCols.find(c=>c.key===sortBy)?.label||''):''}</button>
+          ${sortMenu && html`<div class="tbl-menu" role="menu" aria-label="Sort by" style="left:0;right:auto;min-width:190px" onMouseDown=${e=>e.stopPropagation()}>
+            <button type="button" class="tbl-mi" onClick=${()=>{setSortBy('');setSortMenu(false);}}>None ${!sortBy?html`<${Icon} name="check" size=13/>`:''}</button>
+            ${visibleCols.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" onClick=${()=>{onSortDir(c.key, sortBy===c.key&&sortDir==='asc'?'desc':'asc');setSortMenu(false);}}>
+              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${sortBy===c.key?html`<${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=13/>`:''}</button>`)}
+          </div>`}
+        </div>`}
+        <div class="search" style="width:200px"><${Icon} name="search" size=15/>
+          <input placeholder="Search" aria-label="Search all columns" value=${globalQ}
+            onInput=${e=>setGlobalQ(e.target.value)}/></div>
+        <button type="button" class="btn btn-primary btn-sm" onClick=${()=>addRow()}><${Icon} name="plus" size=13/> New</button>`}
+    </div>
+
+    <div class="tbl-scroll">
+      ${note && html`<div style="font-size:12px;color:var(--ink-gray-6);margin-bottom:10px">${note}</div>`}
+      ${view==='json' ? html`<${JsonView} db=${db} onApply=${d=>{setDb(d);setView('table');}} onLoadMonitor=${loadMonitor} busy=${busy} note=${note}/>`
+      : view==='board' ? html`<${BoardView} boardCol=${boardCol} rows=${sortedRows} visibleCols=${visibleCols}
+          setCellValue=${setCellValue} onAddRow=${addRow} onDeleteRow=${deleteRow} onEditRow=${onEditRow}/>`
+      : view==='list' ? (filteredCount===0
+          ? html`<div class="tbl-frame" style="padding:26px;text-align:center;color:var(--ink-gray-5)">No rows yet. Click New to add one.</div>`
+          : html`<${ListView} groups=${groups} groupByCol=${groupByCol} visibleCols=${visibleCols}
+              collapsed=${collapsed} toggleCollapse=${toggleCollapse} onDeleteRow=${deleteRow}
+              onDuplicateRow=${duplicateRow} onAddRow=${addRow} onEditRow=${onEditRow}/>`)
+      : html`<div class="tbl-frame">
+          ${filteredCount===0
+            ? html`<div style="padding:26px;text-align:center;color:var(--ink-gray-5)">No rows yet. Click New to add one.</div>`
+            : groups.map(g=>html`<${GroupBlock} key=${g.id} group=${g} groupByCol=${groupByCol} visibleCols=${visibleCols}
+                collapsed=${collapsed} toggleCollapse=${toggleCollapse} headProps=${headProps}/>`)}
+        </div>`}
+    </div>
+    ${view!=='json' && html`<div class="tbl-foot">${countStr}</div>`}
+    </div>
+
+    ${fieldEd && html`<${FieldEditor} col=${editingCol} onSave=${saveField} onClose=${()=>setFieldEd(null)}/>`}
+    ${rowEdRow && html`<${RowEditor} row=${rowEdRow} cols=${db.cols} onSet=${(k,val)=>setCellValue(rowEd,k,val)} onDelete=${()=>deleteRow(rowEd)} onClose=${()=>setRowEd(null)}/>`}
+  </div>`;
+}
+
 function App(){
-  const [tool, setTool] = useState('home');
+  /* the active tab is persisted in the URL hash (#tables), so a reload keeps you
+     where you were and back/forward + shareable links work. Falls back to 'home'
+     for an empty or unknown hash. */
+  const hashTool = () => { const h = (location.hash||'').replace(/^#/,''); return TOOLS[h] ? h : 'home'; };
+  const [tool, setTool] = useState(hashTool);
   const [seed, setSeed] = useState(null);
   const meta = TOOLS[tool];
+
+  useEffect(()=>{ if(hashTool() !== tool) location.hash = tool; }, [tool]);
+  useEffect(()=>{ const onHash = () => setTool(hashTool());
+    addEventListener('hashchange', onHash); return () => removeEventListener('hashchange', onHash); }, []);
 
   /* Pre-fill + run live: stamp a seed (n makes each launch a fresh object so the
      target tool's effect re-fires even on a repeat of the same card), then show it. */
@@ -2301,7 +3732,7 @@ function App(){
 
     <main class="main">
       <div class="topbar">
-        <span class="tb-ic"><${Icon} name=${meta.icon} size=15 /></span>
+        <span class="tb-ic"><${Icon} name=${meta.icon} size=24 /></span>
         <span class="tb-name">${meta.name}</span>
         <span class="tb-desc" style="margin-left:2px">· ${meta.desc}</span>
       </div>
@@ -2312,6 +3743,8 @@ function App(){
       <div style=${tool==='signals' ? '' : 'display:none'}><${SignalsTool} seed=${seed} /></div>
       <div style=${tool==='clean'   ? '' : 'display:none'}><${CleanTool} seed=${seed} /></div>
       ${tool==='competitor' && html`<div><${CompetitorTool} /></div>`}
+      ${tool==='reports' && html`<div><${ReportsTool} /></div>`}
+      <div style=${tool==='tables' ? '' : 'display:none'}><${TablesTool} /></div>
       <div style=${tool==='connectors' ? '' : 'display:none'}><${ConnectorsTool} /></div>
     </main>
     <${Auth} open=${authOpen} initialErr=${authErr} onClose=${()=>setAuth(false)} />

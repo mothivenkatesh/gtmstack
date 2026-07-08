@@ -17,5 +17,9 @@ __pycache__/
 .claude/
 tests/
 app.py
+daily_report.py
+connect_sources.py
+launchd/
+logs/
 CLAUDE.md
 RISK.md

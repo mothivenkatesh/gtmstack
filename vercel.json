@@ -7,8 +7,15 @@
     "api/plays.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
     "api/signals.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
     "api/persona.py": { "includeFiles": "api/_*.py" },
-    "api/jobs.py": { "includeFiles": "api/_*.py" }
+    "api/jobs.py": { "includeFiles": "api/_*.py" },
+    "api/report.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
+    "api/monitor.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
+    "api/watchdog.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
+    "api/groups.py": { "includeFiles": "api/_*.py" }
   },
+  "crons": [
+    { "path": "/api/watchdog", "schedule": "30 9 * * *" }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
   ]

@@ -107,6 +107,25 @@ class FetchTests(unittest.TestCase):
         self.assertEqual(r.status_code, 403)
         self.assertEqual(c["n"], 1)              # auth errors are not transient
 
+    def test_fail_status_403_trips_breaker_and_serves_archive(self):
+        # A Cloudflare 403 with fail_status={403} must be a HARD failure: not
+        # retried, tripped toward the breaker, and served from archive. Without
+        # this, review-site blocks read as a clean empty page.
+        c = self._seq([FakeResp(403)])
+        r = _fetch.get("https://cf.test/x", retries=3,
+                       fail_status={403}, archive=lambda: "ARCH")
+        self.assertEqual(r, "ARCH")              # fell to archive, not returned 403
+        self.assertEqual(c["n"], 1)              # not retried
+        self.assertEqual(_fetch._state("cf.test").fails, 1)   # counted as a fail
+
+    def test_fail_status_403_trips_breaker_after_threshold(self):
+        # Repeated blocks trip the breaker open (fast-fail), unlike a plain 403.
+        for _ in range(_fetch.BREAKER_FAILS):
+            self._seq([FakeResp(403)])
+            _fetch.get("https://cf2.test/x", retries=0, fail_status={403})
+        st = _fetch._state("cf2.test")
+        self.assertTrue(st.open_until > time.time())
+
     # ---- degradation when retries exhausted ---------------------------------
     def test_persistent_5xx_returns_response(self):
         c = self._seq([FakeResp(503)] * 4)

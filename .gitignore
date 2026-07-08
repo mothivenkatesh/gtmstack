@@ -19,4 +19,9 @@ gtmstack_signals.db
 # Content-performance local snapshot store (agent 12, local-dev only)
 api/_store/
 
+# Daily-report run logs (the launchd agent logs to ~/.gtmstack/logs)
+logs/
+logs_local_*.txt
+.venv/
+
 .vercel
