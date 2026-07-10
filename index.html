@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GTMstack · Cursor for GTM</title>
+<title>GTMstack</title>
 <meta name="description" content="Preview how developers react to your go-to-market copy before you launch, then mine real audience language to sharpen every message." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -3731,7 +3731,7 @@ function App(){
     <aside class="sidebar">
       <div class="side-brand">
         <span class="side-mark"><${Icon} name="target" size=19 /></span>
-        <span class="side-name">GTMstack<span class="tag">Cursor for GTM</span></span>
+        <span class="side-name">GTMstack</span>
       </div>
       <nav class="side-nav">
         ${NAV.map(id=>{ const t=TOOLS[id]; return html`
@@ -3751,8 +3751,7 @@ function App(){
             <span class="user-meta"><div class="user-email">${me.email}</div><div class="user-act">Account and runs</div></span>
           </button>`
         : html`
-          <button class="signin-btn" onClick=${()=>{ setAuthErr(''); setAuth(true); }}><${Icon} name="user" size=15 /> Sign in</button>
-          <div style="margin-top:11px;line-height:1.55">Preview your go-to-market before you spend on it.</div>`}
+          <button class="signin-btn" onClick=${()=>{ setAuthErr(''); setAuth(true); }}><${Icon} name="user" size=15 /> Sign in</button>`}
       </div>
     </aside>
 
