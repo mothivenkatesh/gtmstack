@@ -54,6 +54,26 @@
 
   .glass-card{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:12px}
 
+  /* ── shared dropdown (Picker) + date range, used across Signals / Reports / Tables ── */
+  .pk{position:relative;display:inline-block}
+  .pk-btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:500;
+    padding:7px 11px;border-radius:8px;border:1px solid var(--outline-gray-3);background:var(--surface-white);
+    color:var(--ink-gray-8);cursor:pointer;white-space:nowrap;line-height:1;transition:.12s}
+  .pk-btn:hover{background:var(--surface-gray-1);border-color:var(--outline-gray-4)}
+  .pk-btn.on{border-color:var(--ink-violet-1);color:var(--ink-violet-1);background:var(--surface-violet-1)}
+  .pk-cap{color:var(--ink-gray-5);font-weight:400}
+  .pk-pop{position:absolute;top:calc(100% + 6px);min-width:210px;z-index:60;background:var(--surface-cards);
+    border:1px solid var(--outline-gray-3);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.13);
+    padding:6px;max-height:340px;overflow:auto}
+  .pk-item{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;
+    font-family:inherit;font-size:13px;color:var(--ink-gray-8);padding:7px 9px;border-radius:7px;cursor:pointer;white-space:nowrap}
+  .pk-item:hover{background:var(--surface-gray-2)}
+  .pk-item .pk-ck{margin-left:auto;color:var(--ink-violet-1);display:inline-flex}
+  .pk-sep{border-top:1px solid var(--outline-gray-2);margin:5px 0}
+  .pk-lbl{font-size:11px;color:var(--ink-gray-5);padding:2px 9px 4px;text-transform:uppercase;letter-spacing:.04em}
+  .pk-date{width:100%;font-family:inherit;font-size:12px;padding:6px 8px;border:1px solid var(--outline-gray-3);
+    border-radius:7px;color:var(--ink-gray-9);background:var(--surface-white)}
+
   /* ── buttons / controls ── */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;font-size:14px;font-weight:500;
        border-radius:8px;padding:9px 15px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
@@ -1377,6 +1397,76 @@ const UNIT_META = {
 const initialsOf = s => ((s||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('') || '?').toUpperCase();
 const joinDots = nodes => nodes.filter(Boolean).flatMap((n,i)=> i ? [html`<span class="dotsep"></span>`, n] : [n]);
 
+/* ── Shared dropdown. Renders a labelled button + a popover that closes on an
+   outside click or Escape. `children` is a render function given a `close`
+   callback so items can dismiss the menu. Used by Signals, Reports, Monitor. ── */
+function Picker({label, caption, icon, active, children, align='left', minW=210, title}){
+  const [open,setOpen]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{ if(!open) return;
+    const onDoc=e=>{ if(ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const onKey=e=>{ if(e.key==='Escape') setOpen(false); };
+    document.addEventListener('mousedown',onDoc); document.addEventListener('keydown',onKey);
+    return ()=>{ document.removeEventListener('mousedown',onDoc); document.removeEventListener('keydown',onKey); };
+  },[open]);
+  return html`<div class="pk" ref=${ref}>
+    <button type="button" class=${'pk-btn'+(active?' on':'')} aria-haspopup="menu" aria-expanded=${open}
+      title=${title||''} onClick=${()=>setOpen(o=>!o)}>
+      ${icon?html`<${Icon} name=${icon} size=15/>`:''} ${label}
+      ${caption?html`<span class="pk-cap">${caption}</span>`:''}
+      <${Icon} name="caretDown" size=14/>
+    </button>
+    ${open && html`<div class="pk-pop" role="menu" style=${align+':0;min-width:'+minW+'px'}
+      onMouseDown=${e=>e.stopPropagation()}>${children(()=>setOpen(false))}</div>`}
+  </div>`;
+}
+
+/* ── Date range control (a Picker with presets + a custom from/to). Value shape:
+   {preset} for a preset, {preset:'custom', from, to} for a custom span. ── */
+const DR_PRESETS = [['all','Any time'],['1','Last 24 hours'],['7','Last 7 days'],
+                    ['30','Last 30 days'],['90','Last 90 days']];
+const drActive = v => !!(v && v.preset && v.preset!=='all' && (v.preset!=='custom' || v.from || v.to));
+function drLabel(v){
+  if(!drActive(v)) return 'Any time';
+  if(v.preset==='custom') return (v.from||'…')+' → '+(v.to||'…');
+  const p=DR_PRESETS.find(x=>x[0]===v.preset); return p?p[1]:'Any time';
+}
+/* True when `tsLike` (ISO string or epoch) falls inside the range. Undated items
+   are dropped by an active range (they cannot be placed on the timeline). */
+function inDateRange(tsLike, v){
+  if(!drActive(v)) return true;
+  const t = typeof tsLike==='number' ? tsLike : (tsLike?Date.parse(tsLike):NaN);
+  if(Number.isNaN(t)) return false;
+  if(v.preset==='custom'){
+    const from = v.from ? Date.parse(v.from) : -Infinity;
+    const to   = v.to   ? Date.parse(v.to)+864e5 : Infinity;   // inclusive end day
+    return t>=from && t<=to;
+  }
+  const days=Number(v.preset); return !days ? true : t >= Date.now()-days*864e5;
+}
+function DateRange({value, onChange}){
+  const v = value || {preset:'all'};
+  return html`<${Picker} icon="calendar" label="When" caption=${drLabel(v)} active=${drActive(v)}
+    minW=232 title="Filter by date">
+    ${close=>html`<div>
+      ${DR_PRESETS.map(([id,lbl])=>{ const on = (v.preset||'all')===id;
+        return html`<button type="button" class="pk-item" role="menuitemradio" aria-checked=${on}
+          onClick=${()=>{ onChange({preset:id}); close(); }}>${lbl}
+          ${on?html`<span class="pk-ck"><${Icon} name="check" size=14/></span>`:''}</button>`; })}
+      <div class="pk-sep"></div>
+      <div class="pk-lbl">Custom range</div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:0 9px 4px">
+        <input type="date" class="pk-date" aria-label="From" value=${v.from||''}
+          onInput=${e=>onChange({preset:'custom', from:e.target.value, to:v.to})}/>
+        <input type="date" class="pk-date" aria-label="To" value=${v.to||''}
+          onInput=${e=>onChange({preset:'custom', from:v.from, to:e.target.value})}/>
+        ${drActive(v)?html`<button type="button" class="pk-item" style="justify-content:center;color:var(--ink-red-3)"
+          onClick=${()=>{ onChange({preset:'all'}); close(); }}><${Icon} name="close" size=13/> Clear</button>`:''}
+      </div>
+    </div>`}
+  </${Picker}>`;
+}
+
 /* Classify the search box. Signals keys off a handle or profile URL, never a
    display name (no source resolves "First Last"). A pasted profile link routes
    straight to its one source. Returns one of:
@@ -1496,6 +1586,9 @@ function PersonRoster({people, onPick}){
 /* Keyword unit: one merged, newest-first mentions feed across the sources. */
 function FeedList({feed, sources}){
   const errs = (sources||[]).filter(s=>s.status!=='ok');
+  const [range,setRange]=useState({preset:'all'});
+  const all = feed||[];
+  const shown = all.filter(a=>inDateRange(a.ts, range));
   return html`
     ${(sources||[]).length>0 && html`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       ${(sources||[]).map(s=>{ const m = SIG_META[s.platform]||{label:s.platform,color:'#525252',icon:'globe'};
@@ -1504,9 +1597,14 @@ function FeedList({feed, sources}){
           <span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=12 /></span>
           ${m.label} ${ok?`· ${n}`:'· quiet'}</span>`; })}
     </div>`}
-    ${feed && feed.length
+    ${all.length>0 && html`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <span style="font-size:12px;color:var(--ink-gray-5)">${drActive(range)?`${shown.length} of ${all.length}`:all.length} mention${shown.length===1?'':'s'}</span>
+      <span style="flex:1"></span>
+      <${DateRange} value=${range} onChange=${setRange}/>
+    </div>`}
+    ${shown && shown.length
       ? html`<div class="feed">
-          ${feed.map(a=>{ const m = SIG_META[a.platform]||{label:a.platform,color:'#525252',icon:'globe'};
+          ${shown.map(a=>{ const m = SIG_META[a.platform]||{label:a.platform,color:'#525252',icon:'globe'};
             return html`<div class="feed-row">
               <span class="feed-plat" style=${`background:${m.color}`}><${Icon} name=${m.icon} size=15 /></span>
               <div class="feed-main">
@@ -1524,8 +1622,10 @@ function FeedList({feed, sources}){
         </div>`
       : html`<div class="sig-empty glass-card" style="border-radius:12px">
           <span class="se-ic"><${Icon} name="rss" size=17 /></span>
-          <div class="se-title">No live mentions yet.</div>
-          <div class="se-note">${errs.length
+          <div class="se-title">${all.length&&drActive(range)?'No mentions in this date range.':'No live mentions yet.'}</div>
+          <div class="se-note">${all.length&&drActive(range)
+            ? 'Widen the date range to see the rest of the feed.'
+            : errs.length
             ? 'The sources that need a connection (X session, Reddit app) stayed quiet. GitHub leads the zero-config read.'
             : 'Nothing matched right now. Try a broader phrase or hit Refresh.'}</div>
         </div>`}`;
@@ -1811,14 +1911,20 @@ function SignalsTool({seed}){
 
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px">
         <span class="field-label" style="margin:0">Look in</span>
-        <div class="sig-srcs">
-          ${um.sources.map(s=>{ const m = SIG_META[s]; const on = sel[s] !== false;
-            return html`<span class=${'sig-src' + (on ? ' on' : '')} style=${on ? `background:${m.color}` : ''}
-              onClick=${()=>setSel(p=>({...p, [s]: p[s]===false}))}>
-              <span class="ss-ic"><${Icon} name=${m.icon} size=14 /></span> ${m.label}
-              ${on && html`<span class="ss-ck"><${Icon} name="check" size=13 /></span>`}
-            </span>`; })}
-        </div>
+        ${(()=>{ const onSrcs=um.sources.filter(s=>sel[s]!==false); const total=um.sources.length; const allOn=onSrcs.length===total;
+          return html`<${Picker} icon="radar" label="Sources" caption=${allOn?'All':onSrcs.length+' of '+total}
+            active=${!allOn} minW=220 title="Choose which sources to search">
+            ${()=>html`<div>
+              <button type="button" class="pk-item" onClick=${()=>setSel({})}>All sources
+                ${allOn?html`<span class="pk-ck"><${Icon} name="check" size=14/></span>`:''}</button>
+              <div class="pk-sep"></div>
+              ${um.sources.map(s=>{ const m=SIG_META[s]; const on=sel[s]!==false;
+                return html`<button type="button" class="pk-item" role="menuitemcheckbox" aria-checked=${on}
+                  onClick=${()=>setSel(p=>({...p,[s]:p[s]===false}))}>
+                  <span style=${`color:${m.color};display:inline-flex`}><${Icon} name=${m.icon} size=15/></span> ${m.label}
+                  ${on?html`<span class="pk-ck"><${Icon} name="check" size=14/></span>`:''}</button>`; })}
+            </div>`}
+          </${Picker}>`; })()}
         ${unit==='person' && !bulk && html`<span style="flex:1"></span>
           <button class="btn btn-ghost btn-sm" onClick=${()=>setAdv(a=>!a)}>
             <${Icon} name=${adv?'minus':'plus'} size=13 /> ${adv ? 'Using exact handles' : 'Know their exact handles?'}
@@ -2578,7 +2684,16 @@ const TYPE_META = {
         : arr.some(id=>(optOf(col,id)?.label||id).toLowerCase().includes(String(q).toLowerCase())); },
     compare:(a,b)=>((Array.isArray(a)?a.length:0)-(Array.isArray(b)?b.length:0))},
   date: {icon:'calendar',
-    matches:(v,q)=>String(v??'').includes(String(q)),
+    matches:(v,q)=>{
+      if(q && typeof q==='object' && !Array.isArray(q)){   // {from,to} range filter
+        if(_isEmpty(v)) return false;
+        const t=Date.parse(v); if(Number.isNaN(t)) return false;
+        const from=q.from?Date.parse(q.from):-Infinity;
+        const to=q.to?Date.parse(q.to)+864e5:Infinity;      // inclusive end day
+        return t>=from && t<=to;
+      }
+      return String(v??'').includes(String(q));
+    },
     compare:(a,b)=>{ const pa=Date.parse(a), pb=Date.parse(b);
       if(Number.isNaN(pa)&&Number.isNaN(pb)) return 0;
       if(Number.isNaN(pa)) return 1; if(Number.isNaN(pb)) return -1; return pa-pb; }},
@@ -2588,6 +2703,16 @@ const TYPE_META = {
       if(['false','no','0'].includes(s)) return v===false; return true; },
     compare:(a,b)=>(a?1:0)-(b?1:0)},
 };
+/* A column filter is one of: an array (select ids), a {from,to} object (date
+   range, date columns only), or a non-empty string. These read its state. */
+const filterActive = (f, col) =>
+  Array.isArray(f) ? f.length>0
+  : (f && typeof f==='object') ? (col && col.type==='date' ? !!(f.from||f.to) : false)
+  : (f!==undefined && f!=='');
+const filterLabel = (f, col) =>
+  Array.isArray(f) ? f.map(id=>optOf(col,id)?.label||id).join(', ')
+  : (f && typeof f==='object') ? (f.from||'…')+' → '+(f.to||'…')
+  : f;
 const SAMPLE = {
   name:'GTM Pipeline',
   cols:[
@@ -2727,6 +2852,7 @@ function MonitorPanel(){
   const [err,setErr]=useState('');
   const [note,setNote]=useState('');
   const [edit,setEdit]=useState(false);
+  const [mrange,setMrange]=useState({preset:'all'});
 
   useEffect(()=>{ load(); },[]);
   async function load(){
@@ -2761,14 +2887,18 @@ function MonitorPanel(){
   const sheetLink = ov.sheet_url ? (ov.sheet_url + (sheetGid!=null?('#gid='+sheetGid):'')) : '';
 
   return html`<div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
-      ${(ov.groups||[]).map(x=>html`<button onClick=${()=>setGid(x.id)}
-        class=${'pill '+(x.id===(g&&g.id)?'pill-blue':'pill-gray')} style="cursor:pointer;border:1px solid var(--outline-gray-2)">
-        ${x.name}<span style="opacity:.6"> · ${x.window_days}d</span></button>`)}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+      <${Picker} icon="binoculars" label="Group" caption=${g?`${g.name} · ${g.window_days}d`:'Pick a group'} active=${!!(g&&g.id)} minW=240 title="Monitor group">
+        ${close=>html`<div>${(ov.groups||[]).map(x=>{ const on=x.id===(g&&g.id);
+          return html`<button type="button" class="pk-item" role="menuitemradio" aria-checked=${on}
+            onClick=${()=>{ setGid(x.id); close(); }}>${x.name}
+            <span style="color:var(--ink-gray-5)">· ${x.window_days}d</span>
+            ${on?html`<span class="pk-ck"><${Icon} name="check" size=14/></span>`:''}</button>`; })}</div>`}
+      </${Picker}>
       <span style="flex:1"></span>
-      ${sheetLink && html`<a href=${sheetLink} target="_blank" rel="noopener" class="pill pill-gray" style="text-decoration:none;border:1px solid var(--outline-gray-2)"><${Icon} name="sheet" size=12/> Google Sheet</a>`}
-      <button onClick=${runNow} disabled=${busy} class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)">
-        <${Icon} name=${busy?'loader':'refresh'} size=13 cls=${busy?'spin':''} /> ${busy?'Scanning...':'Run now'}</button>
+      ${sheetLink && html`<a href=${sheetLink} target="_blank" rel="noopener" class="pk-btn" style="text-decoration:none"><${Icon} name="sheet" size=15/> Google Sheet</a>`}
+      <button onClick=${runNow} disabled=${busy} class="pk-btn">
+        <${Icon} name=${busy?'loader':'refresh'} size=15 cls=${busy?'spin':''} /> ${busy?'Scanning...':'Run now'}</button>
     </div>
 
     ${err && html`<div class="glass-card" style="padding:12px;margin-bottom:12px;color:var(--ink-red-3)"><${Icon} name="alert" size=14/> ${err}</div>`}
@@ -2807,13 +2937,18 @@ function MonitorPanel(){
 
     ${!ov.sheets_configured && html`<div style="font-size:12px;color:var(--ink-gray-5);margin-bottom:12px"><${Icon} name="alert" size=12/> Google Sheets export is off. Set GOOGLE_SA_JSON + GTMSTACK_SHEET_URL to push rows to a shared sheet.</div>`}
 
-    <div class="glass-card" style="padding:16px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    ${(()=>{ const shown=mentions.filter(m=>inDateRange(m.post_ts, mrange));
+      return html`<div class="glass-card" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
         <span style="font-weight:600">Recent mentions</span>
-        <span style="font-size:12px;color:var(--ink-gray-5)">Instagram + Facebook are out of scope (not compliantly scrapeable). G2 needs a licensed API.</span>
+        <span style="font-size:12px;color:var(--ink-gray-5)">${drActive(mrange)?`${shown.length} of ${mentions.length}`:mentions.length}</span>
+        <span style="flex:1;min-width:20px"></span>
+        ${mentions.length>0 && html`<${DateRange} value=${mrange} onChange=${setMrange}/>`}
       </div>
+      <div style="font-size:12px;color:var(--ink-gray-5);margin-bottom:10px">Instagram + Facebook are out of scope (not compliantly scrapeable). G2 needs a licensed API.</div>
       ${mentions.length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions stored yet for ${g&&g.name}.</div>`
-      : mentions.slice(0,80).map(m=>html`
+      : shown.length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions in this date range. Widen it to see the rest.</div>`
+      : shown.slice(0,80).map(m=>html`
         <div style="padding:11px 0;border-top:1px solid var(--outline-gray-2)">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
             <span class="pill pill-gray"><${Icon} name=${platIcon(m.platform)} size=12/> ${m.platform}</span>
@@ -2830,7 +2965,7 @@ function MonitorPanel(){
           <div style="font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere">${(m.body||m.text||'').slice(0,300)}</div>
           ${m.url && html`<a href=${m.url} target="_blank" rel="noopener" style="font-size:12px;color:var(--ink-violet-1);text-decoration:none"><${Icon} name="externalLink" size=11 /> open</a>`}
         </div>`)}
-    </div>
+    </div>`; })()}
   </div>`;
 }
 
@@ -2842,6 +2977,7 @@ function ReportsTool(){
   const [busy,setBusy]=useState(false);
   const [err,setErr]=useState('');
   const [showLog,setShowLog]=useState(false);
+  const [topRange,setTopRange]=useState({preset:'all'});
 
   useEffect(()=>{ fetch(`${API_BASE}/api/report?groups=1`).then(r=>r.json())
     .then(j=>{ const gs=j.groups||[]; setGroups(gs); if(gs[0]) setGid(gs[0].id); })
@@ -2885,13 +3021,17 @@ function ReportsTool(){
 
     ${mode==='monitor' ? html`<${MonitorPanel} />` : html`<div>
 
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
-      ${groups.map(x=>html`<button onClick=${()=>setGid(x.id)}
-        class=${'pill '+(x.id===gid?'pill-blue':'pill-gray')} style="cursor:pointer;border-width:1px;border-style:solid">
-        ${x.name}</button>`)}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+      <${Picker} icon="newspaper" label="Group" caption=${(g&&g.name)||'Pick a group'} active=${!!gid} minW=220 title="Keyword group">
+        ${close=>html`<div>${groups.map(x=>{ const on=x.id===gid;
+          return html`<button type="button" class="pk-item" role="menuitemradio" aria-checked=${on}
+            onClick=${()=>{ setGid(x.id); close(); }}>${x.name}
+            ${on?html`<span class="pk-ck"><${Icon} name="check" size=14/></span>`:''}</button>`; })}
+          ${groups.length===0?html`<div class="pk-lbl">No groups loaded</div>`:''}</div>`}
+      </${Picker}>
       <span style="flex:1"></span>
-      <button onClick=${runNow} disabled=${busy} class="pill pill-gray" style="cursor:pointer;border:1px solid var(--outline-gray-2)">
-        <${Icon} name=${busy?'loader':'refresh'} size=13 cls=${busy?'spin':''} /> ${busy?'Running...':'Run now'}</button>
+      <button onClick=${runNow} disabled=${busy} class="pk-btn">
+        <${Icon} name=${busy?'loader':'refresh'} size=15 cls=${busy?'spin':''} /> ${busy?'Running...':'Run now'}</button>
     </div>
 
     ${err && html`<div class="glass-card" style="padding:13px;margin-bottom:14px;color:var(--ink-red-3)"><${Icon} name="alert" size=14/> ${err}</div>`}
@@ -2933,10 +3073,17 @@ function ReportsTool(){
           </table>
         </div>`}
 
-      <div class="glass-card" style="padding:16px;margin-bottom:16px">
-        <div style="font-weight:600;margin-bottom:10px">Top mentions</div>
-        ${(rep.top_posts||[]).length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions surfaced.</div>`
-        : rep.top_posts.map(p=>html`
+      ${(()=>{ const posts=rep.top_posts||[]; const shown=posts.filter(p=>inDateRange(p.ts, topRange));
+        return html`<div class="glass-card" style="padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <span style="font-weight:600">Top mentions</span>
+          <span style="font-size:12px;color:var(--ink-gray-5)">${drActive(topRange)?`${shown.length} of ${posts.length}`:posts.length}</span>
+          <span style="flex:1"></span>
+          ${posts.length>0 && html`<${DateRange} value=${topRange} onChange=${setTopRange}/>`}
+        </div>
+        ${posts.length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions surfaced.</div>`
+        : shown.length===0 ? html`<div style="color:var(--ink-gray-5)">No mentions in this date range. Widen it to see the rest.</div>`
+        : shown.map(p=>html`
           <div style="padding:11px 0;border-top:1px solid var(--outline-gray-2)">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
               <span class="pill pill-gray"><${Icon} name=${platIcon(p.platform)} size=12 /> ${p.platform}</span>
@@ -2949,7 +3096,7 @@ function ReportsTool(){
             <div style="font-size:14px;line-height:1.5;color:var(--ink-gray-8);overflow-wrap:anywhere">${(p.text||'').slice(0,280)}</div>
             ${p.url && html`<a href=${p.url} target="_blank" rel="noopener" style="font-size:12px;color:var(--ink-violet-1);text-decoration:none"><${Icon} name="externalLink" size=11 /> open</a>`}
           </div>`)}
-      </div>
+      </div>`; })()}
 
       ${(rep.strategy_log||[]).length>0 && html`
         <div class="glass-card" style="padding:0;margin-bottom:16px">
@@ -3025,6 +3172,15 @@ function ColumnMenu({col, filterVal, setFilter, onSortDir, onEdit, onHide, onDel
             return html`<button type="button" class=${'pill '+(on?pillFor(o.color):'pill-gray')} style="cursor:pointer;border:none;opacity:${on?1:.55}"
               onClick=${()=>setFilter(on?arr.filter(x=>x!==o.id):[...arr,o.id])}>${o.label}</button>`; })}
           ${(col.options||[]).length===0?html`<span style="font-size:12px;color:var(--ink-gray-5)">No options yet.</span>`:''}</div>`
+      : col.type==='date'
+      ? (()=>{ const fv=(filterVal&&typeof filterVal==='object')?filterVal:{};
+          const upd=(from,to)=>setFilter((from||to)?{from,to}:'');
+          return html`<div style="padding:2px 8px 8px;display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:11px;color:var(--ink-gray-5)">From<input type="date" class="pk-date" aria-label=${col.label+' from'}
+              value=${fv.from||''} onInput=${e=>upd(e.target.value, fv.to)}/></label>
+            <label style="font-size:11px;color:var(--ink-gray-5)">To<input type="date" class="pk-date" aria-label=${col.label+' to'}
+              value=${fv.to||''} onInput=${e=>upd(fv.from, e.target.value)}/></label>
+            ${(fv.from||fv.to)?html`<button type="button" class="tbl-mi" style="justify-content:center;color:var(--ink-red-3);padding:5px" onClick=${()=>setFilter('')}><${Icon} name="close" size=12/> Clear</button>`:''}</div>`; })()
       : html`<div style="padding:2px 8px 8px"><input class="search-mini" autofocus value=${filterVal||''}
           placeholder=${col.type==='number'?'e.g. >50 or 10-99':'Contains…'} onInput=${e=>setFilter(e.target.value)}/></div>`}
     <div class="tbl-mi-sep"></div>
@@ -3439,8 +3595,7 @@ function TablesTool(){
     return db.rows.filter(row=>{
       if(q && !visibleCols.some(c=>cellText(row[c.key],c).toLowerCase().includes(q))) return false;
       for(const c of visibleCols){ const f=colFilters[c.key];
-        const active=Array.isArray(f)?f.length>0:(f!==undefined&&f!=='');
-        if(active && !TYPE_META[c.type].matches(row[c.key],f,c)) return false; }
+        if(filterActive(f,c) && !TYPE_META[c.type].matches(row[c.key],f,c)) return false; }
       return true;
     });
   },[db.rows, db.cols, globalQ, colFilters, visibleCols]);
@@ -3485,8 +3640,7 @@ function TablesTool(){
   const filteredCount = useMemo(()=> new Set(groups.flatMap(g=>g.rows.map(r=>r._id))).size, [groups]);
   const groupByCol = db.cols.find(c=>c.key===groupBy) || null;
   /* count only live, visible columns so an orphan/hidden filter never inflates "Clear N" */
-  const activeFilters = visibleCols.reduce((n,c)=>{ const f=colFilters[c.key];
-    return n + (Array.isArray(f)?(f.length?1:0):(f?1:0)); }, 0) + (globalQ.trim()?1:0);
+  const activeFilters = visibleCols.reduce((n,c)=>n + (filterActive(colFilters[c.key],c)?1:0), 0) + (globalQ.trim()?1:0);
 
   function onSort(key){ if(sortBy!==key){ setSortBy(key); setSortDir('asc'); }
     else if(sortDir==='asc') setSortDir('desc'); else { setSortBy(''); setSortDir('asc'); } }
@@ -3633,7 +3787,7 @@ function TablesTool(){
           ${filterMenu && html`<div class="tbl-menu" role="group" aria-label="Active filters" style="left:0;right:auto;min-width:230px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
             ${activeFilters===0
               ? html`<div style="padding:6px 8px;font-size:12px;color:var(--ink-gray-5)">No filters. Open a field's menu (the dots in its header) to filter it.</div>`
-              : html`${visibleCols.filter(c=>{ const f=colFilters[c.key]; return Array.isArray(f)?f.length:(f!==undefined&&f!==''); }).map(c=>{ const f=colFilters[c.key]; const val=Array.isArray(f)?f.map(id=>optOf(c,id)?.label||id).join(', '):f;
+              : html`${visibleCols.filter(c=>filterActive(colFilters[c.key],c)).map(c=>{ const f=colFilters[c.key]; const val=filterLabel(f,c);
                   return html`<div key=${c.key} class="tbl-mi" style="cursor:default">
                     <${Icon} name=${TYPE_META[c.type].icon} size=13/> <b>${c.label}</b> <span style="color:var(--ink-gray-6)">${val}</span>
                     <button type="button" class="iconbtn" style="margin-left:auto" aria-label="Clear" onClick=${()=>setColFilter(c.key, Array.isArray(f)?[]:'')}><${Icon} name="close" size=13/></button></div>`; })}
