@@ -7,7 +7,7 @@
 <meta name="description" content="Preview how developers react to your go-to-market copy before you launch, then mine real audience language to sharpen every message." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:FILL,GRAD,opsz,wght@0,200,24,300&display=block" rel="stylesheet" />
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 <style>
@@ -26,8 +26,18 @@
     --sidebar-w:252px;
   }
 
+  /* Circular Std (self-hosted, proprietary, served from /fonts). Book=400,
+     Medium=500, Bold=700; a 600 request maps to Bold via CSS font-matching.
+     IBM Plex Mono still loads from Google Fonts for the .mono / code styles. */
+  @font-face{font-family:'Circular Std';font-weight:400;font-style:normal;font-display:swap;
+    src:url('/fonts/CircularStd-Book.woff2') format('woff2')}
+  @font-face{font-family:'Circular Std';font-weight:500;font-style:normal;font-display:swap;
+    src:url('/fonts/CircularStd-Medium.woff2') format('woff2')}
+  @font-face{font-family:'Circular Std';font-weight:700;font-style:normal;font-display:swap;
+    src:url('/fonts/CircularStd-Bold.woff2') format('woff2')}
+
   *{box-sizing:border-box}
-  html{font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
+  html{font-family:'Circular Std',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
   body{margin:0;background:var(--surface-gray-1);color:var(--ink-gray-9);font-size:14px;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
