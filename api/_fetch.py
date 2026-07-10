@@ -165,7 +165,7 @@ def _transport_get(url, headers, timeout, impersonate, proxydict):
 
 
 def get(url, headers=None, timeout=12, impersonate="chrome", host=None,
-        retries=MAX_RETRIES, archive=None):
+        retries=MAX_RETRIES, archive=None, fail_status=None):
     """The layer 3-7 cascade around a single GET.
 
     Returns a response object (the caller inspects .status_code / .json() / .text
@@ -173,7 +173,16 @@ def get(url, headers=None, timeout=12, impersonate="chrome", host=None,
     honouring Retry-After. When the host breaker is open it fails fast: it calls
     `archive()` if given, else raises Blocked. When live is exhausted it falls to
     `archive()` if given, else returns the last response or raises the last error.
+
+    `fail_status` is an optional set of status codes to treat as HARD failures
+    (not success). A Cloudflare 403 is the case this exists for: without it a 403
+    hits the success path, resets the breaker, and never falls to archive, so a
+    bot-wall reads as a clean empty. Pass fail_status={403} for review sites so
+    the block trips the breaker and serves the archive fallback. These codes are
+    NOT retried (retrying a hard 403 just burns the politeness budget); they fail
+    once, trip the breaker, and degrade.
     """
+    fail_status = fail_status or set()
     hdr = {"user-agent": UA, "accept-language": "en-US,en;q=0.9"}
     if headers:
         hdr.update(headers)
@@ -207,6 +216,9 @@ def get(url, headers=None, timeout=12, impersonate="chrome", host=None,
             continue
 
         code = getattr(r, "status_code", 0)
+        if code in fail_status:                         # hard block (e.g. CF 403)
+            _fail(st)
+            return archive() if archive is not None else r
         if code in RETRY_STATUS and attempt < retries:  # layer 4: back off + retry
             last_resp = r
             ra = _retry_after(r)

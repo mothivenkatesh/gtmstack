@@ -94,6 +94,166 @@ CTYPE_BOOST = {
     "landing": {},
 }
 
+# ── content-type training: the STRUCTURE a strong piece of each type has ───────
+# This is the "proper training" per content type. Each type names its expected
+# parts (in order), what a strong one looks like, and length guidance. Both the
+# deterministic structure check below and the LLM prompt judge the copy against
+# this, so a missing headline / CTA / subject line is caught explicitly rather
+# than only reflected in a vibe score.
+CTYPE_SPEC = {
+    "landing": {
+        "label": "landing page",
+        "parts": [
+            ("headline", "Headline promise (one sharp line)"),
+            ("subhead", "Subhead: who it is for + what it does"),
+            ("proof", "Developer proof (a switch, a number, a name)"),
+            ("value", "Concrete value / how it works"),
+            ("cta", "Self-serve CTA (a real action, not Contact Sales)"),
+            ("pricing", "Visible pricing or a free start"),
+        ],
+        "good": ("one sharp promise above the fold, a subhead that says who it is for, "
+                 "dev proof, a concrete value prop, a self-serve CTA, and visible pricing"),
+        "length": "scannable; the hero should read in about five seconds",
+    },
+    "email": {
+        "label": "cold email",
+        "parts": [
+            ("subject", "Subject line (short, names a reason to open)"),
+            ("hook", "Opening line about THEM, not you"),
+            ("relevance", "A specific reason it is for this person"),
+            ("ask", "One low-friction ask"),
+            ("brevity", "Short (under ~120 words)"),
+        ],
+        "good": ("a subject that earns the open, a first line about the reader, one specific "
+                 "relevant reason, and a single easy ask, all kept short"),
+        "length": "under ~120 words",
+    },
+    "ad": {
+        "label": "ad",
+        "parts": [
+            ("ad_hook", "Hook in the first five words"),
+            ("value", "One concrete benefit"),
+            ("cta", "One clear call to action"),
+            ("not_wall", "Tight, not a wall of text"),
+        ],
+        "good": "a hook in the first five words, one benefit, one CTA, and nothing extra",
+        "length": "one or two lines",
+    },
+    "social": {
+        "label": "social post",
+        "parts": [
+            ("social_hook", "A scroll-stopping first line"),
+            ("substance", "A concrete point, story, or number"),
+            ("low_links", "Not link-stuffed"),
+            ("reply_bait", "A reason to reply or share"),
+        ],
+        "good": "a hook line, one concrete point, minimal links, and a reason to engage",
+        "length": "short; front-load the hook",
+    },
+    "sales": {
+        "label": "sales line",
+        "parts": [
+            ("pain_outcome", "Names a pain and a specific outcome"),
+            ("specific", "A concrete number or detail"),
+            ("no_jargon", "Plain words, no jargon"),
+            ("one_line", "One tight line"),
+        ],
+        "good": "one line that names a real pain and a specific outcome, in plain language",
+        "length": "a single sentence",
+    },
+}
+
+_CTA_VERBS = (r"\b(start|try|sign\s?up|get started|build|deploy|install|create|launch|"
+              r"download|book(?!\s+a\s+demo)|explore|see how|read the docs|get your|claim|join)\b")
+_ASK_PHRASES = (r"(worth a (quick )?look|open to|interested in|reply|let me know|"
+                r"can i|would you|are you|mind if|\?)")
+_OUTCOME = (r"(so you|so that|reduce|save|cut|increase|ship|go live|stop|no more|"
+            r"from .{1,30} to |fewer|faster|less time)")
+
+
+def _lines(text):
+    return [l.strip() for l in text.splitlines() if l.strip()]
+
+
+def _wc(text):
+    return len(re.findall(r"\S+", text or ""))
+
+
+def _detect_part(part, text, s, lines):
+    """Return (present: bool, note: str) for one structural part. Deterministic,
+    never raises. Notes are blunt and actionable, the same voice as the personas."""
+    t = text.lower()
+    first = lines[0] if lines else ""
+    fw = len(first.split())
+    D = {
+        "headline": (0 < fw <= 12,
+                     "Sharp headline up top." if 0 < fw <= 12 else ("First line runs long for a headline." if fw > 12 else "No headline line.")),
+        "subhead": (len(lines) >= 2 and len(lines[1].split()) >= 4,
+                    "Subhead says who and what." if (len(lines) >= 2 and len(lines[1].split()) >= 4) else "No subhead to say who it is for."),
+        "proof": (s.get("social", 0) > 0,
+                  "Shows a real developer uses it." if s.get("social", 0) > 0 else "No proof a dev switched or uses it."),
+        "value": (s.get("code", 0) > 0 or s.get("speed", 0) > 0 or bool(re.search(r"\byou (can|get|ship|build|save|run)\b", t)),
+                  "Concrete value is on the page." if (s.get("code", 0) or s.get("speed", 0) or re.search(r"\byou (can|get|ship|build|save|run)\b", t)) else "Value is abstract; show what you can actually do."),
+        "cta": (bool(re.search(_CTA_VERBS, t)) and s.get("contact_sales", 0) == 0,
+                "Clear self-serve action." if (re.search(_CTA_VERBS, t) and not s.get("contact_sales", 0)) else ("Only a Contact-Sales path, no self-serve action." if s.get("contact_sales", 0) else "No clear call to action.")),
+        "pricing": (s.get("pricing", 0) > 0,
+                    "Price or free start visible." if s.get("pricing", 0) > 0 else "No price or free start shown."),
+        "subject": (0 < fw <= 9 and not first.endswith("."),
+                    "Reads like a real subject line." if (0 < fw <= 9 and not first.endswith(".")) else "No tight subject line up top."),
+        "hook": (s.get("pain", 0) > 0 or bool(re.search(r"^\W*you\b|\byour\b", first.lower())),
+                 "Opens on the reader or a pain." if (s.get("pain", 0) or re.search(r"^\W*you\b|\byour\b", first.lower())) else "Opens about you, not the reader."),
+        "relevance": (bool(re.search(r"\byour\b|\b(saw|noticed|because|since you|you are|you're|building)\b", t)),
+                      "Says why it is for them." if re.search(r"\byour\b|\b(saw|noticed|because|since you|you are|you're|building)\b", t) else "No specific reason it is relevant to them."),
+        "ask": (bool(re.search(_ASK_PHRASES, t)),
+                "One clear ask." if re.search(_ASK_PHRASES, t) else "No clear, low-friction ask."),
+        "brevity": (_wc(text) <= 130,
+                    "Tight length." if _wc(text) <= 130 else "Too long for a cold email; cut it down."),
+        "ad_hook": (fw > 0 and s.get("fluff", 0) == 0,
+                    "Clean hook." if (fw > 0 and not s.get("fluff", 0)) else "First words are fluffy; lead with the benefit."),
+        "not_wall": (s.get("wall_of_text", 0) == 0,
+                     "Tight, not a wall." if not s.get("wall_of_text", 0) else "Too much text for an ad."),
+        "social_hook": (0 < fw <= 14,
+                        "Front-loaded hook." if 0 < fw <= 14 else "No punchy first line to stop the scroll."),
+        "substance": (bool(re.search(r"\d", text)) or s.get("code", 0) > 0,
+                      "Has a concrete point." if (re.search(r"\d", text) or s.get("code", 0)) else "No number or concrete detail to anchor it."),
+        "low_links": (len(re.findall(r"https?://", text)) <= 1,
+                      "Not link-stuffed." if len(re.findall(r"https?://", text)) <= 1 else "Too many links; the feed will throttle it."),
+        "reply_bait": ("?" in text or bool(re.search(r"(agree|thoughts|what do you|which one|am i wrong)", t)),
+                       "Invites a reply." if ("?" in text or re.search(r"(agree|thoughts|what do you|which one|am i wrong)", t)) else "Nothing that invites a reply or share."),
+        "pain_outcome": (s.get("pain", 0) > 0 and bool(re.search(_OUTCOME, t)),
+                         "Pairs a pain with an outcome." if (s.get("pain", 0) and re.search(_OUTCOME, t)) else "Does not tie a pain to a specific outcome."),
+        "specific": (bool(re.search(r"\d", text)),
+                     "Has a concrete number." if re.search(r"\d", text) else "No specific number or detail."),
+        "no_jargon": (s.get("fluff", 0) == 0,
+                      "Plain language." if not s.get("fluff", 0) else "Cut the buzzwords."),
+        "one_line": (_wc(text) <= 30,
+                     "One tight line." if _wc(text) <= 30 else "Too long for a single sales line."),
+    }
+    return D.get(part, (True, ""))
+
+
+def _structure_check(text, ctype):
+    """Deterministic structure read for a content type: which expected parts are
+    present, a completeness percent, and what is missing. Engine-independent, so
+    it shows whether the AI or the built-in model produced the reactions."""
+    spec = CTYPE_SPEC.get(ctype)
+    if not spec:
+        return None
+    s = _signals(text)
+    lines = _lines(text)
+    parts = []
+    for key, label in spec["parts"]:
+        present, note = _detect_part(key, text, s, lines)
+        parts.append({"key": key, "label": label, "present": bool(present), "note": note})
+    have = sum(1 for p in parts if p["present"])
+    return {
+        "content_type": ctype, "label": spec["label"],
+        "parts": parts, "have": have, "total": len(parts),
+        "score": round(have / len(parts) * 100) if parts else 0,
+        "good": spec["good"], "length": spec.get("length", ""),
+        "missing": [p["label"] for p in parts if not p["present"]],
+    }
+
 
 def _signals(text):
     t = text.lower()
@@ -213,13 +373,24 @@ def _llm_preview(text, ctype, chosen):
     roster = "\n".join(
         f'- id "{p["id"]}" = {p["name"]} ({p["tagline"]}). Cares about: {", ".join(p["cares"])}. '
         f'Turned off by: {", ".join(p["turnoffs"])}.' for p in chosen)
+    spec = CTYPE_SPEC.get(ctype, {})
+    struct_txt = ""
+    if spec:
+        parts = "; ".join(lbl for _, lbl in spec["parts"])
+        struct_txt = (
+            f"\nWhat a strong {spec['label']} needs (judge the copy against this structure, "
+            f"reward what is present, and let a missing part lower the score and drive the fix): "
+            f"{parts}. A good one is {spec['good']}. Length: {spec.get('length','')}.\n"
+        )
     sys = (
         "You simulate how real developers react to go-to-market copy. You are a composite of ~17,500 "
         "developer voices from HackerNews, Reddit, Dev.to, GitHub and Quora. Be blunt and specific, "
-        "the way developers actually talk. Never use marketing language yourself."
+        "the way developers actually talk. Never use marketing language yourself. You know the "
+        "conventions of each content type (landing page, cold email, ad, social post, sales line) and "
+        "hold the copy to that type's structure."
     )
     user = (
-        f"Content type: {CTYPES.get(ctype, ctype)}.\nThe copy to react to:\n\"\"\"\n{text}\n\"\"\"\n\n"
+        f"Content type: {CTYPES.get(ctype, ctype)}.{struct_txt}\nThe copy to react to:\n\"\"\"\n{text}\n\"\"\"\n\n"
         f"React AS each of these personas:\n{roster}\n\n"
         "Return ONLY a JSON array, one object per persona, in this exact shape:\n"
         '[{"id": "<persona id>", "score": <0-100 how likely THIS persona engages>, '
@@ -266,7 +437,8 @@ def preview(text, ctype="landing", persona_ids=None, use_llm=None):
     overall = round(sum(r["score"] for r in results) / len(results))
     verdict = "Launch-ready" if overall >= 70 else ("Promising, needs work" if overall >= 45 else "Rework before launch")
     return {"overall": overall, "verdict": verdict, "engine": engine,
-            "content_type": ctype, "results": results}, 200
+            "content_type": ctype, "structure": _structure_check(text, ctype),
+            "results": results}, 200
 
 
 def persona_roster():

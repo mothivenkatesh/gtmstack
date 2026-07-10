@@ -19,3 +19,8 @@ anthropic>=0.40
 # is set; the app runs anonymously without it. [binary] ships a self-contained
 # build so no system libpq is needed on Vercel.
 psycopg[binary]>=3.1
+
+# Google Sheets push (competitive monitor). Optional: only used when
+# GOOGLE_SA_JSON or GOOGLE_SA_KEY is set. The monitor runs without it and just
+# prints results to the log instead.
+gspread>=6.0

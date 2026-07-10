@@ -41,6 +41,30 @@ def _html(link: str) -> str:
     )
 
 
+def send(to: str, subject: str, body: str) -> dict:
+    """Generic plain-text send (used by the competitive monitor for silent-zero
+    and staleness alerts). Same gate + Resend transport as the magic link. Returns
+    {"sent": bool, "mode": ...}. Never raises."""
+    to = (to or "").strip()
+    if not to or "@" not in to:
+        return {"sent": False, "mode": "none", "error": "invalid email"}
+    if not configured():
+        return {"sent": False, "mode": "dev"}
+    try:
+        r = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {os.getenv('RESEND_API_KEY')}",
+                     "Content-Type": "application/json"},
+            json={"from": _from(), "to": [to], "subject": subject,
+                  "text": body},
+            timeout=15)
+        if r.status_code in (200, 201):
+            return {"sent": True, "mode": "resend"}
+        return {"sent": False, "mode": "resend", "error": f"HTTP {r.status_code}"}
+    except Exception as e:
+        return {"sent": False, "mode": "resend", "error": type(e).__name__}
+
+
 def send_magic_link(email: str, link: str) -> dict:
     """Deliver the sign-in link. Returns one of:
       {"sent": True,  "mode": "resend"}

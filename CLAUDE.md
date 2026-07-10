@@ -170,7 +170,7 @@ Env vars (all optional, they act as feature flags). `app.py` loads a gitignored 
 
 **Design**
 - Frappe Design System tokens (light surface + dark `--menu-bar` sidebar). Geist + Geist Mono.
-- Icons are always solid. Source: Phosphor via Iconify, Fill weight for areal glyphs and Bold weight for inherently linear ones (check, plus, arrows, hash, code). One central name to id map drives the `Icon` component. Never reintroduce outline/stroke icons.
+- Icons are LINE style on a 3-tier size scale (user decision, Jul 2026; supersedes the earlier solid-icon rule): 24px page-level (topbar tool icon), 20px nav/toolbar (app sidebar), 16px dense inline (grid headers, menus, chips, buttons). Source: Material Symbols SHARP ligatures at wght 300, GRAD 200, opsz 24, FILL 0 (the `.msi` class). The `Icon` component SNAPS the legacy size prop to the nearest tier (>=22 to 24, >=15 to 20, else 16), so call sites keep their relative hierarchy without pixel-exact sizes. Brand logos (github/linkedin/reddit/x/youtube) and the chess knight have no Material equivalent, so they stay Phosphor-via-Iconify in the line (regular) weight, also at 24px. One central ICONS map drives `Icon`: an id containing ':' renders through iconify-icon, anything else as a Material ligature. Validate any new ligature name against the Material Symbols codepoints file before adding it (an invalid name renders as raw text). htm passes unquoted attribute values as STRINGS; never do arithmetic on a prop without coercing first (a "15"+2 concat once blew every icon up to 152px).
 - No em dashes in UI copy. Lead with the answer. Plain language so a non-technical founder gets it.
 - Text-overflow safety on cards (`overflow-wrap: anywhere`, `min-width: 0` on flex/grid children). Check WCAG contrast.
 
@@ -334,3 +334,67 @@ Goal: the user flagged the Competitor Intelligence result as cluttered and asked
 Session wiring (out of repo): the user pasted a fresh LinkedIn cookie jar in chat (flagged as a secret to rotate). It's stored at `C:/Users/mothi/.gtmstack/li_cookies.json` (OUTSIDE the repo, so it can't be committed or deployed), pointed to by `LINKEDIN_COOKIES` in the gitignored `.env`. The cookie is never echoed, never in a tracked file.
 
 Verified live (1280px, server restarted to load new code + .env): five Frappe cards render, 2-col grid, zero horizontal overflow, brand logos resolve, Cashfree highlighted as "you". LinkedIn column now shows **real follower counts** — Cashfree 296.7K (922 staff), Razorpay 1.2M (4.1K staff), PayU 340.8K (3.4K staff); PhonePe degrades to `—` because its `universalName` isn't a guessable slug (`phonepe`/`phonepe-pvt-ltd`/`phonepe-india` all 404; needs a search-based resolver, backlogged). Sequential read = 2.0s cold, 0.38s cached. The fresh full jar cleared the checkpoint the profile-dir cookies had drifted into. Quadrant caveat unchanged: the feed caps at 24 posts/brand, so the post-volume x-axis is degenerate (all brands at max volume) — it ranks on engagement only; two low-engagement dots (Razorpay/PhonePe) can still overlap their labels. A higher cap or recency window is the real fix (backlogged).
+
+## Build plan, this change (Daily keyword-group report + Carlsen scan strategy)
+
+Goal: a daily Signals brief per keyword group (e.g. "Payment Gateway"), scanned
+with a chess-style strategy, enriched with sentiment + the author's company,
+delivered to a new in-app Reports tab, scheduled at 08:00 IST on the Mac via
+launchd. User decisions: local launchd trigger (uses the real Chrome session for
+X / LinkedIn), in-app Reports tab as the surface.
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 1 | Carlsen scan strategy: opening book (safe sources first), move ordering by source-safety x keyword-priority, prophylaxis (skip tripped-breaker hosts), king safety (LinkedIn last, sequential, resign on challenge), a wall-clock budget, and a post evaluation (freshness x reach x relevance). Pure logic, unit-tested. | api/_carlsen.py, tests/test_carlsen.py (11) | low |
+| 2 | Keyword groups: 4 built-ins (payment_gateway, cashfree_brand, razorpay_watch, payments_infra) plus an optional api/_store/groups.json or DB override. | api/_groups.py | low |
+| 3 | Report engine: runs the Carlsen plan over _signals.lookup(unit=keyword), dedupes, ranks, enriches the top posts (sentiment + author company via _llm, heuristic fallback), computes share-of-voice, reuses _trends.analyze for the grounded synthesis, and stores the result (Postgres when DATABASE_URL is set, else a local JSON snapshot). | api/_report.py | medium |
+| 4 | reports table + save/list/get/latest helpers, degrading to a no-op like the rest of _db. | api/_db.py | low |
+| 5 | Routes: GET/POST /api/report (Vercel handler + Flask), POST gated by CRON_SECRET when set. | api/report.py, app.py, vercel.json | low |
+| 6 | Reports tab: group selector, KPI cards (mentions + sentiment split), synthesis, share-of-voice table, top mentions (sentiment pill + company + profile link), and a collapsible Carlsen scan log. Frappe tokens, solid icons. | index.html | low |
+| 7 | launchd: daily_report.py CLI + install/uninstall. macOS blocks a launchd read of ~/Documents (TCC), so the installer copies the runtime to ~/.gtmstack/app and runs there (no Full Disk Access prompt). Runs 08:00 IST; re-run install.sh after code changes. | daily_report.py, launchd/ | medium |
+
+New env (see .env.example): DATABASE_URL (REQUIRED for the hosted Reports tab, since serverless cannot read the Mac's local snapshot), REPORT_BUDGET_S, CRON_SECRET, plus the existing source + LLM keys.
+
+Constraints held: no Playwright (reads go through the _fetch curl_cffi cascade); LinkedIn stays the protected king (last, sequential, resign-on-challenge) per the burner-account guardrail; secrets stay out of the repo; no em dashes.
+
+Verified: 11 Carlsen unit tests pass. Engine run live with no creds (github + youtube): payment_gateway 142 mentions, share-of-voice + ranked + enriched posts + stored snapshot. launchd test-fire clean (exit 0): all 4 groups from ~/.gtmstack/app, no TCC error. /api/report curl-verified (groups, latest report). index.html node --check OK. Not yet verified live: X / LinkedIn / Reddit need creds; the hosted tab needs DATABASE_URL.
+
+## Build plan, this change (Competitive monitor: production-grade + surfaced)
+
+Goal: take the first-pass competitive monitor (Reddit/Quora/review-site scan to
+Google Sheets) to production and surface it in-app. User decisions locked:
+Instagram + Facebook formally descoped (not compliantly scrapeable); G2 is
+licensed-data-API only (no scraping). Built in 4 phases from MONITOR_PLAN.md.
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 0a | Fixed 4 correctness bugs: Track 5 tuple unpack (`payload['feed']`), ISO-first date parse (`_parse_date`, was dropping every dated review), deleted Quora date fabrication (no real date -> row dropped, never `now()`), deleted the `verify=False` SSL fallback (MITM hole) | api/_reviews.py, api/_monitor.py | low |
+| 0b | `_fetch.get(fail_status={403})`: a Cloudflare 403 is now a HARD fail (trips breaker, falls to archive) instead of resetting the breaker and reading as a clean empty. New `api/_archive.py` = Wayback closure for the `archive=` hook. Review adapters route through `_fetch` with `fail_status={403}` (windowed scans skip archive: stale snapshots never fall inside a last-N-days window) | api/_fetch.py, api/_archive.py, api/_reviews.py | med |
+| 0c | Tightened the silent unknown-source fallback (`_resolve_sources`): an unregistered keyword source is now a visible `needs_connection` block, not a silent full-source scan | api/_signals.py | med |
+| 1a | `monitor_mentions` table (PK `(group_id, dedup_key)`, kind-aware key so a post + its comments + a review of one URL stay distinct, `first_seen`/`last_seen` for the answer-dates + thread-updated requirement) with a local JSON fallback; single-flight run lock (pg advisory lock or lockfile). Store is the system of record; Sheets is a delta export | api/_db.py, api/_mentions.py | med |
+| 1b | Shared `api/_enrich.py` (sentiment lexicon + batched LLM tagger, `enrich_mode` per row); `_report.py` now imports the primitives from it. Monitor caps the model call by count (`MONITOR_ENRICH_MAX`), not rank | api/_enrich.py, api/_report.py, api/_monitor.py | low |
+| 1c | Groups drive the monitor: `_normalize` gained monitor fields (window_days/subreddits/review_brands/include_comments/quora_questions/sinks); two builtin monitor groups (competitor_watch 10d, cashfree_mentions 2d + comments). `_monitor.py` fully rewritten groups-driven: per-subreddit `restrict_sr=1` OAuth-primary Reddit (arctic fallback), Quora curated-URL + keyword, review sites, X keyword; LinkedIn honestly `needs_connection` (keyword search not implemented). Budget-bounded, per-track status (ok/quiet/blocked/error/timeout) | api/_groups.py, api/_monitor.py | med |
+| 1d | Sheets hardened: `value_input_option=RAW` + formula-injection guard, `GTMSTACK_SHEET_URL` REQUIRED (never auto-create + public-share, the first-pass leak), APIError retry, gid capture for deep links, YYYY-MM tab rotation at 4000 rows, `MONITOR_SHEET_SAFETY` burn-in read | api/_sheets.py | low |
+| 1e | Observability: run summary persisted to the reports table; Resend silent-zero + blocked-track alert; 13:00 IST launchd catch-up (fires only if 9am missed, marker-guarded); read-only Vercel-cron staleness watchdog (`api/watchdog.py`) | api/_monitor.py, api/_email.py, launchd/install.sh, api/watchdog.py | med |
+| 2 | Registered trustpilot/quora/capterra/g2 as first-class Signals keyword sources (thin `_reviews` wrappers, honest status), Carlsen tiers (tp4/capterra3/quora3/g2 2), `GET/POST /api/monitor` (Flask + Vercel, POST CRON_SECRET-gated), a Monitor panel inside ReportsTool (per-source health strip, staleness banner, sentiment KPIs, model/lexicon badge, sheet deep links, archive as-of labels, IG/FB descope copy), SIG_META/SIG_ORDER/ACT_ICON entries | api/_signals.py, api/_carlsen.py, api/monitor.py, app.py, index.html | med |
+| 3 | Competitor-negative velocity spike detection (last 24h vs trailing 7-day baseline -> the moment-marketing alert); `GET/POST /api/groups` (CRON_SECRET-gated) + in-app group editor; mentions retention (prune >180d after each run); install.sh code+env manifest stamp | api/_monitor.py, api/_groups.py, api/groups.py, app.py, index.html, launchd/install.sh | med |
+
+New env (see .env.example): GOOGLE_SA_JSON/GOOGLE_SA_KEY, GTMSTACK_SHEET_URL
+(required to push), MONITOR_BUDGET_S / _ENRICH_MAX / _POLITENESS_S / _MAX_SUBS /
+_SHEET_SAFETY / _SHEET_ROTATE_ROWS / _ALERT_EMAIL / _STALE_HOURS /
+_RETENTION_DAYS, G2_API_KEY, BRAVE/BING_SEARCH_KEY.
+
+Honest scope held: Instagram + Facebook descoped (stated in the UI, not faked); G2
+absent until G2_API_KEY (no scraping); TrustPilot/Capterra 403 from datacenter IPs
+(the per-source health strip shows "blocked", not a fake "quiet" - they work from
+the Mac's residential IP at 9am). LinkedIn keyword sentiment is not implemented
+(only own-session person/company reads exist), stated as needs_connection.
+
+Verified: 40 unit tests pass (19 fetch incl. fail_status breaker, 21 monitor:
+kind-aware dedup, idempotent reruns, cross-group, single-flight lock, ISO date
+parse, no-date-fabrication, velocity spike, group save). Endpoints curl-verified:
+/api/monitor overview + staleness, /api/groups read + write round-trip persisted.
+index.html node --check clean. Live monitor run end-to-end (no creds): honest
+per-track statuses (quiet/blocked/needs_connection), no crash, budget-bounded,
+persisted + deduped. Not verified live (needs the Mac's session + creds): real
+Reddit OAuth, X cookies, residential-IP review reads, Google Sheets push, DB.

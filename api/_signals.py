@@ -265,9 +265,21 @@ def _li_jar():
 
 
 def _x_jar():
-    """Full x.com cookie jar from a logged-in Chromium profile, or None.
-    X_PROFILE_DIR points at the persistent profile (e.g. the one the
-    tweet-harvest workflow logs into). Needs auth_token + ct0 to be usable."""
+    """x.com cookie jar, from (in order): explicit env pair, an exported jar
+    file, or a logged-in Chromium profile. Needs auth_token + ct0 to be usable.
+    The env/file paths exist so macOS (where the Chromium profile decrypt is
+    Windows-only) can supply a session directly, e.g. via connect_sources.py."""
+    at, ct0 = os.getenv("X_AUTH_TOKEN"), os.getenv("X_CT0")
+    if at and ct0:
+        return {"auth_token": at, "ct0": ct0}
+    path = os.getenv("X_COOKIES")
+    if path and os.path.exists(path):
+        try:
+            c = json.load(open(path, encoding="utf-8"))
+            if isinstance(c, dict) and c.get("auth_token") and c.get("ct0"):
+                return dict(c)        # whole flat jar, fewer soft-challenges
+        except Exception:
+            pass
     prof = os.getenv("X_PROFILE_DIR")
     if prof and os.path.isdir(prof):
         jar = _chromium_cookie_jar(prof, "x.com")
@@ -285,10 +297,11 @@ def sources_status():
                      "label": "GitHub",
                      "note": ("Connected with a token (5,000 reads/hour)." if gh_token else
                               "Live on the public API. Add a GITHUB_TOKEN to lift the rate limit.")},
-        "reddit":   {"ready": reddit_oauth, "mode": "oauth" if reddit_oauth else "public",
+        "reddit":   {"ready": True, "mode": "oauth" if reddit_oauth else "archive",
                      "label": "Reddit",
                      "note": ("Connected via Reddit app." if reddit_oauth else
-                              "Add a Reddit app (client id + secret) for reliable reads.")},
+                              "Keyword feed via keyless archive (PullPush). Add a Reddit app "
+                              "(client id + secret) for fresh, real-time results and person/company lookups.")},
         "linkedin": {"ready": _li_creds() is not None, "mode": "voyager",
                      "label": "LinkedIn",
                      "note": ("Connected." if _li_creds()
@@ -300,6 +313,20 @@ def sources_status():
                               "Public endpoint only (often rate-limited). Add an X session to enable.")},
         "youtube":  {"ready": True, "mode": "public", "label": "YouTube",
                      "note": "Live on public YouTube. No key needed."},
+        "trustpilot": {"ready": True, "mode": "public", "label": "TrustPilot",
+                       "note": "Live review reads for mapped brands (public JSON)."},
+        "quora":    {"ready": False, "mode": "curated", "label": "Quora",
+                     "note": ("Question-page reads carry real answer dates. Keyword "
+                              "search is login-walled; add curated question URLs to a "
+                              "group's quora_questions.")},
+        "capterra": {"ready": False, "mode": "best-effort", "label": "Capterra",
+                     "note": "Behind Cloudflare; needs curated numeric product ids. "
+                             "Gated on a live smoke."},
+        "g2":       {"ready": bool(os.getenv("G2_API_KEY")), "mode": "licensed-api",
+                     "label": "G2",
+                     "note": ("Connected via the licensed G2 data API." if os.getenv("G2_API_KEY")
+                              else "Needs a licensed G2 data API key (G2_API_KEY). "
+                                   "Scraping G2 is not compliant.")},
     }
 
 
@@ -1449,17 +1476,142 @@ def _x_search(q):
     return _src("x", "ok", handle=q, display_name=f"X · “{q}”", activity=activity)
 
 
+# arctic-shift: a no-auth Reddit source that is CURRENT (its index is live, unlike
+# PullPush which froze in mid-2025). Reddit's own .json 403s from most IPs and the
+# OAuth path needs an app, so this is the keyless fresh path. Its full-text
+# `query` search is intermittently "under maintenance", but the plain recent-posts
+# feed (no query) stays up, so we pull the newest posts per sub and filter for the
+# keyword ourselves. That trades recall for freshness, which is what a monitor wants.
+_ARCTIC = "https://arctic-shift.photon-reddit.com/api"
+_ARCTIC_SUBS = ("developersIndia", "IndiaStartups", "indianstartups", "IndiaBusiness",
+                "india", "StartUpIndia", "smallbusiness", "ecommerce", "shopify", "SaaS",
+                "fintech", "Entrepreneur", "webdev", "personalfinanceindia", "IndianStreetBets",
+                "Business", "Payments", "EcommerceMarketing", "SideProject", "IndianStockMarket",
+                "juststart", "growmybusiness", "kuvera", "IndiaTech", "developersIndia")
+
+
+def _arctic_recent(sub, limit=100, before=None):
+    """Newest posts in a subreddit (no query param, which is the endpoint that
+    stays live; arctic caps limit at 100). `before` (epoch) pages further back.
+    Returns raw post dicts, newest first."""
+    url = (f"{_ARCTIC}/posts/search?subreddit={requests.utils.quote(sub)}"
+           f"&limit={min(limit,100)}&sort=desc")
+    if before:
+        url += f"&before={int(before)}"
+    for _ in range(2):
+        try:
+            r = requests.get(url, headers={"User-Agent": UA}, timeout=18)
+            if r.status_code in (429, 500, 502, 503):
+                continue
+            r.raise_for_status()
+            return r.json().get("data", []) or []
+        except Exception:
+            continue
+    return []
+
+
+def _arctic_sub_scan(sub, pages=3):
+    """Recent posts for one sub across a few pages (100 each, `before`-paginated)."""
+    posts, before = [], None
+    for _ in range(pages):
+        data = _arctic_recent(sub, before=before)
+        if not data:
+            break
+        posts += data
+        try:
+            before = float(data[-1].get("created_utc"))
+        except Exception:
+            break
+    return posts
+
+
+def _reddit_arctic(q, cap=50, pages=2):
+    """Fresh keyword mentions: scan recent posts across the watched subs IN PARALLEL
+    (arctic's query search is down, so we filter client-side) and keep the ones whose
+    title or body contains the query. Parallel + paged so a rare phrase still fills up
+    without a minutes-long serial crawl. Newest-first; recall is bounded by how often
+    the phrase actually appears recently (the official OAuth API is the way to 50)."""
+    ql = (q or "").lower().strip()
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=len(_ARCTIC_SUBS)) as ex:
+        batches = list(ex.map(lambda s: _arctic_sub_scan(s, pages), _ARCTIC_SUBS))
+    out, seen = [], set()
+    for posts in batches:
+        for d in posts:
+            title = _clean(d.get("title"))
+            if not title:
+                continue
+            hay = (title + " " + (d.get("selftext") or "")).lower()
+            if ql and ql not in hay:
+                continue
+            pid = d.get("id")
+            if pid in seen:
+                continue
+            seen.add(pid)
+            permalink = d.get("permalink") or ""
+            out.append({
+                "kind": "post", "text": title,
+                "url": ("https://www.reddit.com" + permalink) if permalink
+                       else f"https://www.reddit.com/r/{d.get('subreddit','')}",
+                "ts": _iso(d.get("created_utc")), "ago": _ago(d.get("created_utc")),
+                "where": f"r/{d.get('subreddit')}" if d.get("subreddit") else None,
+                "author": d.get("author"),
+                "engagement": [{"label": "score", "value": _human(d.get("score", 0))},
+                               {"label": "comments", "value": _human(d.get("num_comments", 0))}],
+            })
+    out.sort(key=lambda a: a.get("ts") or "", reverse=True)
+    return out[:cap]
+
+
+# PullPush (the live Pushshift successor): a keyless global Reddit search. Unlike
+# arctic-shift it needs no per-subreddit loop and does not 403 from datacenter IPs,
+# so it is the primary no-auth fallback when the official OAuth app is not set.
+_PULLPUSH = "https://api.pullpush.io/reddit/search/submission/"
+
+
+def _reddit_pullpush(q, cap=25):
+    url = (f"{_PULLPUSH}?q={requests.utils.quote(q)}&size={cap}"
+           f"&sort=desc&sort_type=created_utc")
+    try:
+        r = requests.get(url, headers={"User-Agent": UA}, timeout=25)
+        if not r.ok:
+            return []
+        data = r.json().get("data", []) or []
+    except Exception:
+        return []
+    out, seen = [], set()
+    for d in data:
+        title = _clean(d.get("title"))
+        pid = d.get("id") or d.get("permalink")
+        if not title or pid in seen:
+            continue
+        seen.add(pid)
+        permalink = d.get("permalink") or ""
+        url_ = ("https://www.reddit.com" + permalink) if permalink.startswith("/") \
+            else (permalink or f"https://www.reddit.com/r/{d.get('subreddit','')}")
+        out.append({
+            "kind": "post", "text": title, "url": url_,
+            "ts": _iso(d.get("created_utc")), "ago": _ago(d.get("created_utc")),
+            "where": f"r/{d.get('subreddit')}" if d.get("subreddit") else None,
+            "author": d.get("author"),
+            "engagement": [{"label": "score", "value": _human(d.get("score", 0))},
+                           {"label": "comments", "value": _human(d.get("num_comments", 0))}],
+        })
+        if len(out) >= cap:
+            break
+    out.sort(key=lambda a: a.get("ts") or "", reverse=True)
+    return out
+
+
+_REDDIT_KW_CAP = 50   # keyword feed pulls up to this many mentions per source
+
+
 def _reddit_search(q):
     token = _reddit_token()
+    # official/public search: sort=new for recency, up to the keyword cap
     _, res = _reddit_fetch(
-        f"/search.json?q={requests.utils.quote(q)}&sort=new&limit=12&raw_json=1", token)
-    if res is None:
-        return _src("reddit", "needs_connection" if not token else "error", handle=q,
-                    note=("Reddit blocked this search. Add a Reddit app "
-                          "(REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET) to enable it."
-                          if not token else
-                          "Reddit connected but returned no data. Retry shortly."))
-    children = (res or {}).get("data", {}).get("children", [])
+        f"/search.json?q={requests.utils.quote(q)}&sort=new&limit={_REDDIT_KW_CAP}&raw_json=1", token)
+    children = (res or {}).get("data", {}).get("children", []) if res else []
     activity = []
     for ch in children:
         c = ch.get("data", {})
@@ -1472,10 +1624,80 @@ def _reddit_search(q):
             "engagement": [{"label": "score", "value": _human(c.get("score", 0))},
                            {"label": "comments", "value": _human(c.get("num_comments", 0))}],
         })
-        if len(activity) >= MAX_ACTIVITY:
+        if len(activity) >= _REDDIT_KW_CAP:
             break
-    return _src("reddit", "ok", handle=q, display_name=f"Reddit · “{q}”",
-                activity=activity)
+    if activity:
+        return _src("reddit", "ok", handle=q, display_name=f"Reddit · “{q}”",
+                    activity=activity)
+    # Primary blocked or empty: keyless fallbacks. arctic-shift first (its index is
+    # CURRENT, so results are recent), then PullPush (frozen mid-2025, stale, last resort).
+    for name, fn in (("arctic-shift", _reddit_arctic), ("pullpush", _reddit_pullpush)):
+        activity = fn(q)
+        if activity:
+            return _src("reddit", "ok", handle=q, display_name=f"Reddit · “{q}”",
+                        source_note=name, activity=activity)
+    return _src("reddit", "needs_connection" if not token else "error", handle=q,
+                note=("Reddit search is blocked and the no-auth archives were empty. "
+                      "Add REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET for the official path."))
+
+
+# ── Review-site + Quora keyword adapters (thin wrappers over _reviews) ───────
+# These make TrustPilot / Quora first-class Signals keyword sources so a lookup
+# and the daily report can include them. The query is treated as a BRAND for the
+# review sites (they are brand-keyed), and as a search phrase for Quora. All reads
+# go through _reviews, which routes through the _fetch transport.
+
+def _trustpilot_search(q):
+    try:
+        from _reviews import _trustpilot_reviews
+        rows = _trustpilot_reviews(q)          # q as brand
+    except Exception:
+        rows = []
+    if not rows:
+        return _src("trustpilot", "not_found", handle=q,
+                    display_name=f"TrustPilot · {q}",
+                    note="No recent TrustPilot reviews for this brand, or brand not mapped.")
+    return _src("trustpilot", "ok", handle=q, display_name=f"TrustPilot · {q}",
+                activity=rows[:MAX_ACTIVITY])
+
+
+def _capterra_search(q):
+    try:
+        from _reviews import _capterra_reviews
+        rows = _capterra_reviews(q)
+    except Exception:
+        rows = []
+    if not rows:
+        return _src("capterra", "needs_connection", handle=q,
+                    display_name=f"Capterra · {q}",
+                    note="Capterra needs a curated numeric product id and often blocks. Gated.")
+    return _src("capterra", "ok", handle=q, display_name=f"Capterra · {q}",
+                activity=rows[:MAX_ACTIVITY])
+
+
+def _quora_search(q):
+    try:
+        from _reviews import _quora_posts
+        rows = _quora_posts(q)
+    except Exception:
+        rows = []
+    if not rows:
+        return _src("quora", "needs_connection", handle=q, display_name=f"Quora · {q}",
+                    note=("Quora keyword search is login-walled. Add curated question "
+                          "URLs to the group's quora_questions for reliable reads."))
+    return _src("quora", "ok", handle=q, display_name=f"Quora · {q}",
+                activity=rows[:MAX_ACTIVITY])
+
+
+def _g2_search(q):
+    """G2 is licensed-API only (decided). Absent until G2_API_KEY is set; never
+    scraped. Honest needs_connection so the UI does not show a fake empty."""
+    if not os.getenv("G2_API_KEY"):
+        return _src("g2", "needs_connection", handle=q, display_name=f"G2 · {q}",
+                    note="G2 needs a licensed data API key (G2_API_KEY). Not scraped.")
+    # licensed-API adapter would go here when the key is provisioned
+    return _src("g2", "not_found", handle=q, display_name=f"G2 · {q}",
+                note="G2 API key set but no adapter wired yet.")
 
 
 # ── YouTube adapter (keyless) ───────────────────────────────────────────────
@@ -1840,7 +2062,9 @@ _ADAPTERS = {"github": _github, "reddit": _reddit, "linkedin": _linkedin,
 _COMPANY_ADAPTERS = {"github": _github_org, "linkedin": _linkedin_company,
                      "x": _x, "reddit": _reddit_sub, "youtube": _youtube}
 _KEYWORD_ADAPTERS = {"github": _github_search, "x": _x_search,
-                     "reddit": _reddit_search, "youtube": _youtube_search}
+                     "reddit": _reddit_search, "youtube": _youtube_search,
+                     "trustpilot": _trustpilot_search, "quora": _quora_search,
+                     "capterra": _capterra_search, "g2": _g2_search}
 
 
 # ── SQLite cache (real-time first, short TTL) ───────────────────────────────
@@ -1891,6 +2115,23 @@ _COMPANY_SOURCES = ("github", "linkedin", "x", "reddit", "youtube")
 _KEYWORD_SOURCES = ("github", "x", "reddit", "youtube")
 
 
+def _resolve_sources(requested, default, registry):
+    """Resolve a lookup's source list, honestly.
+
+    If the caller passed nothing, use the unit default. If the caller passed an
+    explicit list, honour exactly the known subset and report the rest as
+    unknown; do NOT silently fall back to scanning everything when an unknown
+    name filters the list to empty. That old behaviour turned a typo or an
+    unregistered source (e.g. 'quora' before it is wired) into a full four-source
+    scan, so a caller asking for one source got a different answer with no error.
+    Returns (known_sources, unknown_sources)."""
+    if not requested:
+        return list(default), []
+    known = [s for s in requested if s in registry]
+    unknown = [s for s in requested if s not in registry]
+    return known, unknown
+
+
 def lookup(query, sources=None, handles=None, force=False, unit="person"):
     """
     unit     : 'person' (default) | 'company' | 'keyword'.
@@ -1916,7 +2157,7 @@ def _lookup_person(query, sources=None, handles=None, force=False):
     if not query and not (handles and any(handles.values())):
         return {"error": "Enter a name, handle, or email to look up."}, 400
 
-    sources = [s for s in (sources or ALL_SOURCES) if s in _ADAPTERS] or list(ALL_SOURCES)
+    sources, unknown = _resolve_sources(sources, ALL_SOURCES, _ADAPTERS)
     handles = {k: (v or "").strip() for k, v in (handles or {}).items()}
 
     key = _cache_key("person", query, sources, handles)
@@ -1928,6 +2169,9 @@ def _lookup_person(query, sources=None, handles=None, force=False):
             return cached, 200
 
     results = []
+    for src in unknown:
+        results.append(_src(src, "needs_connection", handle=query,
+                            note=f"'{src}' is not a registered person source."))
     for src in sources:
         ident = handles.get(src) or query
         try:
@@ -1965,8 +2209,7 @@ def _lookup_company(query, sources=None, force=False):
     if not query:
         return {"error": "Enter a company name or domain to look up."}, 400
     base = _company_base(query)
-    sources = [s for s in (sources or _COMPANY_SOURCES) if s in _COMPANY_ADAPTERS] \
-        or list(_COMPANY_SOURCES)
+    sources, _unknown_co = _resolve_sources(sources, _COMPANY_SOURCES, _COMPANY_ADAPTERS)
 
     key = _cache_key("company", base, sources, {})
     if not force:
@@ -2019,8 +2262,7 @@ def _lookup_keyword(query, sources=None, force=False):
     query = (query or "").strip()
     if not query:
         return {"error": "Enter a keyword or phrase to track."}, 400
-    sources = [s for s in (sources or _KEYWORD_SOURCES) if s in _KEYWORD_ADAPTERS] \
-        or list(_KEYWORD_SOURCES)
+    sources, unknown = _resolve_sources(sources, _KEYWORD_SOURCES, _KEYWORD_ADAPTERS)
 
     key = _cache_key("keyword", query, sources, {})
     if not force:
@@ -2031,6 +2273,9 @@ def _lookup_keyword(query, sources=None, force=False):
             return cached, 200
 
     results = []
+    for src in unknown:
+        results.append(_src(src, "needs_connection", handle=query,
+                            note=f"'{src}' is not a registered keyword source."))
     for src in sources:
         try:
             results.append(_KEYWORD_ADAPTERS[src](query))
