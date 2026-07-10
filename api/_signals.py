@@ -1487,7 +1487,7 @@ _ARCTIC_SUBS = ("developersIndia", "IndiaStartups", "indianstartups", "IndiaBusi
                 "india", "StartUpIndia", "smallbusiness", "ecommerce", "shopify", "SaaS",
                 "fintech", "Entrepreneur", "webdev", "personalfinanceindia", "IndianStreetBets",
                 "Business", "Payments", "EcommerceMarketing", "SideProject", "IndianStockMarket",
-                "juststart", "growmybusiness", "kuvera", "IndiaTech", "developersIndia")
+                "juststart", "growmybusiness", "kuvera", "IndiaTech")
 
 
 def _arctic_recent(sub, limit=100, before=None):
@@ -1532,9 +1532,21 @@ def _reddit_arctic(q, cap=50, pages=2):
     without a minutes-long serial crawl. Newest-first; recall is bounded by how often
     the phrase actually appears recently (the official OAuth API is the way to 50)."""
     ql = (q or "").lower().strip()
-    from concurrent.futures import ThreadPoolExecutor
+    # Deadline-bounded: take whatever finishes within the budget and drop slow subs,
+    # so a hung archive can never consume the whole 30s function budget and 504 the
+    # lookup. arctic is a best-effort fallback (PullPush is primary).
+    from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as _FTimeout
+    batches = []
     with ThreadPoolExecutor(max_workers=len(_ARCTIC_SUBS)) as ex:
-        batches = list(ex.map(lambda s: _arctic_sub_scan(s, pages), _ARCTIC_SUBS))
+        futs = [ex.submit(_arctic_sub_scan, s, pages) for s in _ARCTIC_SUBS]
+        try:
+            for fut in as_completed(futs, timeout=float(os.getenv("ARCTIC_DEADLINE_S", "12"))):
+                try:
+                    batches.append(fut.result())
+                except Exception:
+                    pass
+        except _FTimeout:
+            pass
     out, seen = [], set()
     for posts in batches:
         for d in posts:
@@ -1631,11 +1643,16 @@ def _reddit_search(q):
                     activity=activity)
     # Primary blocked or empty: keyless fallbacks. arctic-shift first (its index is
     # CURRENT, so results are recent), then PullPush (frozen mid-2025, stale, last resort).
+    _archive_note = {
+        "arctic-shift": "Served from the arctic-shift archive (official Reddit search was blocked).",
+        "pullpush": "Served from the PullPush archive, which is frozen mid-2025 so results may be stale. "
+                    "Add REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET for live results.",
+    }
     for name, fn in (("arctic-shift", _reddit_arctic), ("pullpush", _reddit_pullpush)):
         activity = fn(q)
         if activity:
             return _src("reddit", "ok", handle=q, display_name=f"Reddit · “{q}”",
-                        source_note=name, activity=activity)
+                        note=_archive_note.get(name), activity=activity)
     return _src("reddit", "needs_connection" if not token else "error", handle=q,
                 note=("Reddit search is blocked and the no-auth archives were empty. "
                       "Add REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET for the official path."))

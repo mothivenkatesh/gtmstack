@@ -1665,10 +1665,17 @@ function SignalsTool({seed}){
     setLoading(false);
   }
 
+  /* Build a sel map ({source: bool}) covering every source of the unit, so no
+     source (e.g. youtube) is left undefined and silently defaulted on. */
+  function selFor(u, on){
+    const m = {};
+    (UNIT_META[u].sources || []).forEach(s => { m[s] = on(s); });
+    return m;
+  }
+
   async function pickPerson(p){
     setUnit('person'); setBulk(false); setAdv(false); setWebhook('');
-    setSel({github:p.platform==='github', reddit:p.platform==='reddit',
-            linkedin:p.platform==='linkedin', x:p.platform==='x'});
+    setSel(selFor('person', s => s === p.platform));
     setQuery(p.handle); setError(null); setJob(null); setLoading(true); setData(null);
     try{
       const r = await fetch(`${API_BASE}/api/signals`, {method:'POST', headers:{'Content-Type':'application/json'},
@@ -1685,8 +1692,7 @@ function SignalsTool({seed}){
     const u = p.unit || 'person';
     const srcs = p.sources || UNIT_META[u].sources;
     setUnit(u); setBulk(false); setAdv(false); setWebhook(''); setJob(null); setError(null);
-    setSel({github:srcs.includes('github'), reddit:srcs.includes('reddit'),
-            linkedin:srcs.includes('linkedin'), x:srcs.includes('x'), youtube:srcs.includes('youtube')});
+    setSel(selFor(u, s => srcs.includes(s)));
     setQuery(p.query); setLoading(true); setData(null);
     try{
       const r = await fetch(`${API_BASE}/api/signals`, {method:'POST', headers:{'Content-Type':'application/json'},
@@ -3092,9 +3098,14 @@ function Cell({row, col, editing, setEditing, setCellValue, sticky}){
 }
 
 /* ── header (sortable) + per-column filter rows ── */
-function TableHead({visibleCols, sortBy, sortDir, onSort, colFilters, setColFilter, menuKey, setMenuKey,
+function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters, setColFilter, menuKey, setMenuKey,
                    colMenu, setColMenu, onSortDir, onEditCol, onHideCol, onDeleteCol, onAddColumn,
                    onMoveCol, dropCol, setDropCol, dragRef, resizeRef, onResizeCol}){
+  /* colMenu + dropCol are scoped by {key, gid}: the header row is repeated once
+     per group, so keying by col.key alone opened the menu (or lit the drop target)
+     in every group at once. gid makes only the acted-on group react. */
+  const menuOpen = c => colMenu && colMenu.key===c && colMenu.gid===gid;
+  const dropHere = c => dropCol && dropCol.key===c && dropCol.gid===gid;
   return html`<thead>
     <tr>
       <th class="tbl-th tbl-actcol" scope="col"><span class="sr-only">Row actions</span></th>
@@ -3106,12 +3117,12 @@ function TableHead({visibleCols, sortBy, sortDir, onSort, colFilters, setColFilt
           const mu=()=>{ document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu);
             onResizeCol(col.key,last); setTimeout(()=>{resizeRef.current=false;},0); };
           document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu); };
-        return html`<th key=${col.key} class=${'tbl-th tbl-thcol'+(dropCol===col.key?' tbl-drop-col':'')}
+        return html`<th key=${col.key} class=${'tbl-th tbl-thcol'+(dropHere(col.key)?' tbl-drop-col':'')}
           scope="col" aria-sort=${asort} style="width:${col.width}px;padding:0;position:relative"
           draggable=true
           onDragStart=${e=>{ if(resizeRef.current){ e.preventDefault(); return; } dragRef.current.col=col.key; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',col.key);}catch(_){} }}
           onDragEnd=${()=>{ dragRef.current.col=null; setDropCol(null); }}
-          onDragOver=${e=>{ if(dragRef.current.col!=null && dragRef.current.col!==col.key){ e.preventDefault(); if(dropCol!==col.key) setDropCol(col.key); } }}
+          onDragOver=${e=>{ if(dragRef.current.col!=null && dragRef.current.col!==col.key){ e.preventDefault(); if(!dropHere(col.key)) setDropCol({key:col.key, gid}); } }}
           onDrop=${e=>{ e.preventDefault(); const src=dragRef.current.col; if(src){ onMoveCol(src, col.key); } dragRef.current.col=null; setDropCol(null); }}>
         <div style="display:flex;align-items:center;gap:4px;padding:6px;cursor:grab;user-select:none">
           <span role="button" tabindex="0" aria-label=${'Sort by '+col.label}
@@ -3120,9 +3131,9 @@ function TableHead({visibleCols, sortBy, sortDir, onSort, colFilters, setColFilt
             <${Icon} name=${TYPE_META[col.type].icon} size=11/> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${col.label}</span>
             ${sortBy===col.key ? html`<${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=10/>` : ''}</span>
           <button type="button" class="iconbtn" aria-label=${col.label+' field options'} aria-haspopup="menu"
-            style="position:relative" draggable=false onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setColMenu(colMenu===col.key?null:col.key)}>
+            style="position:relative" draggable=false onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setColMenu(menuOpen(col.key)?null:{key:col.key, gid})}>
             <${Icon} name="dots" size=13/>
-            ${colMenu===col.key && html`<${ColumnMenu} col=${col}
+            ${menuOpen(col.key) && html`<${ColumnMenu} col=${col}
               filterVal=${colFilters[col.key]} setFilter=${v=>setColFilter(col.key, v)}
               onSortDir=${d=>onSortDir(col.key,d)} onEdit=${()=>onEditCol(col.key)}
               onHide=${()=>onHideCol(col.key)} onDelete=${()=>onDeleteCol(col.key)} onClose=${()=>setColMenu(null)}/>`}
@@ -3171,7 +3182,7 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
         ${visibleCols.map(c=>html`<col key=${c.key} style=${'width:'+(c.width||160)+'px'}/>`)}
         <col style="width:${TBL_ADDCOL}px"/>
       </colgroup>
-      <${TableHead} ...${headProps} />
+      <${TableHead} gid=${group.id} ...${headProps} />
       <tbody>
         ${group.rows.map((row,i)=>html`<tr key=${row._id} class=${headProps.dropRow===row._id?'tbl-droprow':''}
           onDragOver=${e=>{ if(headProps.dragRef.current.row!=null && headProps.dragRef.current.row!==row._id){ e.preventDefault(); if(headProps.dropRow!==row._id) headProps.setDropRow(row._id); } }}
@@ -3452,7 +3463,12 @@ function TablesTool(){
       const g={id:k, key:k, isEmpty, label, rows, count:rows.length};
       if(col.type==='number'&&!isEmpty){ const nums=rows.map(r=>r[groupBy]).filter(n=>typeof n==='number'); g.sum=nums.reduce((a,b)=>a+b,0); g.avg=nums.length?g.sum/nums.length:0; }
       return g; });
-    arr.sort((A,B)=> A.isEmpty?1:B.isEmpty?-1:TYPE_META[col.type].compare(A.key,B.key,col));
+    // Group keys are single option ids (multi_select is fanned out one bucket per
+    // tag above), so order multi_select groups with the select comparator, which
+    // ranks by the column's option order; multi_select.compare ranks by array
+    // length and would leave every group at 0 (insertion order).
+    const gcmp = TYPE_META[col.type==='multi_select'?'select':col.type].compare;
+    arr.sort((A,B)=> A.isEmpty?1:B.isEmpty?-1:gcmp(A.key,B.key,col));
     return arr;
   },[sortedRows, db.cols, groupBy]);
 

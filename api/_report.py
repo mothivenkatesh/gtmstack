@@ -50,19 +50,6 @@ def _brand_of(text, group):
     return None
 
 
-def _brand_of(text, group):
-    """Which of the group's brands a post is about (primary first, then
-    competitors), for share-of-voice. None when it matched only a broad term."""
-    t = (text or "").lower()
-    for b in (group.get("primary") or []):
-        if b.lower() in t:
-            return b
-    for b in (group.get("competitors") or []):
-        if b.lower() in t:
-            return b
-    return None
-
-
 def _share_of_voice(posts, group):
     brands = list(dict.fromkeys((group.get("primary") or []) + (group.get("competitors") or [])))
     agg = {b: {"brand": b, "mentions": 0, "engagement": 0.0,
@@ -141,6 +128,15 @@ def run_report(group_id, sources=None, budget_s=DEFAULT_BUDGET_S, use_llm=None):
     if not group:
         return {"error": f"Unknown group: {group_id}"}, 404
     sources = sources or group.get("sources") or ALL_SOURCES
+
+    # Ensure the reports table exists on the batch path (safe every run); without
+    # this the launchd job silently no-ops on a fresh DATABASE_URL.
+    try:
+        import _db
+        if _db.configured():
+            _db.init_db()
+    except Exception:
+        pass
 
     try:
         from _fetch import status as fetch_status

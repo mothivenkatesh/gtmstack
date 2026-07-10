@@ -216,7 +216,14 @@ def _get_or_rotate_tab(ss, tab, rotate_at):
     base = tab
     try:
         ws = ss.worksheet(base)
-        if rotate_at and ws.row_count and ws.row_count >= rotate_at:
+        # Gate on POPULATED rows, not ws.row_count (grid capacity, always 5000 from
+        # add_worksheet), else every tab rotates on the second run and orphans the
+        # base tab. Every written row has a non-empty col A (the dedup id).
+        try:
+            populated = len(ws.col_values(1))
+        except Exception:
+            populated = 0
+        if rotate_at and populated >= rotate_at:
             ym = datetime.now(timezone.utc).strftime("%Y-%m")
             base = f"{tab} {ym}"
             try:

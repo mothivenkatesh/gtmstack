@@ -301,7 +301,7 @@ def _social_track(group):
 # One group
 # ---------------------------------------------------------------------------
 
-def _run_group(group, deadline):
+def _run_group(group, deadline, push_to_sheets=True):
     gid = group["id"]
     srcs = set(group.get("sources") or [])
     tracks, track_status = {}, {}
@@ -345,7 +345,7 @@ def _run_group(group, deadline):
         inserted, updated = _mentions.upsert(gid, mentions, run_date=run_date)
 
     sheets_result = {}
-    if "sheets" in (group.get("sinks") or []) and sheets_configured():
+    if push_to_sheets and "sheets" in (group.get("sinks") or []) and sheets_configured():
         delta = inserted if _mentions else mentions
         if delta:
             sheets_result = sheets_push(delta, tab=group.get("name") or gid)
@@ -400,6 +400,14 @@ def run_monitor(push_to_sheets=True, only=None, catchup=False):
     if catchup and _already_ran_today():
         print("[monitor] catch-up: today's run already done, skipping", flush=True)
         return {"skipped": "already_ran", "total": 0, "elapsed_s": 0}
+    # Ensure the schema exists on the batch path. init_db is CREATE TABLE IF NOT
+    # EXISTS, so it is safe every run; without this the launchd job silently
+    # no-ops on a fresh DATABASE_URL where nobody has signed in via magic-link yet.
+    if _db and _db.configured():
+        try:
+            _db.init_db()
+        except Exception:
+            pass
     if _mentions and not _mentions.acquire_lock("monitor"):
         print("[monitor] another run holds the lock; skipping", flush=True)
         return {"skipped": "locked", "total": 0, "elapsed_s": 0}
@@ -413,7 +421,7 @@ def run_monitor(push_to_sheets=True, only=None, catchup=False):
         for g in groups:
             print(f"[monitor] scanning {g['id']}", flush=True)
             try:
-                res = _run_group(g, deadline)
+                res = _run_group(g, deadline, push_to_sheets=push_to_sheets)
             except Exception as exc:
                 res = {"group_id": g["id"], "error": str(exc)}
                 print(f"[monitor] {g['id']} crashed: {exc}", flush=True)
