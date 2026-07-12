@@ -689,16 +689,25 @@ export function TablesTool(){
   },[view]);
   /* one outside-click handler closes every open popover (filter, header menu, columns) */
   const [loadMenu,setLoadMenu]=useState(false);     // "Load data" dropdown
-  useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); setLoadMenu(false); };
+  const [actionMenu,setActionMenu]=useState(false); // "Action" dropdown (export / dedupe)
+  const [actMode,setActMode]=useState('root');      // action menu pane: root | dedupe
+  const [colQ,setColQ]=useState('');                // search box inside the columns/sort menus
+  const [sortDraft,setSortDraft]=useState({key:'',dir:'asc'});          // sort builder
+  const [fDraft,setFDraft]=useState({key:'',op:'contains',v:'',v2:''}); // filter builder
+  useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); setLoadMenu(false); setActionMenu(false); };
     document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
   /* Toolbar dropdowns are mutually exclusive: opening one closes every other
      popover (and toggles the clicked one shut if it was already open). */
   const toggleBar=(key)=>{
-    const cur={view:viewMenu, cols:showCols, filter:filterMenu, group:groupMenu, sort:sortMenu, load:loadMenu}[key];
+    const cur={view:viewMenu, cols:showCols, filter:filterMenu, group:groupMenu, sort:sortMenu, load:loadMenu, action:actionMenu}[key];
     setMenuKey(null); setColMenu(null);
     setViewMenu(key==='view' && !cur); setShowCols(key==='cols' && !cur);
     setFilterMenu(key==='filter' && !cur); setGroupMenu(key==='group' && !cur);
     setSortMenu(key==='sort' && !cur); setLoadMenu(key==='load' && !cur);
+    setActionMenu(key==='action' && !cur);
+    if(key==='cols'||key==='sort') setColQ('');
+    if(key==='sort' && !cur) setSortDraft({key:sortBy||'', dir:sortDir||'asc'});
+    if(key==='action' && !cur) setActMode('root');
   };
   /* if a grouped/sorted column is deleted, drop the stale reference */
   useEffect(()=>{ const keys=new Set(db.cols.map(c=>c.key));
@@ -890,6 +899,47 @@ export function TablesTool(){
   const groupChoices = view==='board' ? visibleCols.filter(c=>c.type==='select'||c.type==='multi_select') : visibleCols;
 
   const VIEWS = [['table','Table','sheet'],['list','List','rows'],['board','Board','kanban'],['json','JSON','code']];
+  /* ── toolbar actions: filter builder apply, exports, dedupe ── */
+  function applyDraftFilter(){
+    const c=db.cols.find(x=>x.key===fDraft.key); if(!c) return;
+    let val;
+    if(c.type==='number') val = fDraft.op==='gt' ? '>'+fDraft.v : fDraft.op==='lt' ? '<'+fDraft.v
+      : fDraft.op==='between' ? fDraft.v+'-'+fDraft.v2 : fDraft.v;
+    else if(c.type==='select'||c.type==='multi_select') val = fDraft.v ? [fDraft.v] : [];
+    else if(c.type==='date') val = {from:fDraft.v, to:fDraft.v2};
+    else val = fDraft.v;
+    setColFilter(fDraft.key, val);
+    setFDraft(d=>({...d, v:'', v2:''}));   // menu stays open so filters can stack
+  }
+  function download(name, text, type){
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function exportCSV(){
+    const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const head=visibleCols.map(c=>esc(c.label)).join(',');
+    const body=sortedRows.map(r=>visibleCols.map(c=>esc(cellText(r[c.key],c))).join(',')).join('\n');
+    download((db.name||'table')+'.csv', head+'\n'+body, 'text/csv');
+    setActionMenu(false);
+  }
+  function exportJSON(){
+    const rows=db.rows.map(({_id, ...rest})=>rest);
+    download((db.name||'table')+'.json', JSON.stringify({name:db.name, cols:db.cols, rows}, null, 2), 'application/json');
+    setActionMenu(false);
+  }
+  function dedupeBy(key){
+    const col=db.cols.find(c=>c.key===key); if(!col) return;
+    const seen=new Set(); let removed=0;
+    const rows=db.rows.filter(r=>{ const k=cellText(r[key],col).trim().toLowerCase();
+      if(k==='') return true;
+      if(seen.has(k)){ removed++; return false; }
+      seen.add(k); return true; });
+    setDb(d=>({...d, rows}));
+    setNote(removed ? `Removed ${removed} duplicate row${removed===1?'':'s'} by ${col.label}.` : `No duplicates found in ${col.label}.`);
+    setActionMenu(false);
+  }
+
   const countStr = (activeFilters>0 ? `${filteredCount} of ${db.rows.length} rows` : `${db.rows.length} ${db.rows.length===1?'row':'rows'}`)
     + ` · ${visibleCols.length} of ${db.cols.length} columns`;
 
@@ -926,23 +976,64 @@ export function TablesTool(){
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
             onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('cols')}><${Icon} name="eye" size=15/> ${visibleCols.length}/${db.cols.length} Columns</button>
-          ${showCols && html`<div class="tbl-menu" role="group" aria-label="Show or hide columns" style="left:0;right:auto;min-width:210px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
-            ${db.cols.map(c=>html`<div key=${c.key} style="display:flex;align-items:center;gap:8px;padding:4px 4px">
-              <span style="flex:1;font-size:13px"><${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}</span>
-              <button type="button" class=${'pill '+(c.hidden?'pill-gray':'pill-blue')} style="cursor:pointer;border:none" aria-pressed=${!c.hidden} onClick=${()=>toggleHidden(c.key)}>${c.hidden?'Hidden':'Shown'}</button></div>`)}
+          ${showCols && html`<div class="tbl-menu" role="group" aria-label="Show or hide columns" style="left:0;right:auto;min-width:250px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+            <input class="search-mini" placeholder="Search columns..." value=${colQ} onInput=${e=>setColQ(e.target.value)}/>
+            <button type="button" class="tbl-mi" style="margin-top:4px" onClick=${()=>{setShowCols(false); setFieldEd({mode:'new'});}}>
+              <${Icon} name="plus" size=13/> Create new column</button>
+            <div class="tbl-mi-sep"></div>
+            ${db.cols.filter(c=>!colQ.trim()||c.label.toLowerCase().includes(colQ.trim().toLowerCase())).map(c=>html`
+              <div key=${c.key} style="display:flex;align-items:center;gap:8px;padding:4px 8px">
+                <button type="button" class=${'tswitch'+(c.hidden?'':' on')} role="switch" aria-checked=${!c.hidden}
+                  aria-label=${'Show '+c.label} onClick=${()=>toggleHidden(c.key)}></button>
+                <${Icon} name=${TYPE_META[c.type].icon} size=13/> <span style="font-size:13px">${c.label}</span>
+              </div>`)}
           </div>`}
         </div>
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(activeFilters>0?' on':'')} aria-expanded=${filterMenu}
             onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('filter')}><${Icon} name="funnel" size=15/> Filter${activeFilters>0?' ('+activeFilters+')':''}</button>
-          ${filterMenu && html`<div class="tbl-menu" role="group" aria-label="Active filters" style="left:0;right:auto;min-width:230px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
-            ${activeFilters===0
-              ? html`<div style="padding:8px 8px;font-size:12px;color:var(--ink-gray-5)">No filters. Open a field's menu (the dots in its header) to filter it.</div>`
-              : html`${visibleCols.filter(c=>filterActive(colFilters[c.key],c)).map(c=>{ const f=colFilters[c.key]; const val=filterLabel(f,c);
-                  return html`<div key=${c.key} class="tbl-mi" style="cursor:default">
-                    <${Icon} name=${TYPE_META[c.type].icon} size=13/> <b>${c.label}</b> <span style="color:var(--ink-gray-6)">${val}</span>
-                    <button type="button" class="iconbtn" style="margin-left:auto" aria-label="Clear" onClick=${()=>setColFilter(c.key, Array.isArray(f)?[]:'')}><${Icon} name="close" size=13/></button></div>`; })}
-                <button type="button" class="tbl-mi" style="color:var(--ink-red-3);border-top:1px solid var(--outline-gray-2);margin-top:4px;padding-top:8px" onClick=${()=>{clearFilters();setFilterMenu(false);}}><${Icon} name="minus" size=13/> Clear all filters</button>`}
+          ${filterMenu && html`<div class="tbl-menu" role="group" aria-label="Filters" style="left:0;right:auto;min-width:320px;padding:8px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+            <div class="pk-lbl">When</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <select class="input" style="height:32px;padding:0 24px 0 8px;font-size:12px;flex:1" value=${fDraft.key}
+                onChange=${e=>{ const c=db.cols.find(x=>x.key===e.target.value); const t=c?c.type:'text';
+                  const op=t==='number'?'gt':(t==='select'||t==='multi_select'||t==='checkbox')?'is':t==='date'?'between':'contains';
+                  setFDraft({key:e.target.value, op, v:'', v2:''}); }}>
+                <option value="">Select a column</option>
+                ${visibleCols.map(c=>html`<option key=${c.key} value=${c.key}>${c.label}</option>`)}
+              </select>
+              ${(()=>{ const c=db.cols.find(x=>x.key===fDraft.key); const t=c?c.type:null;
+                const OPS = t==='number'?[['gt','Greater than'],['lt','Less than'],['eq','Equal to'],['between','Between']]
+                  : (t==='select'||t==='multi_select'||t==='checkbox')?[['is','Is']]
+                  : t==='date'?[['between','Between']] : [['contains','Contains']];
+                return html`<select class="input" style="height:32px;padding:0 24px 0 8px;font-size:12px;width:130px" value=${fDraft.op}
+                  disabled=${!t} onChange=${e=>setFDraft(d=>({...d,op:e.target.value}))}>
+                  ${OPS.map(([id,label])=>html`<option key=${id} value=${id}>${label}</option>`)}
+                </select>`; })()}
+            </div>
+            ${(()=>{ const c=db.cols.find(x=>x.key===fDraft.key); if(!c) return '';
+              const set=(k)=>e=>setFDraft(d=>({...d,[k]:e.target.value}));
+              if(c.type==='select'||c.type==='multi_select') return html`<select class="input" style="height:32px;padding:0 24px 0 8px;font-size:12px;width:100%;margin-bottom:8px" value=${fDraft.v} onChange=${set('v')}>
+                <option value="">Pick an option</option>${(c.options||[]).map(o=>html`<option key=${o.id} value=${o.id}>${o.label}</option>`)}</select>`;
+              if(c.type==='checkbox') return html`<select class="input" style="height:32px;padding:0 24px 0 8px;font-size:12px;width:100%;margin-bottom:8px" value=${fDraft.v} onChange=${set('v')}>
+                <option value="">Pick a value</option><option value="true">Checked</option><option value="false">Unchecked</option></select>`;
+              if(c.type==='date') return html`<div style="display:flex;gap:8px;margin-bottom:8px">
+                <input type="date" class="pk-date" aria-label="From" value=${fDraft.v} onInput=${set('v')}/>
+                <input type="date" class="pk-date" aria-label="To" value=${fDraft.v2} onInput=${set('v2')}/></div>`;
+              if(c.type==='number') return html`<div style="display:flex;gap:8px;margin-bottom:8px">
+                <input type="number" class="search-mini" placeholder=${fDraft.op==='between'?'From':'Value'} value=${fDraft.v} onInput=${set('v')}/>
+                ${fDraft.op==='between'?html`<input type="number" class="search-mini" placeholder="To" value=${fDraft.v2} onInput=${set('v2')}/>`:''}</div>`;
+              return html`<input class="search-mini" style="margin-bottom:8px" placeholder="Enter filter value" value=${fDraft.v} onInput=${set('v')}/>`; })()}
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+              <span style="flex:1"></span>
+              ${activeFilters>0 && html`<button type="button" class="tbar-btn" style="color:var(--ink-red-3)" onClick=${()=>{clearFilters();}}><${Icon} name="trash" size=13/> Clear filters</button>`}
+              <button type="button" class="btn btn-primary btn-sm" disabled=${!fDraft.key} onClick=${applyDraftFilter}>Apply filter</button>
+            </div>
+            ${activeFilters>0 && html`<div class="tbl-mi-sep"></div>
+              ${visibleCols.filter(c=>filterActive(colFilters[c.key],c)).map(c=>{ const f=colFilters[c.key]; const val=filterLabel(f,c);
+                return html`<div key=${c.key} class="tbl-mi" style="cursor:default">
+                  <${Icon} name=${TYPE_META[c.type].icon} size=13/> <b>${c.label}</b> <span style="color:var(--ink-gray-6)">${val}</span>
+                  <button type="button" class="iconbtn" style="margin-left:auto" aria-label="Clear" onClick=${()=>setColFilter(c.key, Array.isArray(f)?[]:'')}><${Icon} name="close" size=13/></button></div>`; })}`}
           </div>`}
         </div>
         <div style="position:relative">
@@ -960,13 +1051,47 @@ export function TablesTool(){
           <button type="button" class=${'tbar-btn'+(sortBy?' on':'')} aria-expanded=${sortMenu}
             onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('sort')}>
             <${Icon} name="rows" size=15/> Sort${sortBy?': '+(visibleCols.find(c=>c.key===sortBy)?.label||''):''}</button>
-          ${sortMenu && html`<div class="tbl-menu" role="menu" aria-label="Sort by" style="left:0;right:auto;min-width:190px" onMouseDown=${e=>e.stopPropagation()}>
-            <button type="button" class="tbl-mi" onClick=${()=>{setSortBy('');setSortMenu(false);}}>None ${!sortBy?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>
-            ${visibleCols.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" onClick=${()=>{onSortDir(c.key, sortBy===c.key&&sortDir==='asc'?'desc':'asc');setSortMenu(false);}}>
-              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${sortBy===c.key?html`<span class="mi-end"><${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=13/></span>`:''}</button>`)}
+          ${sortMenu && html`<div class="tbl-menu" role="group" aria-label="Sort by" style="left:0;right:auto;min-width:280px;padding:8px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
+            <input class="search-mini" placeholder="Search columns..." value=${colQ} onInput=${e=>setColQ(e.target.value)}/>
+            <div style="max-height:190px;overflow:auto;margin-top:4px">
+              ${visibleCols.filter(c=>!colQ.trim()||c.label.toLowerCase().includes(colQ.trim().toLowerCase())).map(c=>html`
+                <button type="button" key=${c.key} class="tbl-mi" role="menuitemradio" aria-checked=${sortDraft.key===c.key}
+                  onClick=${()=>setSortDraft(d=>({...d,key:c.key}))}>
+                  <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}
+                  ${sortDraft.key===c.key?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>`)}
+            </div>
+            <div class="tbl-mi-sep"></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="seg">
+                <button type="button" class=${sortDraft.dir==='asc'?'on':''} onClick=${()=>setSortDraft(d=>({...d,dir:'asc'}))}>Ascending</button>
+                <button type="button" class=${sortDraft.dir==='desc'?'on':''} onClick=${()=>setSortDraft(d=>({...d,dir:'desc'}))}>Descending</button>
+              </div>
+              <span style="flex:1"></span>
+              ${sortBy && html`<button type="button" class="tbar-btn" onClick=${()=>{setSortBy('');setSortMenu(false);}}>Clear</button>`}
+              <button type="button" class="btn btn-primary btn-sm" disabled=${!sortDraft.key}
+                onClick=${()=>{onSortDir(sortDraft.key, sortDraft.dir); setSortMenu(false);}}>Apply</button>
+            </div>
           </div>`}
         </div>`}
         <span style="flex:1"></span>
+        <div style="position:relative">
+          <button type="button" class="tbar-btn" aria-haspopup="menu" aria-expanded=${actionMenu}
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('action')}>
+            <${Icon} name="zap" size=15/> Action <${Icon} name="caretDown" size=12/></button>
+          ${actionMenu && html`<div class="tbl-menu" role="menu" aria-label="Actions" style="left:auto;right:0;min-width:230px" onMouseDown=${e=>e.stopPropagation()}>
+            ${actMode==='root' ? html`
+              <button type="button" class="tbl-mi" onClick=${exportCSV}><${Icon} name="download" size=13/> Export view as CSV</button>
+              <button type="button" class="tbl-mi" onClick=${exportJSON}><${Icon} name="code" size=13/> Export table as JSON</button>
+              <div class="tbl-mi-sep"></div>
+              <button type="button" class="tbl-mi" onClick=${e=>{e.stopPropagation(); setActMode('dedupe');}}>
+                <${Icon} name="copy" size=13/> Dedupe by column <span class="mi-end"><${Icon} name="caretRight" size=13/></span></button>`
+            : html`
+              <button type="button" class="tbl-mi" onClick=${e=>{e.stopPropagation(); setActMode('root');}}><${Icon} name="arrowLeft" size=13/> Back</button>
+              <div class="pk-lbl">Keep the first row per value of</div>
+              ${visibleCols.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" onClick=${()=>dedupeBy(c.key)}>
+                <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}</button>`)}`}
+          </div>`}
+        </div>
         <div class="search" style="width:200px"><${Icon} name="search" size=15/>
           <input placeholder="Search" aria-label="Search all columns" value=${globalQ}
             onInput=${e=>setGlobalQ(e.target.value)}/></div>

@@ -621,6 +621,13 @@
   /* ghost filler rows: spreadsheet-style empty grid below the data; a click adds a row */
   .tbl-ghostrow{cursor:pointer}
   .tbl-ghostrow .tbl-td{height:41px}
+  /* toggle switch (columns menu show/hide) */
+  .tswitch{width:32px;height:18px;border-radius:var(--radius-pill);border:none;background:var(--outline-gray-3);
+           position:relative;cursor:pointer;flex-shrink:0;padding:0;transition:background .15s}
+  .tswitch::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+                  background:#fff;transition:left .15s}
+  .tswitch.on{background:var(--ink-blue-2)}
+  .tswitch.on::after{left:16px}
   /* toolbar controls are UI chrome, not table data, so they sit at the 14px base
      (Table / List / Board / JSON / Group / Fields / Search / New) */
   .tbl-bar .seg button,.tbl-bar .tbar-btn,.tbl-bar .btn,.tbl-bar .search input{font-size:14px}
