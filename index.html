@@ -565,7 +565,7 @@
   .tbl-actcol{box-sizing:border-box;padding:8px;
               position:sticky;left:0;background:var(--surface-cards);z-index:2}
   th.tbl-actcol{z-index:4;background:var(--surface-gray-1)}
-  .tbl-sticky1{position:sticky;left:64px;background:var(--surface-cards);z-index:2;
+  .tbl-sticky1{position:sticky;left:80px;background:var(--surface-cards);z-index:2;
                border-right:1px solid var(--outline-gray-1)}
   th.tbl-sticky1{z-index:4}
   /* drag-and-drop reordering indicators */
@@ -597,7 +597,10 @@
                 text-transform:uppercase;letter-spacing:.04em;color:var(--ink-gray-5)}
   .tbl-mi-sep{height:1px;background:var(--outline-gray-2);margin:4px 0}
   /* the active checkmark sits flush right, like a native menu */
-  .tbl-mi .msi:last-child, .tbl-mi iconify-icon:last-child{margin-left:auto;color:var(--ink-blue-2)}
+  /* trailing indicator (check / sort caret) sits at the right edge; the old
+     .msi:last-child selector also matched items whose ONLY icon was the leading
+     one, shoving their icon + label to the right */
+  .tbl-mi .mi-end{margin-left:auto;color:var(--ink-blue-2);display:inline-flex}
   .tbl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.32);display:flex;align-items:flex-start;
                justify-content:center;padding:8vh 16px;z-index:60}
   .tbl-modal{background:var(--surface-cards);border:1px solid var(--outline-gray-2);border-radius:var(--radius-lg);
@@ -638,8 +641,16 @@
   /* row-number gutter: number at rest, actions on hover (Airtable) */
   /* number and actions occupy the SAME grid cell and cross-fade on hover (opacity,
      not display) so moving the cursor across rows never triggers a reflow */
-  .gutter-stack{display:grid;place-items:center start}
-  .gutter-stack > *{grid-area:1/1}
+  /* gutter: [checkbox <-> row number overlay] + hover actions. The checkbox
+     replaces the number on hover or while selected (Airtable behaviour). */
+  .gutter-stack{display:flex;align-items:center;gap:4px}
+  .gs-left{display:grid;place-items:center start;width:16px;flex-shrink:0}
+  .gs-left > *{grid-area:1/1}
+  .tbl-rowck{width:14px;height:14px;margin:0;accent-color:var(--ink-violet-1);cursor:pointer}
+  tbody .tbl-rowck{opacity:0;transition:opacity .1s}
+  tbody tr:hover .tbl-rowck, tbody .tbl-rowck:checked{opacity:1}
+  tbody tr:hover .tbl-rownum, tbody tr.rowsel .tbl-rownum{opacity:0}
+  .tbl-frame tbody tr.rowsel .tbl-td{background:var(--surface-blue-1)}
   .tbl-rownum{color:var(--ink-gray-5);font-size:11px;font-variant-numeric:tabular-nums;padding-left:4px;
               opacity:1;transition:opacity .1s}
   .tbl-actcol .tbl-row-acts{opacity:0;pointer-events:none;transition:opacity .1s}
@@ -3276,7 +3287,7 @@ function Cell({row, col, editing, setEditing, setCellValue, sticky}){
 /* ── header (sortable) + per-column filter rows ── */
 function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters, setColFilter, menuKey, setMenuKey,
                    colMenu, setColMenu, onSortDir, onEditCol, onHideCol, onDeleteCol, onAddColumn,
-                   onMoveCol, dropCol, setDropCol, dragRef, resizeRef, onResizeCol}){
+                   onMoveCol, dropCol, setDropCol, dragRef, resizeRef, onResizeCol, allSel, toggleAllSel}){
   /* colMenu + dropCol are scoped by {key, gid}: the header row is repeated once
      per group, so keying by col.key alone opened the menu (or lit the drop target)
      in every group at once. gid makes only the acted-on group react. */
@@ -3284,7 +3295,9 @@ function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters, setCo
   const dropHere = c => dropCol && dropCol.key===c && dropCol.gid===gid;
   return html`<thead>
     <tr>
-      <th class="tbl-th tbl-actcol" scope="col"><span class="sr-only">Row actions</span></th>
+      <th class="tbl-th tbl-actcol" scope="col">
+        <input type="checkbox" class="tbl-rowck" aria-label="Select all rows" checked=${allSel}
+          onMouseDown=${e=>e.stopPropagation()} onChange=${toggleAllSel}/></th>
       ${visibleCols.map((col,ci)=>{
         const asort = sortBy===col.key ? (sortDir==='asc'?'ascending':'descending') : 'none';
         const startResize = e => { e.stopPropagation(); e.preventDefault(); resizeRef.current=true;
@@ -3326,7 +3339,7 @@ function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters, setCo
 }
 
 /* ── one collapsible group block (or the single implicit group) ── */
-const TBL_GUTTER = 64, TBL_ADDCOL = 40;
+const TBL_GUTTER = 80, TBL_ADDCOL = 40;   // gutter: checkbox/number + hover actions
 function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, headProps}){
   const open = groupByCol ? !collapsed.has(group.id) : true;
   const {onDeleteRow, onDuplicateRow, onAddRow} = headProps;
@@ -3362,7 +3375,7 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
       </colgroup>
       <${TableHead} gid=${group.id} ...${headProps} />
       <tbody>
-        ${group.rows.map((row,i)=>html`<tr key=${row._id} class=${headProps.dropRow===row._id?'tbl-droprow':''}
+        ${group.rows.map((row,i)=>html`<tr key=${row._id} class=${(headProps.dropRow===row._id?'tbl-droprow ':'')+(headProps.selRows.has(row._id)?'rowsel':'')}
           onDragOver=${e=>{ if(headProps.dragRef.current.row!=null && headProps.dragRef.current.row!==row._id){ e.preventDefault(); if(headProps.dropRow!==row._id) headProps.setDropRow(row._id); } }}
           onDrop=${e=>{ e.preventDefault(); const src=headProps.dragRef.current.row; if(src){ headProps.onDropRow(src, row); } headProps.dragRef.current.row=null; headProps.setDropRow(null); }}>
           <td class=${'tbl-td tbl-actcol'+(headProps.canDragRows?' tbl-rowdrag':'')} draggable=${headProps.canDragRows}
@@ -3370,7 +3383,11 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
             onDragStart=${e=>{ headProps.dragRef.current.row=row._id; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain',row._id);}catch(_){} }}
             onDragEnd=${()=>{ headProps.dragRef.current.row=null; headProps.setDropRow(null); }}>
             <div class="gutter-stack">
-              <span class="tbl-rownum">${i+1}</span>
+              <span class="gs-left">
+                <span class="tbl-rownum">${i+1}</span>
+                <input type="checkbox" class="tbl-rowck" aria-label="Select row" checked=${headProps.selRows.has(row._id)}
+                  onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()} onChange=${()=>headProps.toggleSel(row._id)}/>
+              </span>
               <span class="tbl-row-acts">
                 <button type="button" class="iconbtn" aria-label="Duplicate row" onClick=${()=>onDuplicateRow(row._id)}><${Icon} name="copyRow" size=13/></button>
                 <button type="button" class="iconbtn acts-del" aria-label="Delete row" onClick=${()=>onDeleteRow(row._id)}><${Icon} name="trash" size=13/></button>
@@ -3614,6 +3631,14 @@ function TablesTool(){
     if(sortBy && !keys.has(sortBy)) setSortBy('');
   },[db.cols]);
 
+  /* ── row selection (the column-A checkboxes) ── */
+  const [selRows,setSelRows]=useState(new Set());
+  const toggleSel=id=> setSelRows(s=>{ const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n; });
+  /* prune selections whose row no longer exists (delete, JSON replace) */
+  useEffect(()=>{ setSelRows(s=>{ const ids=new Set(db.rows.map(r=>r._id));
+    const n=new Set([...s].filter(id=>ids.has(id))); return n.size===s.size?s:n; }); },[db.rows]);
+  const deleteSelected=()=>{ setDb(d=>({...d, rows:d.rows.filter(r=>!selRows.has(r._id))})); setSelRows(new Set()); };
+
   const visibleCols = useMemo(()=> db.cols.filter(c=>!c.hidden), [db.cols]);
 
   const filteredRows = useMemo(()=>{
@@ -3767,12 +3792,15 @@ function TablesTool(){
     setBusy(false);
   }
 
+  /* select-all covers the FILTERED rows (what the user can see) */
+  const allSel = filteredRows.length>0 && filteredRows.every(r=>selRows.has(r._id));
+  const toggleAllSel = ()=> setSelRows(allSel ? new Set() : new Set(filteredRows.map(r=>r._id)));
   const headProps={visibleCols, sortBy, sortDir, onSort, onSortDir, colFilters, setColFilter,
     menuKey, setMenuKey, colMenu, setColMenu, editing, setEditing, setCellValue,
     onEditCol:key=>setFieldEd({mode:'edit', key}), onHideCol:toggleHidden, onDeleteCol:deleteColumn,
     onAddColumn:()=>setFieldEd({mode:'new'}), onDeleteRow:deleteRow, onDuplicateRow:duplicateRow, onAddRow:addRow,
     onMoveCol:moveColumn, dropCol, setDropCol, dropRow, setDropRow, onDropRow, canDragRows: !sortBy,
-    dragRef, resizeRef, onResizeCol:setColWidth};
+    dragRef, resizeRef, onResizeCol:setColWidth, selRows, toggleSel, allSel, toggleAllSel};
   const editingCol = fieldEd?.mode==='edit' ? db.cols.find(c=>c.key===fieldEd.key) : null;
   const onEditRow = id => setRowEd(id);
   const rowEdRow = rowEd ? db.rows.find(r=>r._id===rowEd) : null;
@@ -3793,9 +3821,13 @@ function TablesTool(){
           <${Icon} name=${curView[2]} size=14/> ${curView[1]} <${Icon} name="caretDown" size=12/></button>
         ${viewMenu && html`<div class="tbl-menu" role="menu" aria-label="Views" style="left:0;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
           ${VIEWS.map(([id,label,icon])=>html`<button key=${id} type="button" class="tbl-mi" role="menuitemradio" aria-checked=${view===id} onClick=${()=>{setView(id);setViewMenu(false);}}>
-            <${Icon} name=${icon} size=14/> ${label} ${view===id?html`<${Icon} name="check" size=13/>`:''}</button>`)}
+            <${Icon} name=${icon} size=14/> ${label} ${view===id?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>`)}
         </div>`}
       </div>
+      ${selRows.size>0 && html`
+        <span class="pill pill-blue">${selRows.size} selected</span>
+        <button type="button" class="tbar-btn" style="color:var(--ink-red-3)" onClick=${deleteSelected}><${Icon} name="trash" size=13/> Delete</button>
+        <button type="button" class="tbar-btn" onClick=${()=>setSelRows(new Set())}>Clear</button>`}
       ${view!=='json' && html`
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
@@ -3824,9 +3856,9 @@ function TablesTool(){
             onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('group')}>
             <${Icon} name=${view==='board'?'kanban':'list'} size=15/> ${view==='board'?'Stack':'Group'}${groupBy?': '+(visibleCols.find(c=>c.key===groupBy)?.label||''):''}</button>
           ${groupMenu && html`<div class="tbl-menu" role="menu" aria-label="Group by" style="left:0;right:auto;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
-            ${view!=='board' ? html`<button type="button" class="tbl-mi" role="menuitemradio" aria-checked=${!groupBy} onClick=${()=>{setGroupBy('');setGroupMenu(false);}}>None ${!groupBy?html`<${Icon} name="check" size=13/>`:''}</button>` : ''}
+            ${view!=='board' ? html`<button type="button" class="tbl-mi" role="menuitemradio" aria-checked=${!groupBy} onClick=${()=>{setGroupBy('');setGroupMenu(false);}}>None ${!groupBy?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>` : ''}
             ${groupChoices.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" role="menuitemradio" aria-checked=${groupBy===c.key} onClick=${()=>{setGroupBy(c.key);setGroupMenu(false);}}>
-              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${groupBy===c.key?html`<${Icon} name="check" size=13/>`:''}</button>`)}
+              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${groupBy===c.key?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>`)}
             ${view==='board' && groupChoices.length===0 ? html`<div style="padding:8px 8px;font-size:12px;color:var(--ink-gray-5)">Add a Select field first.</div>` : ''}
           </div>`}
         </div>
@@ -3835,9 +3867,9 @@ function TablesTool(){
             onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('sort')}>
             <${Icon} name="rows" size=15/> Sort${sortBy?': '+(visibleCols.find(c=>c.key===sortBy)?.label||''):''}</button>
           ${sortMenu && html`<div class="tbl-menu" role="menu" aria-label="Sort by" style="left:0;right:auto;min-width:190px" onMouseDown=${e=>e.stopPropagation()}>
-            <button type="button" class="tbl-mi" onClick=${()=>{setSortBy('');setSortMenu(false);}}>None ${!sortBy?html`<${Icon} name="check" size=13/>`:''}</button>
+            <button type="button" class="tbl-mi" onClick=${()=>{setSortBy('');setSortMenu(false);}}>None ${!sortBy?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>
             ${visibleCols.map(c=>html`<button type="button" key=${c.key} class="tbl-mi" onClick=${()=>{onSortDir(c.key, sortBy===c.key&&sortDir==='asc'?'desc':'asc');setSortMenu(false);}}>
-              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${sortBy===c.key?html`<${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=13/>`:''}</button>`)}
+              <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${sortBy===c.key?html`<span class="mi-end"><${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=13/></span>`:''}</button>`)}
           </div>`}
         </div>`}
         <span style="flex:1"></span>
