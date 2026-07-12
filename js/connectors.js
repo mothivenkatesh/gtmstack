@@ -29,9 +29,7 @@ export function ConnectorsTool(){
             <span class="conn-cat">${c.cat}</span>
           </div>
           <h3 class="conn-name">${c.name}</h3>
-          <button class="btn btn-ghost btn-sm conn-btn" disabled>
-            Connect <span class="conn-soon">Soon</span>
-          </button>
+          <button class="btn btn-ghost btn-sm conn-btn" disabled>Connect</button>
         </div>`)}
     </div>
   </div>`;
