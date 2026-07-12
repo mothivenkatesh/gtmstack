@@ -404,7 +404,7 @@ export function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters
 /* ── one collapsible group block (or the single implicit group) ── */
 export const TBL_GUTTER = 80, TBL_ADDCOL = 40;   // gutter: checkbox/number + hover actions
 
-export function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, headProps}){
+export function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, headProps, ghostRows=0}){
   const open = groupByCol ? !collapsed.has(group.id) : true;
   const {onDeleteRow, onDuplicateRow, onAddRow} = headProps;
   /* fixed table layout + explicit width: the colgroup is the single source of
@@ -463,6 +463,11 @@ export function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCol
         </tr>`)}
         <tr><td colspan=${colspan} style="padding:0">
           <button type="button" class="tbl-newrow" onClick=${()=>onAddRow(groupPreset())}><${Icon} name="plus" size=12/> New</button></td></tr>
+        ${Array.from({length:ghostRows}).map((_,i)=>html`<tr class="tbl-ghostrow" key=${'g'+i} title="Click to add a row" onClick=${()=>onAddRow({})}>
+          <td class="tbl-td tbl-actcol"></td>
+          ${visibleCols.map(c=>html`<td key=${c.key} class="tbl-td"></td>`)}
+          <td class="tbl-td"></td><td class="tbl-td"></td>
+        </tr>`)}
       </tbody>
     </table>`}
   </div>`;
@@ -683,16 +688,17 @@ export function TablesTool(){
     return ()=>{ setGroupBy(preBoardGroup.current); };
   },[view]);
   /* one outside-click handler closes every open popover (filter, header menu, columns) */
-  useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); };
+  const [loadMenu,setLoadMenu]=useState(false);     // "Load data" dropdown
+  useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); setLoadMenu(false); };
     document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
   /* Toolbar dropdowns are mutually exclusive: opening one closes every other
      popover (and toggles the clicked one shut if it was already open). */
   const toggleBar=(key)=>{
-    const cur={view:viewMenu, cols:showCols, filter:filterMenu, group:groupMenu, sort:sortMenu}[key];
+    const cur={view:viewMenu, cols:showCols, filter:filterMenu, group:groupMenu, sort:sortMenu, load:loadMenu}[key];
     setMenuKey(null); setColMenu(null);
     setViewMenu(key==='view' && !cur); setShowCols(key==='cols' && !cur);
     setFilterMenu(key==='filter' && !cur); setGroupMenu(key==='group' && !cur);
-    setSortMenu(key==='sort' && !cur);
+    setSortMenu(key==='sort' && !cur); setLoadMenu(key==='load' && !cur);
   };
   /* if a grouped/sorted column is deleted, drop the stale reference */
   useEffect(()=>{ const keys=new Set(db.cols.map(c=>c.key));
@@ -832,6 +838,12 @@ export function TablesTool(){
 
   const clearFilters=()=>{ setGlobalQ(''); setColFilters({}); };
 
+  function resetSample(){
+    setLoadMenu(false);
+    if(!window.confirm('Replace the current table with the sample GTM pipeline? This overwrites your saved data.')) return;
+    const r=validateDb(JSON.parse(JSON.stringify(SAMPLE)));
+    if(r.ok){ setDb(r.db); setGroupBy(''); setSortBy(''); clearFilters(); setSelRows(new Set()); setNote('Sample pipeline loaded.'); }
+  }
   async function loadMonitor(){
     setBusy(true); setNote('');
     try{
@@ -878,7 +890,8 @@ export function TablesTool(){
   const groupChoices = view==='board' ? visibleCols.filter(c=>c.type==='select'||c.type==='multi_select') : visibleCols;
 
   const VIEWS = [['table','Table','sheet'],['list','List','rows'],['board','Board','kanban'],['json','JSON','code']];
-  const countStr = activeFilters>0 ? `${filteredCount} of ${db.rows.length} rows` : `${db.rows.length} ${db.rows.length===1?'row':'rows'}`;
+  const countStr = (activeFilters>0 ? `${filteredCount} of ${db.rows.length} rows` : `${db.rows.length} ${db.rows.length===1?'row':'rows'}`)
+    + ` · ${visibleCols.length} of ${db.cols.length} columns`;
 
   const curView = VIEWS.find(v=>v[0]===view) || VIEWS[0];
   return html`<div class="tbl-shell">
@@ -893,6 +906,18 @@ export function TablesTool(){
             <${Icon} name=${icon} size=14/> ${label} ${view===id?html`<span class="mi-end"><${Icon} name="check" size=13/></span>`:''}</button>`)}
         </div>`}
       </div>
+      <div style="position:relative">
+        <button type="button" class="tbar-btn" aria-haspopup="menu" aria-expanded=${loadMenu}
+          onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('load')}>
+          <${Icon} name="upload" size=15/> Load data <${Icon} name="caretDown" size=12/></button>
+        ${loadMenu && html`<div class="tbl-menu" role="menu" aria-label="Load data" style="left:0;min-width:210px" onMouseDown=${e=>e.stopPropagation()}>
+          <button type="button" class="tbl-mi" onClick=${()=>{setLoadMenu(false); loadMonitor();}}><${Icon} name="binoculars" size=13/> Monitor mentions</button>
+          <button type="button" class="tbl-mi" onClick=${()=>{setLoadMenu(false); setView('json');}}><${Icon} name="code" size=13/> Paste JSON</button>
+          <div class="tbl-mi-sep"></div>
+          <button type="button" class="tbl-mi" onClick=${resetSample}><${Icon} name="refresh" size=13/> Reset to sample</button>
+        </div>`}
+      </div>
+      ${view!=='json' && html`<span class="tbar-chip"><${Icon} name="rows" size=15/> ${db.rows.length} Rows</span>`}
       ${selRows.size>0 && html`
         <span class="pill pill-blue">${selRows.size} selected</span>
         <button type="button" class="tbar-btn" style="color:var(--ink-red-3)" onClick=${deleteSelected}><${Icon} name="trash" size=13/> Delete</button>
@@ -900,7 +925,7 @@ export function TablesTool(){
       ${view!=='json' && html`
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
-            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('cols')}><${Icon} name="eyeSlash" size=15/> Hide fields</button>
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('cols')}><${Icon} name="eye" size=15/> ${visibleCols.length}/${db.cols.length} Columns</button>
           ${showCols && html`<div class="tbl-menu" role="group" aria-label="Show or hide columns" style="left:0;right:auto;min-width:210px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
             ${db.cols.map(c=>html`<div key=${c.key} style="display:flex;align-items:center;gap:8px;padding:4px 4px">
               <span style="flex:1;font-size:13px"><${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}</span>
@@ -962,7 +987,8 @@ export function TablesTool(){
           ${filteredCount===0
             ? html`<div style="padding:24px;text-align:center;color:var(--ink-gray-5)">No rows yet. Click New to add one.</div>`
             : groups.map(g=>html`<${GroupBlock} key=${g.id} group=${g} groupByCol=${groupByCol} visibleCols=${visibleCols}
-                collapsed=${collapsed} toggleCollapse=${toggleCollapse} headProps=${headProps}/>`)}
+                collapsed=${collapsed} toggleCollapse=${toggleCollapse} headProps=${headProps}
+                ghostRows=${groupByCol?0:8}/>`)}
         </div>`}
     </div>
     ${view!=='json' && html`<div class="tbl-foot">${countStr}</div>`}

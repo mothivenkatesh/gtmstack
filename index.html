@@ -615,6 +615,12 @@
             font-family:inherit;cursor:pointer;white-space:nowrap}
   .tbar-btn:hover{background:var(--surface-gray-1)}
   .tbar-btn.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2)}
+  /* passive toolbar indicator (row count): styled like a button but inert */
+  .tbar-chip{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px;border:1px solid var(--outline-gray-2);
+             border-radius:var(--radius);background:var(--surface-gray-1);color:var(--ink-gray-6);font-size:14px;white-space:nowrap}
+  /* ghost filler rows: spreadsheet-style empty grid below the data; a click adds a row */
+  .tbl-ghostrow{cursor:pointer}
+  .tbl-ghostrow .tbl-td{height:41px}
   /* toolbar controls are UI chrome, not table data, so they sit at the 14px base
      (Table / List / Board / JSON / Group / Fields / Search / New) */
   .tbl-bar .seg button,.tbl-bar .tbar-btn,.tbl-bar .btn,.tbl-bar .search input{font-size:14px}
