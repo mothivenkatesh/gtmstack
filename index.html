@@ -46,8 +46,7 @@
 
   *{box-sizing:border-box}
   html{font-family:'Circular Std',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
-  html,body{height:100%}
-  body{margin:0;background:var(--app-canvas);color:var(--ink-gray-9);font-size:14px;line-height:1.15;overflow:hidden;
+  body{margin:0;background:var(--app-canvas);color:var(--ink-gray-9);font-size:14px;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
   /* Material Symbols Sharp: line icons, 24px, wght 300, GRAD 200, opsz 24 */
@@ -118,11 +117,11 @@
   .pill-red{background:var(--surface-red-1);color:var(--ink-red-3)}
   .pill-gray{background:var(--surface-gray-2);color:var(--ink-gray-6)}
 
-  /* ── app shell (floating frame) ── */
-  .app{height:100vh}
-  .sidebar{position:fixed;top:var(--gap);left:var(--gap);bottom:var(--gap);width:var(--sidebar-w);
+  /* ── app shell (flush, sidebar with a divider) ── */
+  .app{min-height:100vh}
+  .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);
            background:var(--menu-bar);color:var(--menu-ink-6);display:flex;flex-direction:column;
-           border-radius:var(--shell-radius);overflow:hidden;z-index:50}
+           border-right:1px solid var(--menu-line);z-index:50}
   .side-brand{display:flex;align-items:center;gap:11px;padding:18px 18px 16px}
   .side-mark{width:34px;height:34px;border-radius:var(--radius);background:linear-gradient(150deg,#0070CC,#6846E3);
              display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
@@ -141,9 +140,7 @@
   .side-item .si-star{margin-left:auto;color:#F4B740}
   .side-foot{padding:14px 18px;border-top:1px solid var(--menu-line);font-size:12px;line-height:1.55;color:var(--menu-ink-4)}
 
-  .main{position:fixed;top:var(--gap);right:var(--gap);bottom:var(--gap);left:calc(var(--sidebar-w) + var(--gap)*2);
-        background:var(--surface-gray-1);border-radius:var(--shell-radius);
-        overflow:auto;overscroll-behavior:contain}
+  .main{margin-left:var(--sidebar-w);min-height:100vh}
   .topbar{position:sticky;top:0;z-index:30;height:56px;display:flex;align-items:center;gap:11px;padding:0 28px;
           background:var(--surface-gray-1)}
   .topbar .tb-ic{width:28px;height:28px;border-radius:var(--radius);background:var(--surface-blue-1);border:1px solid var(--outline-blue-1);
@@ -622,7 +619,7 @@
   .tbl-bar .seg button,.tbl-bar .tbar-btn,.tbl-bar .btn,.tbl-bar .search input{font-size:14px}
   .tbl-bar .tbar-btn{padding:6px 10px}
   /* Airtable-style two-pane: inner view sidebar + full-bleed grid */
-  .tbl-shell{display:flex;height:calc(100vh - var(--gap)*2 - 56px);overflow:hidden}
+  .tbl-shell{display:flex;height:calc(100vh - 56px);overflow:hidden}
   .tbl-viewbar{width:212px;flex-shrink:0;border-right:1px solid var(--outline-gray-2);background:var(--surface-gray-1);
                display:flex;flex-direction:column;gap:10px;padding:14px 10px;overflow-y:auto}
   .tbl-vb-title{font-size:15px;font-weight:600;color:var(--ink-gray-9);margin:0;cursor:text;padding:3px 7px;border-radius:var(--radius-sm);
