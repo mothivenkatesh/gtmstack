@@ -7,7 +7,7 @@ import { SignalsTool,    manifest as mSignals }    from './signals.js';
 import { CleanTool,      manifest as mClean }      from './clean.js';
 import { CompetitorTool, manifest as mCompetitor } from './competitor.js';
 import { TablesTool,     manifest as mTables }     from './tables.js';
-import { ReportsTool,    manifest as mReports }    from './reports.js';
+import { RoutinesTool,   manifest as mReports }    from './reports.js';
 import { ConnectorsTool, manifest as mConnectors } from './connectors.js';
 import { Auth, RunsModal, WelcomeModal } from './auth.js';
 
@@ -94,7 +94,7 @@ export function App(){
       <div style=${tool==='signals' ? '' : 'display:none'}><${SignalsTool} seed=${seed} /></div>
       <div style=${tool==='clean'   ? '' : 'display:none'}><${CleanTool} seed=${seed} /></div>
       ${tool==='competitor' && html`<div><${CompetitorTool} /></div>`}
-      ${tool==='reports' && html`<div><${ReportsTool} /></div>`}
+      ${tool==='reports' && html`<div><${RoutinesTool} /></div>`}
       <div style=${tool==='tables' ? '' : 'display:none'}><${TablesTool} /></div>
       <div style=${tool==='connectors' ? '' : 'display:none'}><${ConnectorsTool} /></div>
     </main>

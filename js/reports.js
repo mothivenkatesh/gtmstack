@@ -189,8 +189,9 @@ export function MonitorPanel(){
 }
 
 
-export function ReportsTool(){
-  const [mode,setMode]=useState('briefs');
+/* ── Daily-brief output panel (one routine's detail view). The engine and
+   endpoints are unchanged; this is the old Reports briefs body, extracted. ── */
+export function BriefsPanel(){
   const [groups,setGroups]=useState([]);
   const [gid,setGid]=useState(null);
   const [rep,setRep]=useState(null);
@@ -216,7 +217,7 @@ export function ReportsTool(){
     try{
       const r = await fetch(`${API_BASE}/api/report`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({group:gid, budget_s:45})});
-      if(r.status===401){ setErr('Run-now is disabled on the hosted site. The 8am job populates this tab.'); }
+      if(r.status===401){ setErr('Run-now is disabled on the hosted site. The 8am routine populates this.'); }
       else { const j=await r.json(); if(j.error) setErr(j.error); else setRep(j); }
     }catch(e){ setErr('Run failed.'); }
     setBusy(false);
@@ -225,22 +226,7 @@ export function ReportsTool(){
   const g = groups.find(x=>x.id===gid);
   const s = (rep && rep.sentiment) || {positive:0,negative:0,neutral:0};
 
-  return html`
-  <div class="view">
-    <div class="view-head">
-      <h1 class="view-h1">${mode==='monitor'?'Competitive monitor':'Daily signal briefs, one per keyword group'}</h1>
-      <p class="view-sub">${mode==='monitor'
-        ? html`Every morning at 9am IST the monitor scans Reddit, Quora, review sites (TrustPilot, Capterra), and X for competitor and Cashfree mentions, tags sentiment and company, and pushes deduped rows to a Google Sheet. The store here is the source of truth.`
-        : html`Every morning at 9am IST a Carlsen-ordered scan reads each group across GitHub, YouTube, Reddit, X, and LinkedIn, tags sentiment and the author's company, and files the brief here. Pick a group, or run one now.`}</p>
-    </div>
-
-    <div style="display:inline-flex;gap:4px;padding:4px;border:1px solid var(--outline-gray-2);border-radius:var(--radius);margin-bottom:16px">
-      <button onClick=${()=>setMode('briefs')} class=${'pill '+(mode==='briefs'?'pill-blue':'pill-gray')} style="cursor:pointer;border:none"><${Icon} name="newspaper" size=12/> Daily briefs</button>
-      <button onClick=${()=>setMode('monitor')} class=${'pill '+(mode==='monitor'?'pill-blue':'pill-gray')} style="cursor:pointer;border:none"><${Icon} name="binoculars" size=12/> Competitive monitor</button>
-    </div>
-
-    ${mode==='monitor' ? html`<${MonitorPanel} />` : html`<div>
-
+  return html`<div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
       <${Picker} icon="newspaper" label="Group" caption=${(g&&g.name)||'Pick a group'} active=${!!gid} minW=220 title="Keyword group">
         ${close=>html`<div>${groups.map(x=>{ const on=x.id===gid;
@@ -251,7 +237,7 @@ export function ReportsTool(){
       </${Picker}>
       <span style="flex:1"></span>
       <button onClick=${runNow} disabled=${busy} class="pk-btn">
-        <${Icon} name=${busy?'loader':'refresh'} size=15 cls=${busy?'spin':''} /> ${busy?'Running...':'Run now'}</button>
+        <${Icon} name=${busy?'loader':'play'} size=15 cls=${busy?'spin':''} /> ${busy?'Running...':'Run now'}</button>
     </div>
 
     ${err && html`<div class="glass-card" style="padding:16px;margin-bottom:16px;color:var(--ink-red-3)"><${Icon} name="alert" size=14/> ${err}</div>`}
@@ -259,7 +245,7 @@ export function ReportsTool(){
     ${!rep ? html`
       <div class="glass-card" style="padding:32px;text-align:center;color:var(--ink-gray-5)">
         <${Icon} name="newspaper" size=26 /><div style="margin-top:8px">No brief for ${(g&&g.name)||'this group'} yet.</div>
-        <div style="margin-top:4px;font-size:12px">It runs daily at 8am IST. Or hit Run now.</div>
+        <div style="margin-top:4px;font-size:12px">The routine runs daily at 8am IST. Or hit Run now.</div>
       </div>`
     : html`
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
@@ -333,9 +319,104 @@ export function ReportsTool(){
           </div>`}
         </div>`}
     `}
+  </div>`;
+}
+
+/* ── Routines: the scheduled agents, packaged like Claude Code routines.
+   Each routine = what runs, its schedule, where it runs, last-run status, and
+   a detail view (its output). The engines/endpoints are unchanged. ── */
+const ROUTINES = [
+  {id:'briefs',   icon:'newspaper',  name:'Daily signal briefs',  schedule:'Daily · 08:00 IST', where:'Mac · launchd',
+   what:'Carlsen-ordered scan of every keyword group across GitHub, YouTube, Reddit, X, and LinkedIn. Tags sentiment and the author company, files one brief per group.'},
+  {id:'monitor',  icon:'binoculars', name:'Competitive monitor',  schedule:'Daily · 09:00 IST', where:'Mac · launchd',
+   what:'Scans Reddit, Quora, TrustPilot, Capterra, and X for competitor and Cashfree mentions. Tags sentiment, upserts the store, pushes the delta to Google Sheets.'},
+  {id:'catchup',  icon:'refresh',    name:'Monitor catch-up',     schedule:'Daily · 13:00 IST', where:'Mac · launchd',
+   what:'Re-fires the monitor only when the 9am run was missed (marker-guarded), so a closed laptop does not lose the day.'},
+  {id:'watchdog', icon:'alert',      name:'Staleness watchdog',   schedule:'Daily · 09:30 UTC', where:'Vercel cron',
+   what:'Read-only check on the hosted site that alerts when the monitor has not completed in over 26 hours.'},
+];
+const DOT = {green:'var(--ink-green-2)', amber:'var(--ink-amber-2)', red:'var(--ink-red-3)', gray:'var(--outline-gray-4)'};
+
+export function RoutinesTool(){
+  const [open,setOpen]=useState(null);          // null = the routines list, else a routine id
+  const [ov,setOv]=useState(null);              // /api/monitor overview (monitor + watchdog status)
+  const [idx,setIdx]=useState(null);            // /api/report index (latest briefs, newest first)
+  const [busy,setBusy]=useState('');
+  const [note,setNote]=useState('');
+
+  useEffect(()=>{ load(); },[]);
+  function load(){
+    fetch(`${API_BASE}/api/monitor`).then(r=>r.json()).then(setOv).catch(()=>setOv({}));
+    fetch(`${API_BASE}/api/report`).then(r=>r.json()).then(j=>setIdx(j.reports||[])).catch(()=>setIdx([]));
+  }
+  async function runMonitor(){
+    setBusy('monitor'); setNote('');
+    try{
+      const r=await fetch(`${API_BASE}/api/monitor`,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(r.status===401){ setNote('Run-now is disabled on the hosted site; the 9am routine populates this.'); }
+      else{ const j=await r.json(); setNote(j.error?j.error:`Scan done: ${j.total||0} found, ${j.inserted||0} new in ${j.elapsed_s||0}s.`); load(); }
+    }catch(e){ setNote('Run failed.'); }
+    setBusy('');
+  }
+
+  const lr=ov&&ov.last_run;
+  const staleH=lr&&lr.finished_at ? (Date.now()-new Date(lr.finished_at))/3.6e6 : null;
+  const latest=(idx||[])[0];
+  const briefH=latest&&latest.generated_at ? (Date.now()-new Date(latest.generated_at))/3.6e6 : null;
+  const status={
+    briefs:  latest? {dot:briefH>26?'amber':'green', text:`last brief ${agoFrom(latest.generated_at)} (${latest.group_name||latest.group_id})`}
+                   : {dot:'gray', text: idx===null?'checking...':'no brief filed yet'},
+    monitor: lr? {dot:staleH>26?'amber':'green', text:`last scan ${agoFrom(lr.finished_at)} · ${lr.total||0} mentions, ${lr.inserted||0} new`}
+               : {dot:'gray', text: ov===null?'checking...':'no run recorded yet'},
+    catchup: lr? {dot:'green', text:'armed; skips itself when the 9am run succeeded'}
+               : {dot:'gray', text:'waiting on a first monitor run'},
+    watchdog: staleH!==null? (staleH>26? {dot:'red', text:`monitor is stale (${Math.round(staleH)}h since the last run)`}
+                                       : {dot:'green', text:'monitor is fresh; nothing to alert'})
+                           : {dot:'gray', text: ov===null?'checking...':'no run to watch yet'},
+  };
+  const openRt=ROUTINES.find(r=>r.id===open);
+
+  return html`
+  <div class="view">
+    <div class="view-head">
+      <h1 class="view-h1">${openRt?openRt.name:'Routines'}</h1>
+      <p class="view-sub">${openRt?openRt.what:'Scheduled agents that run your GTM ops. Each routine runs on its own schedule, files its output here, and the runnable ones can be fired on demand.'}</p>
+    </div>
+
+    ${note && html`<div class="glass-card" style="padding:16px;margin-bottom:16px;color:var(--ink-gray-7)"><${Icon} name="check" size=14/> ${note}</div>`}
+
+    ${open===null ? html`<div style="display:flex;flex-direction:column;gap:8px">
+      ${ROUTINES.map(rt=>{ const st=status[rt.id]; return html`
+        <div key=${rt.id} class="glass-card" style="padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${DOT[st.dot]}" title=${st.dot}></span>
+          <${Icon} name=${rt.icon} size=20/>
+          <div style="flex:1;min-width:240px">
+            <div style="font-weight:600">${rt.name}</div>
+            <div style="font-size:12px;color:var(--ink-gray-6);margin-top:4px;line-height:1.5">${rt.what}</div>
+            <div style="font-size:12px;color:var(--ink-gray-5);margin-top:4px">${st.text}</div>
+          </div>
+          <span class="pill pill-gray"><${Icon} name="clock" size=12/> ${rt.schedule}</span>
+          <span class="pill pill-gray">${rt.where}</span>
+          ${rt.id==='monitor' && html`<button class="pk-btn" disabled=${busy==='monitor'} onClick=${runMonitor}>
+            <${Icon} name=${busy==='monitor'?'loader':'play'} size=15 cls=${busy==='monitor'?'spin':''}/> ${busy==='monitor'?'Running...':'Run now'}</button>`}
+          <button class="pk-btn" onClick=${()=>setOpen(rt.id)}>${rt.id==='briefs'||rt.id==='monitor'?'Open':'Details'} <${Icon} name="arrowRight" size=15/></button>
+        </div>`; })}
+      </div>`
+    : html`<div>
+      <button class="pk-btn" style="margin-bottom:16px" onClick=${()=>{setOpen(null); load();}}><${Icon} name="arrowLeft" size=15/> All routines</button>
+      ${open==='briefs' && html`<${BriefsPanel}/>`}
+      ${open==='monitor' && html`<${MonitorPanel}/>`}
+      ${open==='catchup' && html`<div class="glass-card" style="padding:24px;line-height:1.6;color:var(--ink-gray-7);font-size:14px">
+        <p style="margin:0 0 8px">A marker file records the day of the last completed monitor run. At 13:00 IST this routine checks the marker: if the 9am scan already ran today it exits immediately; if the Mac was asleep at 9am it runs the full monitor instead, so the day is never lost.</p>
+        <p style="margin:0">${lr&&lr.finished_at?html`Last completed monitor run: <b>${agoFrom(lr.finished_at)}</b>.`:'No monitor run recorded yet.'}</p>
+      </div>`}
+      ${open==='watchdog' && html`<div class="glass-card" style="padding:24px;line-height:1.6;color:var(--ink-gray-7);font-size:14px">
+        <p style="margin:0 0 8px">A read-only Vercel cron hits <code>/api/watchdog</code> daily. If the monitor has not completed in over 26 hours it sends an alert email, catching a sleeping Mac, a broken launchd job, or a wedged run. It never scans anything itself.</p>
+        <p style="margin:0">${staleH!==null?html`Current staleness: <b>${Math.round(staleH)}h</b> since the last completed run${staleH>26?' — over the 26h threshold, an alert would fire.':' — within the 26h threshold.'}`:'No run recorded to watch yet.'}</p>
+      </div>`}
     </div>`}
   </div>`;
 }
 
 /* Module manifest: the standard interface every tool exposes to the shell. */
-export const manifest = { id:'reports', icon:'newspaper', name:'Reports', desc:'Daily signal briefs + the competitive monitor', component: ReportsTool };
+export const manifest = { id:'reports', icon:'clock', name:'Routines', desc:'Scheduled agents: briefs, monitor, catch-up, watchdog', component: RoutinesTool };
