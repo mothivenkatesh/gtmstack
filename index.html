@@ -65,8 +65,8 @@
   /* ── shared dropdown (Picker) + date range, used across Signals / Reports / Tables ── */
   .pk{position:relative;display:inline-block}
   .pk-btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-size:13px;font-weight:500;
-    padding:8px 8px;border-radius:var(--radius);border:1px solid var(--outline-gray-3);background:var(--surface-white);
-    color:var(--ink-gray-8);cursor:pointer;white-space:nowrap;line-height:1;transition:.12s}
+    height:32px;padding:0 8px;border-radius:var(--radius);border:1px solid var(--outline-gray-3);background:var(--surface-white);
+    color:var(--ink-gray-8);cursor:pointer;white-space:nowrap;transition:.12s}
   .pk-btn:hover{background:var(--surface-gray-1);border-color:var(--outline-gray-4)}
   .pk-btn.on{border-color:var(--ink-violet-1);color:var(--ink-violet-1);background:var(--surface-violet-1)}
   .pk-cap{color:var(--ink-gray-5);font-weight:400}
@@ -84,15 +84,15 @@
 
   /* ── buttons / controls ── */
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;font-size:14px;font-weight:500;
-       border-radius:var(--radius);padding:8px 16px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+       height:32px;border-radius:var(--radius);padding:0 16px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-primary{background:var(--ink-gray-9);color:#fff}
   .btn-primary:not(:disabled):hover{background:#000}
   .btn-ghost{background:var(--surface-cards);border-color:var(--outline-gray-3);color:var(--ink-gray-8)}
   .btn-ghost:hover{background:var(--surface-gray-2)}
-  .btn-lg{padding:16px 24px;font-size:14px}
-  .btn-sm{padding:8px 8px;font-size:12px}
-  .input{width:100%;font-family:inherit;font-size:14px;padding:16px 16px;border:1px solid var(--outline-gray-3);
+  .btn-lg{height:40px;padding:0 24px;font-size:14px}
+  .btn-sm{height:24px;padding:0 8px;font-size:13px}
+  .input{width:100%;font-family:inherit;font-size:14px;height:40px;padding:0 16px;border:1px solid var(--outline-gray-3);
          border-radius:var(--radius);background:var(--surface-white);color:var(--ink-gray-9);outline:none;transition:.15s}
   .input:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
   select.input{cursor:pointer;-webkit-appearance:none;appearance:none;padding-right:32px;
@@ -105,12 +105,12 @@
   .copy-area:focus{border-color:var(--ink-blue-2);box-shadow:0 0 0 3px var(--surface-blue-1)}
   .seg{display:inline-flex;background:var(--surface-gray-2);border-radius:var(--radius);padding:4px;gap:4px;flex-wrap:wrap}
   .seg button{border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-gray-6);
-              padding:8px 8px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+              height:24px;padding:0 8px;border-radius:var(--radius-sm);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
   .seg button.on{background:var(--surface-cards);color:var(--ink-gray-9)}
 
   /* ── pills ── */
   .pill{display:inline-flex;align-items:center;gap:4px;border-radius:var(--radius-pill);font-size:12px;font-weight:500;
-        line-height:1.15;padding:4px 8px;white-space:nowrap;border:1px solid transparent}
+        height:24px;padding:0 8px;white-space:nowrap;border:1px solid transparent}
   .pill-blue{background:var(--surface-blue-1);color:var(--ink-blue-2)}
   .pill-green{background:var(--surface-green-1);color:var(--ink-green-2)}
   .pill-amber{background:var(--surface-amber-1);color:var(--ink-amber-2)}
@@ -206,8 +206,8 @@
   .track:hover{background:var(--surface-gray-1)}
   .track.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2);font-weight:500}
   .panel-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 16px;flex-wrap:wrap}
-  .search{display:flex;align-items:center;gap:8px;border:1px solid var(--outline-gray-3);border-radius:var(--radius);padding:0 8px;background:var(--surface-white)}
-  .search input{border:none;outline:none;font-family:inherit;font-size:14px;padding:8px 0;background:transparent;color:var(--ink-gray-9);width:140px}
+  .search{display:flex;align-items:center;gap:8px;height:32px;border:1px solid var(--outline-gray-3);border-radius:var(--radius);padding:0 8px;background:var(--surface-white)}
+  .search input{border:none;outline:none;font-family:inherit;font-size:14px;padding:0;background:transparent;color:var(--ink-gray-9);width:140px}
   .tbody{padding:8px 8px;max-height:56vh;overflow-y:auto}
   .cue{display:flex;gap:16px;padding:8px 16px;border-radius:var(--radius-sm)}
   .cue:hover{background:var(--surface-gray-1)}
@@ -371,9 +371,9 @@
   .auth-sub{font-size:14px;color:var(--ink-gray-5);line-height:1.55;margin:0 0 24px}
   .auth-sub b{color:var(--ink-gray-8)}
   .auth-label{font-size:12px;font-weight:600;color:var(--ink-gray-7);margin:0 0 8px;display:block}
-  .auth-input{width:100%;height:44px;border:1px solid var(--outline-gray-3);border-radius:var(--radius);padding:0 16px;font-family:inherit;font-size:14px;color:var(--ink-gray-9);outline:none;transition:.14s;background:#fff}
+  .auth-input{width:100%;height:40px;border:1px solid var(--outline-gray-3);border-radius:var(--radius);padding:0 16px;font-family:inherit;font-size:14px;color:var(--ink-gray-9);outline:none;transition:.14s;background:#fff}
   .auth-input:focus{border-color:var(--ink-violet-1);box-shadow:0 0 0 3px var(--surface-violet-1)}
-  .auth-btn{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border:none;border-radius:var(--radius);background:var(--ink-violet-1);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px;transition:.14s;text-decoration:none}
+  .auth-btn{display:flex;align-items:center;justify-content:center;width:100%;height:40px;border:none;border-radius:var(--radius);background:var(--ink-violet-1);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px;transition:.14s;text-decoration:none}
   .auth-btn:hover{background:#5a3bd0}
   .auth-btn:disabled{opacity:.55;cursor:not-allowed}
   .auth-note{font-size:12px;color:var(--ink-gray-5);line-height:1.5;margin:16px 0 0}
@@ -394,7 +394,7 @@
   .user-meta{min-width:0;flex:1}
   .user-email{font-size:12px;color:var(--menu-ink-9);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .user-act{font-size:12px;color:var(--menu-ink-4)}
-  .signin-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:8px;border-radius:var(--radius);background:var(--ink-violet-1);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .signin-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:40px;padding:0 16px;border-radius:var(--radius);background:var(--ink-violet-1);color:#fff;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .signin-btn:hover{background:#5a3bd0}
   .user-menu{position:absolute;bottom:60px;left:14px;right:14px;background:var(--surface-white);border:1px solid var(--menu-line);border-radius:var(--radius);overflow:hidden}
   .user-menu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:none;color:var(--menu-ink-6);padding:8px 16px;font-family:inherit;font-size:14px;cursor:pointer}
@@ -607,15 +607,15 @@
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   /* compact single-row table toolbar (Notion-style) */
   .tbl-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-  .tbar-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border:1px solid var(--outline-gray-2);
+  .tbar-btn{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px;border:1px solid var(--outline-gray-3);
             border-radius:var(--radius);background:var(--surface-white);color:var(--ink-gray-7);font-size:12px;
-            font-family:inherit;cursor:pointer;white-space:nowrap;line-height:1.2}
+            font-family:inherit;cursor:pointer;white-space:nowrap}
   .tbar-btn:hover{background:var(--surface-gray-1)}
   .tbar-btn.on{background:var(--surface-blue-1);border-color:var(--outline-blue-1);color:var(--ink-blue-2)}
   /* toolbar controls are UI chrome, not table data, so they sit at the 14px base
      (Table / List / Board / JSON / Group / Fields / Search / New) */
   .tbl-bar .seg button,.tbl-bar .tbar-btn,.tbl-bar .btn,.tbl-bar .search input{font-size:14px}
-  .tbl-bar .tbar-btn{padding:8px 8px}
+  .tbl-bar .tbar-btn{padding:0 8px}
   /* Airtable-style two-pane: inner view sidebar + full-bleed grid */
   .tbl-shell{display:flex;height:calc(100vh - 56px);overflow:hidden}
   .tbl-viewbar{width:212px;flex-shrink:0;border-right:1px solid var(--outline-gray-2);background:var(--surface-gray-1);
@@ -3841,7 +3841,7 @@ function TablesTool(){
         <div class="search" style="width:200px"><${Icon} name="search" size=15/>
           <input placeholder="Search" aria-label="Search all columns" value=${globalQ}
             onInput=${e=>setGlobalQ(e.target.value)}/></div>
-        <button type="button" class="btn btn-primary btn-sm" onClick=${()=>addRow()}><${Icon} name="plus" size=13/> New</button>`}
+        <button type="button" class="btn btn-primary" onClick=${()=>addRow()}><${Icon} name="plus" size=13/> New</button>`}
     </div>
 
     <div class="tbl-scroll">
