@@ -75,7 +75,7 @@ Dual deploy, one core:
 - Production: Vercel serverless functions in `api/*.py` (BaseHTTPRequestHandler).
 - Shared logic: `api/_*.py` modules are imported by both, so behavior is identical.
 
-Frontend: single-file `index.html`, Preact 10 + htm via esm.sh, no build step. Tools stay mounted and toggle via `display:none` to preserve per-tool state. `API_BASE` is `http://localhost:5000` when opened from `file:`, else same-origin.
+Frontend: modular native ES modules under `js/` (no build step; Preact 10 + htm via esm.sh). `index.html` holds ONLY the CSS + `<script type="module" src="/js/app.js">`. Each tool is a self-contained module exporting its components AND a `manifest` (`{id, icon, name, desc, component}`), the standard interface every tool exposes; `js/app.js` builds `TOOLS`/`NAV` from the imported manifests, so adding a tool = one module + one entry in `MODULES`. Module map: `js/core.js` (preact/htm runtime re-exports, `API_BASE`, `ICONS`/`Icon`, shared `Picker`/`DateRange`, misc helpers) ← imported by everything; tools `js/{home,persona,extract,signals,clean,competitor,tables,reports,connectors}.js`; `js/plays.js` (PlayRunner + per-play result renderers; imports `PersonaResult` from persona.js — tools never import plays.js except home/competitor, keeping the graph acyclic); `js/auth.js` (magic-link modal, runs, welcome); `js/app.js` (shell + registry + mount). HomeTool receives the registry as a `tools` PROP (do not import app.js from a tool — that is a cycle). Tools stay mounted and toggle via `display:none` to preserve per-tool state. `API_BASE` is `http://localhost:5000` when opened from `file:`, else same-origin.
 
 | Path | Role |
 |---|---|
