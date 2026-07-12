@@ -547,7 +547,7 @@
 
   /* bordered grid: a framed table with row + column separators. The whole table
      context is a uniform 12px per the type spec (cells, headers, list, board). */
-  .tbl-frame{border:1px solid var(--outline-gray-2);border-radius:var(--radius);font-size:12px;display:inline-block;min-width:100%;vertical-align:top}
+  .tbl-frame{border:1px solid var(--outline-gray-2);border-radius:var(--radius);font-size:12px;display:block;width:fit-content;min-width:100%}
   .board-wrap{font-size:12px}
   /* separate (not collapse): collapse makes sticky headers flicker + drop borders
      on scroll in Chrome; separate + spacing 0 keeps the same look but scrolls clean */
@@ -3320,6 +3320,7 @@ function TableHead({gid, visibleCols, sortBy, sortDir, onSort, colFilters, setCo
       <th class="tbl-th" scope="col" style="width:40px;text-align:center">
         <button type="button" class="iconbtn" aria-label="Add column"
           onMouseDown=${e=>e.stopPropagation()} onClick=${onAddColumn}><${Icon} name="plus" size=14/></button></th>
+      <th class="tbl-th" scope="col" aria-hidden="true"></th>
     </tr>
   </thead>`;
 }
@@ -3341,7 +3342,7 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
        multi_select keeps its array wrap (coerceValue would double-wrap). */
     return {[groupByCol.key]: groupByCol.type==='multi_select' ? [group.key] : coerceValue(group.key, groupByCol.type)};
   };
-  const colspan = visibleCols.length + 2;
+  const colspan = visibleCols.length + 3;   // gutter + cols + add-col + filler
   return html`<div>
     ${groupByCol && html`<div class="tbl-grouphead" role="button" tabindex="0" aria-expanded=${open}
       onClick=${()=>toggleCollapse(group.id)} onKeyDown=${e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleCollapse(group.id);}}}>
@@ -3352,11 +3353,12 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
       <span class="pill pill-gray">· ${group.count}</span>
       ${groupByCol.type==='number' && !group.isEmpty && html`<span style="font-size:12px;color:var(--ink-gray-5)">sum ${(group.sum||0).toLocaleString()} · avg ${Math.round(group.avg||0).toLocaleString()}</span>`}
     </div>`}
-    ${open && html`<table style=${'table-layout:fixed;width:'+totalW+'px;border-collapse:separate;border-spacing:0;font-size:12px'}>
+    ${open && html`<table style=${'table-layout:fixed;width:100%;min-width:'+totalW+'px;border-collapse:separate;border-spacing:0;font-size:12px'}>
       <colgroup>
         <col style="width:${TBL_GUTTER}px"/>
         ${visibleCols.map(c=>html`<col key=${c.key} style=${'width:'+(c.width||160)+'px'}/>`)}
         <col style="width:${TBL_ADDCOL}px"/>
+        <col/>
       </colgroup>
       <${TableHead} gid=${group.id} ...${headProps} />
       <tbody>
@@ -3376,6 +3378,7 @@ function GroupBlock({group, groupByCol, visibleCols, collapsed, toggleCollapse, 
             </div></td>
           ${visibleCols.map((col,ci)=>html`<${Cell} key=${col.key} row=${row} col=${col} sticky=${false} editing=${headProps.editing} setEditing=${headProps.setEditing} setCellValue=${headProps.setCellValue}/>`)}
           <td class="tbl-td" style="width:40px"></td>
+          <td class="tbl-td"></td>
         </tr>`)}
         <tr><td colspan=${colspan} style="padding:0">
           <button type="button" class="tbl-newrow" onClick=${()=>onAddRow(groupPreset())}><${Icon} name="plus" size=12/> New</button></td></tr>
@@ -3793,7 +3796,6 @@ function TablesTool(){
             <${Icon} name=${icon} size=14/> ${label} ${view===id?html`<${Icon} name="check" size=13/>`:''}</button>`)}
         </div>`}
       </div>
-      <span style="flex:1"></span>
       ${view!=='json' && html`
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
@@ -3838,6 +3840,7 @@ function TablesTool(){
               <${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label} ${sortBy===c.key?html`<${Icon} name=${sortDir==='asc'?'caretUp':'caretDown'} size=13/>`:''}</button>`)}
           </div>`}
         </div>`}
+        <span style="flex:1"></span>
         <div class="search" style="width:200px"><${Icon} name="search" size=15/>
           <input placeholder="Search" aria-label="Search all columns" value=${globalQ}
             onInput=${e=>setGlobalQ(e.target.value)}/></div>
