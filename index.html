@@ -3600,6 +3600,15 @@ function TablesTool(){
   /* one outside-click handler closes every open popover (filter, header menu, columns) */
   useEffect(()=>{ const h=()=>{ setMenuKey(null); setColMenu(null); setShowCols(false); setGroupMenu(false); setViewMenu(false); setFilterMenu(false); setSortMenu(false); };
     document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
+  /* Toolbar dropdowns are mutually exclusive: opening one closes every other
+     popover (and toggles the clicked one shut if it was already open). */
+  const toggleBar=(key)=>{
+    const cur={view:viewMenu, cols:showCols, filter:filterMenu, group:groupMenu, sort:sortMenu}[key];
+    setMenuKey(null); setColMenu(null);
+    setViewMenu(key==='view' && !cur); setShowCols(key==='cols' && !cur);
+    setFilterMenu(key==='filter' && !cur); setGroupMenu(key==='group' && !cur);
+    setSortMenu(key==='sort' && !cur);
+  };
   /* if a grouped/sorted column is deleted, drop the stale reference */
   useEffect(()=>{ const keys=new Set(db.cols.map(c=>c.key));
     if(groupBy && !keys.has(groupBy)) setGroupBy('');
@@ -3781,7 +3790,7 @@ function TablesTool(){
     <div class="tbl-bar">
       <div style="position:relative">
         <button type="button" class="tbar-btn on" aria-haspopup="menu" aria-expanded=${viewMenu}
-          onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setViewMenu(o=>!o)}>
+          onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('view')}>
           <${Icon} name=${curView[2]} size=14/> ${curView[1]} <${Icon} name="caretDown" size=12/></button>
         ${viewMenu && html`<div class="tbl-menu" role="menu" aria-label="Views" style="left:0;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
           ${VIEWS.map(([id,label,icon])=>html`<button key=${id} type="button" class="tbl-mi" role="menuitemradio" aria-checked=${view===id} onClick=${()=>{setView(id);setViewMenu(false);}}>
@@ -3792,7 +3801,7 @@ function TablesTool(){
       ${view!=='json' && html`
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(visibleCols.length<db.cols.length?' on':'')} aria-expanded=${showCols}
-            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setShowCols(o=>!o)}><${Icon} name="eyeSlash" size=15/> Hide fields</button>
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('cols')}><${Icon} name="eyeSlash" size=15/> Hide fields</button>
           ${showCols && html`<div class="tbl-menu" role="group" aria-label="Show or hide columns" style="left:0;right:auto;min-width:210px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
             ${db.cols.map(c=>html`<div key=${c.key} style="display:flex;align-items:center;gap:8px;padding:4px 2px">
               <span style="flex:1;font-size:13px"><${Icon} name=${TYPE_META[c.type].icon} size=13/> ${c.label}</span>
@@ -3801,7 +3810,7 @@ function TablesTool(){
         </div>
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(activeFilters>0?' on':'')} aria-expanded=${filterMenu}
-            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setFilterMenu(o=>!o)}><${Icon} name="funnel" size=15/> Filter${activeFilters>0?' ('+activeFilters+')':''}</button>
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('filter')}><${Icon} name="funnel" size=15/> Filter${activeFilters>0?' ('+activeFilters+')':''}</button>
           ${filterMenu && html`<div class="tbl-menu" role="group" aria-label="Active filters" style="left:0;right:auto;min-width:230px" onMouseDown=${e=>e.stopPropagation()} onClick=${e=>e.stopPropagation()}>
             ${activeFilters===0
               ? html`<div style="padding:6px 8px;font-size:12px;color:var(--ink-gray-5)">No filters. Open a field's menu (the dots in its header) to filter it.</div>`
@@ -3814,7 +3823,7 @@ function TablesTool(){
         </div>
         <div style="position:relative">
           <button type="button" class=${'tbar-btn'+(groupBy?' on':'')} aria-expanded=${groupMenu}
-            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setGroupMenu(o=>!o)}>
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('group')}>
             <${Icon} name=${view==='board'?'kanban':'list'} size=15/> ${view==='board'?'Stack':'Group'}${groupBy?': '+(visibleCols.find(c=>c.key===groupBy)?.label||''):''}</button>
           ${groupMenu && html`<div class="tbl-menu" role="menu" aria-label="Group by" style="left:0;right:auto;min-width:170px" onMouseDown=${e=>e.stopPropagation()}>
             ${view!=='board' ? html`<button type="button" class="tbl-mi" role="menuitemradio" aria-checked=${!groupBy} onClick=${()=>{setGroupBy('');setGroupMenu(false);}}>None ${!groupBy?html`<${Icon} name="check" size=13/>`:''}</button>` : ''}
@@ -3825,7 +3834,7 @@ function TablesTool(){
         </div>
         ${view!=='board' && html`<div style="position:relative">
           <button type="button" class=${'tbar-btn'+(sortBy?' on':'')} aria-expanded=${sortMenu}
-            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>setSortMenu(o=>!o)}>
+            onMouseDown=${e=>e.stopPropagation()} onClick=${()=>toggleBar('sort')}>
             <${Icon} name="rows" size=15/> Sort${sortBy?': '+(visibleCols.find(c=>c.key===sortBy)?.label||''):''}</button>
           ${sortMenu && html`<div class="tbl-menu" role="menu" aria-label="Sort by" style="left:0;right:auto;min-width:190px" onMouseDown=${e=>e.stopPropagation()}>
             <button type="button" class="tbl-mi" onClick=${()=>{setSortBy('');setSortMenu(false);}}>None ${!sortBy?html`<${Icon} name="check" size=13/>`:''}</button>
