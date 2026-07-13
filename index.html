@@ -34,20 +34,20 @@
     --gap:4px; --shell-radius:16px; --app-canvas:#F8F8F8;
   }
 
-  /* Graphik LCG (self-hosted, proprietary, served from /fonts). Regular=400,
-     Medium=500, Semibold=600, Bold=700 (true weights, no synthetic matching).
+  /* General Sans (self-hosted from /fonts; Fontshare/ITF free license, so the
+     public deploy is fine). Regular=400, Medium=500, Semibold=600, Bold=700.
      IBM Plex Mono still loads from Google Fonts for the .mono / code styles. */
-  @font-face{font-family:'Graphik LCG';font-weight:400;font-style:normal;font-display:swap;
-    src:url('/fonts/GraphikLCG-Regular.woff2') format('woff2')}
-  @font-face{font-family:'Graphik LCG';font-weight:500;font-style:normal;font-display:swap;
-    src:url('/fonts/GraphikLCG-Medium.woff2') format('woff2')}
-  @font-face{font-family:'Graphik LCG';font-weight:600;font-style:normal;font-display:swap;
-    src:url('/fonts/GraphikLCG-Semibold.woff2') format('woff2')}
-  @font-face{font-family:'Graphik LCG';font-weight:700;font-style:normal;font-display:swap;
-    src:url('/fonts/GraphikLCG-Bold.woff2') format('woff2')}
+  @font-face{font-family:'General Sans';font-weight:400;font-style:normal;font-display:swap;
+    src:url('/fonts/GeneralSans-Regular.woff2') format('woff2')}
+  @font-face{font-family:'General Sans';font-weight:500;font-style:normal;font-display:swap;
+    src:url('/fonts/GeneralSans-Medium.woff2') format('woff2')}
+  @font-face{font-family:'General Sans';font-weight:600;font-style:normal;font-display:swap;
+    src:url('/fonts/GeneralSans-Semibold.woff2') format('woff2')}
+  @font-face{font-family:'General Sans';font-weight:700;font-style:normal;font-display:swap;
+    src:url('/fonts/GeneralSans-Bold.woff2') format('woff2')}
 
   *{box-sizing:border-box}
-  html{font-family:'Graphik LCG',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
+  html{font-family:'General Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
   body{margin:0;background:var(--app-canvas);color:var(--ink-gray-9);font-size:14px;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
