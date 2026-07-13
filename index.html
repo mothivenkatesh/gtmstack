@@ -34,20 +34,20 @@
     --gap:4px; --shell-radius:16px; --app-canvas:#F8F8F8;
   }
 
-  /* General Sans (self-hosted from /fonts; Fontshare/ITF free license, so the
-     public deploy is fine). Regular=400, Medium=500, Semibold=600, Bold=700.
-     IBM Plex Mono still loads from Google Fonts for the .mono / code styles. */
-  @font-face{font-family:'General Sans';font-weight:400;font-style:normal;font-display:swap;
-    src:url('/fonts/GeneralSans-Regular.woff2') format('woff2')}
-  @font-face{font-family:'General Sans';font-weight:500;font-style:normal;font-display:swap;
-    src:url('/fonts/GeneralSans-Medium.woff2') format('woff2')}
-  @font-face{font-family:'General Sans';font-weight:600;font-style:normal;font-display:swap;
-    src:url('/fonts/GeneralSans-Semibold.woff2') format('woff2')}
-  @font-face{font-family:'General Sans';font-weight:700;font-style:normal;font-display:swap;
-    src:url('/fonts/GeneralSans-Bold.woff2') format('woff2')}
+  /* Zoho Puvi (self-hosted from /fonts; Zoho's freely downloadable typeface).
+     Regular=400, Medium=500, Semibold=600, Bold=700. Body copy defaults to
+     Regular. IBM Plex Mono still loads from Google Fonts for .mono / code. */
+  @font-face{font-family:'Zoho Puvi';font-weight:400;font-style:normal;font-display:swap;
+    src:url('/fonts/ZohoPuvi-Regular.woff2') format('woff2')}
+  @font-face{font-family:'Zoho Puvi';font-weight:500;font-style:normal;font-display:swap;
+    src:url('/fonts/ZohoPuvi-Medium.woff2') format('woff2')}
+  @font-face{font-family:'Zoho Puvi';font-weight:600;font-style:normal;font-display:swap;
+    src:url('/fonts/ZohoPuvi-Semibold.woff2') format('woff2')}
+  @font-face{font-family:'Zoho Puvi';font-weight:700;font-style:normal;font-display:swap;
+    src:url('/fonts/ZohoPuvi-Bold.woff2') format('woff2')}
 
   *{box-sizing:border-box}
-  html{font-family:'General Sans',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
+  html{font-family:'Zoho Puvi',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px}
   body{margin:0;background:var(--app-canvas);color:var(--ink-gray-9);font-size:14px;font-weight:400;line-height:1.15;
        letter-spacing:.01em;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
