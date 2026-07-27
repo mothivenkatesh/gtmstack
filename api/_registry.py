@@ -315,7 +315,202 @@ class WatchdogModule(Module):
                      "threshold_hours": threshold, "alerted": alerted})
 
 
+# ── harness modules (the GTM harness: graph, agents, cohorts, approvals) ─────
+# Five thin Module classes over the harness engines. Same contract as every
+# other feature: metadata, get, post. The engines hold the logic.
+
+class GraphModule(Module):
+    id, name, desc = "graph", "Context Graph", "The revenue ontology every agent reads and writes"
+
+    def get(self, req):
+        import _graph as G
+        if req.params.get("id"):
+            node = G.get(req.params["id"])
+            if not node:
+                return Resp({"error": "not found"}, 404)
+            return Resp({"node": node, "neighbours": G.neighbours(node["id"])})
+        t = req.params.get("type")
+        if t:
+            return Resp({"type": t, "nodes": G.query(t, limit=int(req.params.get("limit", 100)))})
+        return Resp({"counts": G.counts()})
+
+    def post(self, req):
+        import _graph as G
+        from _cohorts import seed as seed_cohorts
+        from _definitions import seed as seed_defs
+        if req.body.get("action") == "reset":
+            G.reset()
+            seed_defs(); seed_cohorts()
+            return Resp({"ok": True, "reset": True, "counts": G.counts()})
+        if req.body.get("action") == "seed":
+            seed_defs(); seed_cohorts()
+            return Resp({"ok": True, "counts": G.counts()})
+        return Resp({"error": "unknown action"}, 400)
+
+
+class AgentsModule(Module):
+    id, name, desc = "agents", "Agents", "The agent workforce, their AOPs, plans, and runs"
+
+    def get(self, req):
+        from _agents import catalog, aop, runs
+        if req.params.get("id"):
+            a = aop(req.params["id"])
+            return Resp(a) if a else Resp({"error": "unknown agent"}, 404)
+        if req.params.get("runs"):
+            return Resp({"runs": runs(limit=int(req.params.get("limit", 25)))})
+        return Resp({"agents": catalog()})
+
+    def post(self, req):
+        from _agents import plan, run, route
+        # Plain-English delegation: the GTM lead types what they want, we pick
+        # the teammate. This is the front door, so it comes first.
+        if req.body.get("ask"):
+            r = route(req.body["ask"])
+            if req.body.get("mode") == "route":
+                return Resp(r)
+            rec, status = run(r["agent"], r["input"],
+                              approved=bool(req.body.get("approved")))
+            return Resp({**rec, "routed": r}, status)
+        agent = req.body.get("agent")
+        if not agent:
+            return Resp({"error": "agent required"}, 400)
+        inp = req.body.get("input") or {}
+        if req.body.get("mode") == "plan":
+            return Resp(plan(agent, inp))
+        rec, status = run(agent, inp, approved=bool(req.body.get("approved")))
+        return Resp(rec, status)
+
+
+class McpModule(Module):
+    """MCP endpoint: the five GTMstack tools, callable by any AI agent.
+
+    GET returns the catalog as plain JSON (handy for humans and for a quick
+    curl); POST speaks JSON-RPC 2.0, which is what MCP clients actually use.
+    The handlers live in _mcp.py and call the same engines as the UI.
+    """
+    id, name, desc = "mcp", "MCP", "GTMstack tools, callable by any AI agent"
+
+    def get(self, req):
+        from _mcp import TOOLS, SERVER_INFO, PROTOCOL_VERSION
+        return Resp({"server": SERVER_INFO, "protocolVersion": PROTOCOL_VERSION,
+                     "transport": "streamable-http (POST JSON-RPC 2.0 to this URL)",
+                     "tools": [{"name": t["name"], "title": t["title"],
+                                "description": t["description"]} for t in TOOLS]})
+
+    def post(self, req):
+        from _mcp import handle
+        body = req.body
+        if isinstance(body, list):                       # JSON-RPC batch
+            out = [r for r in (handle(m) for m in body) if r is not None]
+            return Resp(out if out else {}, 200 if out else 202)
+        resp = handle(body)
+        if resp is None:                                 # notification, no reply
+            return Resp({}, 202)
+        return Resp(resp)
+
+
+class InboxModule(Module):
+    """The human-attention queue: the one place a GTM lead answers their team.
+
+    Ported in spirit from OpenWorker's Inbox (coworker/inbox.py): approvals,
+    questions, and notifications in one queue, resolved once, answerable from
+    any surface. This is what makes the product feel like a coworker rather than
+    a control panel, which is exactly what the first cut of this UI got wrong.
+    """
+    id, name, desc = "inbox", "Inbox", "What your team needs from you"
+
+    def get(self, req):
+        from _approvals import pending, stats
+        from _agents import ask_copy, AGENTS
+        items = []
+        for p in pending():
+            d = p["data"]
+            copy = ask_copy(d.get("action", ""))
+            agent = AGENTS.get(d.get("agent"), {})
+            items.append({
+                "id": p["id"], "kind": "approval",
+                "title": copy["title"], "detail": copy["detail"],
+                "agent": agent.get("name", d.get("agent")),
+                "spends_money": d.get("risk") == "spend",
+                "context": d.get("summary", ""),
+                "requested_at": d.get("requested_at"),
+            })
+        s = stats()
+        return Resp({"items": items, "count": len(items),
+                     "settled": s.get("standing_policies", 0)})
+
+    def post(self, req):
+        from _approvals import resolve
+        return Resp(resolve(req.body.get("id"), req.body.get("outcome", "once"),
+                            req.body.get("scope")))
+
+
+class CohortsModule(Module):
+    id, name, desc = "cohorts", "Cohorts", "Smart segments, the unit of GTM action"
+
+    def get(self, req):
+        from _cohorts import all as all_cohorts, members, suggest
+        if req.params.get("key"):
+            return Resp(members(req.params["key"],
+                                limit=int(req.params.get("limit", 100))))
+        if req.params.get("suggest"):
+            return Resp({"suggestions": suggest()})
+        return Resp({"cohorts": all_cohorts()})
+
+    def post(self, req):
+        from _cohorts import create
+        return Resp(create(req.body.get("name"), req.body.get("plain"),
+                           req.body.get("node", "signal"), req.body.get("predicate"),
+                           req.body.get("kind", "dynamic"), req.body.get("play")))
+
+
+class ApprovalsModule(Module):
+    id, name, desc = "approvals", "Approvals", "Tiered, approve-once governance over agent actions"
+
+    def get(self, req):
+        from _approvals import pending, policies, stats
+        from _risk import RiskClass, tier_meta
+        return Resp({
+            "pending": pending(),
+            "policies": [{"id": p["id"], **p["data"]} for p in policies()],
+            "stats": stats(),
+            "tiers": [{"risk": r.value, **tier_meta(r)} for r in RiskClass],
+        })
+
+    def post(self, req):
+        from _approvals import resolve, revoke, grant
+        act = req.body.get("action")
+        if act == "resolve":
+            return Resp(resolve(req.body.get("id"), req.body.get("outcome", "once"),
+                                req.body.get("scope")))
+        if act == "revoke":
+            revoke(req.body.get("id"))
+            return Resp({"ok": True})
+        if act == "grant":
+            return Resp({"ok": True, "id": grant(req.body.get("tool"),
+                                                 req.body.get("scope", "*"),
+                                                 req.body.get("agent"))})
+        return Resp({"error": "unknown action"}, 400)
+
+
+class DefinitionsModule(Module):
+    id, name, desc = "definitions", "Key Definitions", "One authoritative definition per metric"
+
+    def get(self, req):
+        from _definitions import all as all_defs
+        return Resp({"definitions": all_defs()})
+
+    def post(self, req):
+        from _definitions import promote
+        return Resp(promote(req.body.get("name"), req.body.get("formula"),
+                            req.body.get("inputs"), req.body.get("owner", "RevOps"),
+                            req.body.get("source_run")))
+
+
 MODULES = [TranscriptModule(), PersonaModule(), SignalsModule(), ReportModule(),
            MonitorModule(), GroupsModule(), JobsModule(), CleanModule(),
-           PlaysModule(), AuthModule(), WatchdogModule()]
+           PlaysModule(), AuthModule(), WatchdogModule(),
+           GraphModule(), AgentsModule(), CohortsModule(), ApprovalsModule(),
+           InboxModule(), McpModule(),
+           DefinitionsModule()]
 REGISTRY = {m.id: m for m in MODULES}

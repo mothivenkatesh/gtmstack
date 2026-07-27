@@ -9,11 +9,12 @@ import { CompetitorTool, manifest as mCompetitor } from './competitor.js';
 import { TablesTool,     manifest as mTables }     from './tables.js';
 import { RoutinesTool,   manifest as mReports }    from './reports.js';
 import { ConnectorsTool, manifest as mConnectors } from './connectors.js';
+import { HarnessTool,    manifest as mHarness }    from './harness.js';
 import { Auth, RunsModal, WelcomeModal } from './auth.js';
 
 
 /* ── tool registry: built from each module's manifest (the shared interface) ── */
-export const MODULES = [mHome, mPersona, mExtract, mSignals, mClean, mCompetitor, mTables, mReports, mConnectors];
+export const MODULES = [mHome, mHarness, mPersona, mExtract, mSignals, mClean, mCompetitor, mTables, mReports, mConnectors];
 export const TOOLS = Object.fromEntries(MODULES.map(m=>[m.id, m]));
 export const NAV = MODULES.map(m=>m.id);
 
@@ -93,6 +94,7 @@ export function App(){
       <div style=${tool==='extract' ? '' : 'display:none'}><${ExtractTool} seed=${seed} /></div>
       <div style=${tool==='signals' ? '' : 'display:none'}><${SignalsTool} seed=${seed} /></div>
       <div style=${tool==='clean'   ? '' : 'display:none'}><${CleanTool} seed=${seed} /></div>
+      ${tool==='harness' && html`<div><${HarnessTool} /></div>`}
       ${tool==='competitor' && html`<div><${CompetitorTool} /></div>`}
       ${tool==='reports' && html`<div><${RoutinesTool} /></div>`}
       <div style=${tool==='tables' ? '' : 'display:none'}><${TablesTool} /></div>

@@ -402,3 +402,66 @@ index.html node --check clean. Live monitor run end-to-end (no creds): honest
 per-track statuses (quiet/blocked/needs_connection), no crash, budget-bounded,
 persisted + deduped. Not verified live (needs the Mac's session + creds): real
 Reddit OAuth, X cookies, residential-IP review reads, Google Sheets push, DB.
+
+## Build plan, this change (GTM harness + Inbox + MCP server)
+
+Goal: implement the GTMstack harness PRD on top of the existing app, using
+OpenWorker (Andrew Ng, MIT) as the reference for governed autonomy, and expose
+the five existing tools over MCP so any agent can call them.
+
+What was taken from OpenWorker, precisely (it is a reference, not a dependency;
+nothing is vendored): `coworker/risk.py` -> `api/_risk.py` (risk as a DECLARED
+property one `classify()` reads, re-cut for GTM as READ / WRITE / SPEND rather
+than read/write_local/exec/external); `coworker/permissions.py` + `engine.py` ->
+`api/_approvals.py` (the `Decision` object, approve-once-then-standing with
+scopes, guardrails evaluated BEFORE grants, and the invariant that every
+auto-allowed action cites the rule that allowed it); `coworker/inbox.py` ->
+`InboxModule` (the canonical human-attention queue: an approval request becomes
+an item and the run reports it rather than proceeding).
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 1 | Risk classes for agent actions: READ / WRITE / SPEND, by-name base table, `classify` + `is_consequential` + `tier_meta` | api/_risk.py | low |
+| 2 | The revenue context graph (the ontology): node + edge tables, keyed `upsert` (idempotent, so a re-run updates rather than duplicates), `query`/`link`/`neighbours`/`counts`. SQLite under `api/_store/` (gitignored), Postgres is the Phase-1 swap behind the same calls | api/_graph.py | low |
+| 3 | Approval engine: `decide` (guardrails, then tier, then standing policy, each answer carrying its rule), the pending queue as the labelling stream, `resolve(once/always/deny)` where ALWAYS writes a standing policy, `stats` for the approvals-shrink metric | api/_approvals.py | low |
+| 4 | The agent workforce: 11 AOPs (scope, plain-English steps naming their deterministic tool, guardrails, evals), `plan` (per-step risk + approval state + self-flagged weak-data risks) and `run` (gated; a step needing a human is queued, not forced). Listener/Analyst/Steward wired to real engines, the rest declared. Plus `route` (plain-English delegation, deterministic keyword routing) and `ask_copy` (human phrasing for every consequential action) | api/_agents.py | med |
+| 5 | Cohort Engine: static / dynamic / outcome-learned / predictive, declarative predicates compiled against the graph. Membership is DETERMINISTIC (a model asked to enumerate a set invents members); what is agentic is defining and suggesting cohorts. Every membership carries its reason | api/_cohorts.py | low |
+| 6 | Key Definitions: one authoritative versioned definition per metric, `promote` from an analysis, deterministic keyword resolution (picking the standard definition must be predictable or the consistency guarantee is worthless) | api/_definitions.py | low |
+| 7 | Six Module classes + shims: graph, agents, cohorts, approvals, definitions, inbox | api/_registry.py, api/{graph,agents,cohorts,approvals,definitions,inbox}.py | low |
+| 8 | MCP server: five tools (`gtm_signals`, `gtm_persona`, `gtm_youtube_transcript`, `gtm_nobounce`, `gtm_competitor_intel`) as thin adapters over the SAME engines the UI calls. JSON-RPC 2.0 over HTTP (`McpModule`) plus a stdio shim for Claude Desktop / Cursor, both on one set of handlers. Tool errors come back as content, never a 500, because an agent recovers from a described failure | api/_mcp.py, api/mcp.py, mcp_server.py | low |
+| 9 | Frontend tool `harness` ("Your team"): Work (plain-English delegation + the run told as a story), Inbox (approvals in outcome language with Yes-always / Just-once / No), Your team, Lists, Memory | js/harness.js, js/app.js, index.html | low |
+| 10 | vercel.json entries for the 7 new functions (`includeFiles: api/_*.py`), without which every new endpoint 500s on deploy per the known Vercel launcher gotcha | vercel.json | low |
+
+UI posture, corrected mid-build after review: the first cut was an admin console
+(five tabs of tool names, node types, predicates, risk tiers). GTM teams are not
+engineers, so it was rebuilt as a coworker surface: you delegate in plain
+English, the teammate works, and it comes back through the Inbox when it needs a
+decision. Vocabulary rule for `js/harness.js` and the step summaries: outcomes,
+never internals ("Saved 24 posts, each with a link back to the original", not
+"24 signals written to the graph"; "Send you an alert when something matters",
+not "send_message").
+
+Verified live end to end: delegation routes correctly across five phrasings
+(Listener / Steward / Analyst / Watcher); a real run over Reddit read 25 public
+posts, identified the posters, saved them with source links, and correctly
+classified "Best Payment Gateway in India" as category intent; cohorts computed
+deterministic membership with a stated reason per member; the approval gate
+halted both write steps and queued them, and answering "always" converted one
+into a standing policy so the next plan showed it auto-allowed WITH its rule
+cited. MCP verified on both transports: initialize, tools/list (5), real
+`gtm_nobounce` and `gtm_signals` calls returning live data, and a correct -32601
+on an unknown method.
+
+Two bugs found and fixed during verification: (1) `resolve` routed an update
+through `upsert` with an explicit id and no natural key, taking the INSERT path
+and tripping the primary key, so the policy was granted but the queue item never
+cleared (500); it now updates in place. (2) Watcher was marked runnable with zero
+steps, so it reported "got to work" over an empty card; it is now honestly
+"needs a connection" and the UI says so instead of showing a silent success.
+
+Honest scope: sentiment and intent are a keyword heuristic (`_sentiment` /
+`_intent`), not a model, so they will miss sarcasm and indirect phrasing. The
+PRD's 0.85 precision target needs a real classifier plus the golden-set eval
+harness, which is the next increment. Alert delivery is a dry run until a Slack
+or email destination is connected. The graph is local SQLite, so serverless gets
+an ephemeral copy per cold start until DATABASE_URL backs it.

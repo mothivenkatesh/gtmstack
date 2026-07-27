@@ -11,7 +11,14 @@
     "api/report.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
     "api/monitor.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
     "api/watchdog.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
-    "api/groups.py": { "includeFiles": "api/_*.py" }
+    "api/groups.py": { "includeFiles": "api/_*.py" },
+    "api/graph.py": { "includeFiles": "api/_*.py" },
+    "api/agents.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
+    "api/cohorts.py": { "includeFiles": "api/_*.py" },
+    "api/approvals.py": { "includeFiles": "api/_*.py" },
+    "api/definitions.py": { "includeFiles": "api/_*.py" },
+    "api/inbox.py": { "includeFiles": "api/_*.py" },
+    "api/mcp.py": { "maxDuration": 60, "includeFiles": "api/_*.py" }
   },
   "crons": [
     { "path": "/api/watchdog", "schedule": "30 9 * * *" }
