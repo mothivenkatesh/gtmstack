@@ -766,3 +766,63 @@ Verified: 80 harness tests (up from 63), six unit files, 51 E2E with 0 failures,
 eval gate green. Live checks: a manual Signals run wrote 18 people + 18 signals +
 a run node marked `by: human`; tables round-trip through the DB; analytics roll
 up by tool; the CRM reports honestly when unconfigured.
+
+## Build plan, this change (typed run state, checkpointing, CRM providers)
+
+Three items chosen deliberately INSTEAD of adopting LangGraph. The agents are
+three straight lines with no conditional edges, so a graph framework would be a
+`for` loop with extra imports. These close the real gaps and leave the door open.
+
+**1. Typed run state.** `RunState` / `StepState` TypedDicts in `_agents.py`.
+Zero runtime cost, no dependency, and the state contract is now checkable rather
+than a dict passed by convention, which is the bug class that has bitten this
+repo twice.
+
+**2. Checkpointing.** The only genuine gap LangGraph would have filled. The run
+node was written once at the END, so a process dying mid-run left nothing. Now
+`_checkpoint()` persists after every step, carrying the state threaded between
+steps (`CARRY_KEYS`, bounded by `CARRY_MAX`, because a checkpoint is not a data
+store). `resumable()` lists stopped runs and `run(..., resume=run_id)` continues
+from the last completed step. No new infrastructure: the graph already stored
+runs, this just writes sooner and writes more.
+
+**A real bug the resume test found.** A failed step did NOT stop the run. Steps
+4, 5, and 6 continued on incomplete state and reported "ok", which wrote signals
+with NO SENTIMENT: silently corrupt data, and it also meant a run never became
+resumable because it always reached the end. A failure now halts, marks the
+remaining steps `skipped`, checkpoints, and returns `done: False` with a resume
+hint. Verified by crashing Listener at step 3: the 18 fetched items survived in
+the checkpoint, and the resume skipped the two completed steps and finished
+without re-fetching.
+
+**3. CRM providers.** `_crm_providers.py` puts HubSpot and Salesforce behind one
+protocol as peers, replacing a hardcoded HubSpot plus a `"salesforce": False`
+placeholder, which was the same declared-but-not-built pattern deleted from the
+agent roster. Same shape as the proven Signals source adapters.
+
+The important part is NORMALISATION, not the fetching. HubSpot's
+`lifecyclestage` and Salesforce's `LeadSource` / `StageName` do not map cleanly,
+and if they land in different shapes Steward cannot dedupe across them: the graph
+splits into two halves that cannot reason about each other, exactly the
+toolkit-versus-harness problem just fixed. One `LIFECYCLE` table maps both into
+one vocabulary, with a test asserting `salesqualifiedlead` and `Qualified` both
+become `sql`.
+
+Auth differs and the protocol absorbs it: HubSpot is a static bearer token,
+Salesforce is OAuth2 with a per-org instance host and short-lived access tokens,
+so `_token()` refreshes when only a refresh token is held. A connector that only
+accepted a static Salesforce token would work for an hour and then look broken.
+
+Still READ ONLY. Writing back is a SPEND-tier action against someone's system of
+record and belongs behind the approval ladder. One provider failing is recorded
+against that provider and the others continue.
+
+Verified: 93 harness tests (up from 80), six unit files, 51 E2E with 0 failures,
+eval gate green.
+
+**On LangGraph, for the record.** The trigger to adopt it is a conditional edge:
+Focus composing other agents, or tool-selection across multiple CRMs. Neither has
+arrived. When it does, porting a working system with a typed state contract and
+checkpointing already in place is straightforward, and the approval queue stays
+as-is because a durable queue survives a process death in a way an in-memory
+interrupt does not.

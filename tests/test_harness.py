@@ -40,6 +40,7 @@ import _graph as G             # noqa: E402
 import _observe as O           # noqa: E402
 import _contracts as CT        # noqa: E402
 import _crm as CRM            # noqa: E402
+import _crm_providers as CP   # noqa: E402
 import _docs as DOC           # noqa: E402
 import _toolgraph as TG       # noqa: E402
 
@@ -523,11 +524,12 @@ class Crm(unittest.TestCase):
         self.assertFalse(CRM.configured()["any"])
         out = CRM.sync()
         self.assertFalse(out["ok"])
-        self.assertIn("not connected", out["error"].lower())
+        self.assertIn("no crm is connected", out["error"].lower())
 
     def test_status_says_what_to_do(self):
         s = CRM.status()
-        self.assertIn("HUBSPOT_TOKEN", s["note"])
+        self.assertIn("HubSpot", s["note"])
+        self.assertIn("Salesforce", s["note"])
         self.assertEqual(s["people_from_crm"], 0)
 
     def test_sync_never_fabricates_records(self):
@@ -568,6 +570,115 @@ class ToolGraph(unittest.TestCase):
 
     def test_non_dict_payload_is_safe(self):
         self.assertIsNone(TG.record("signals", {}, "not a dict"))
+
+
+class Checkpointing(unittest.TestCase):
+    """A crashed run must be resumable, and a failed step must not let later
+    steps run on incomplete state."""
+
+    def setUp(self):
+        G.reset()
+        self._real = AG._listener_tool
+
+    def tearDown(self):
+        AG._listener_tool = self._real
+
+    def _crash_on(self, tool_name):
+        real = self._real
+        def crashing(tool, inp, run_id):
+            if tool == tool_name:
+                raise RuntimeError("simulated crash")
+            return real(tool, inp, run_id)
+        AG._listener_tool = crashing
+
+    def test_a_failed_step_halts_the_run(self):
+        """The bug this caught: later steps ran on missing state and reported
+        ok, writing signals with no sentiment. Silently corrupt beats nothing."""
+        self._crash_on("classify_sentiment")
+        rec, _ = AG.run("listener", {"query": "x", "sources": ["reddit"]}, approved=True)
+        st = {s["tool"]: s["status"] for s in rec["steps"]}
+        self.assertEqual(st["classify_sentiment"], "error")
+        self.assertEqual(st["write_signal"], "skipped")
+        self.assertFalse(rec["ok"])
+        self.assertFalse(rec["done"])
+
+    def test_a_halted_run_is_resumable(self):
+        self._crash_on("classify_sentiment")
+        AG.run("listener", {"query": "x", "sources": ["reddit"]}, approved=True)
+        r = AG.resumable()
+        self.assertEqual(len(r), 1)
+        self.assertLess(r[0]["completed"], r[0]["total"])
+
+    def test_a_finished_run_is_not_resumable(self):
+        AG.run("steward", {"query": "x"}, approved=True)
+        self.assertEqual([x for x in AG.resumable() if x["agent"] == "steward"], [])
+
+    def test_resuming_an_unknown_run_404s(self):
+        self.assertEqual(AG.run("listener", {}, resume="run_nope")[1], 404)
+
+    def test_checkpoint_preserves_carried_state(self):
+        """Without the carry, a resume would re-fetch and the earlier steps'
+        work would be lost, which makes it a restart rather than a resume."""
+        self._crash_on("classify_sentiment")
+        AG.run("listener", {"query": "x", "sources": ["reddit"]}, approved=True)
+        saved = G.query("run")[0]["data"]
+        self.assertIn("carry", saved)
+        self.assertFalse(saved["done"])
+
+
+class CrmProviders(unittest.TestCase):
+    """HubSpot and Salesforce as peers behind one protocol. The normalisation is
+    the point: if they land in different shapes, Steward cannot dedupe across
+    them and the graph splits in two."""
+
+    def setUp(self):
+        for k in ("HUBSPOT_TOKEN", "SALESFORCE_INSTANCE_URL",
+                  "SALESFORCE_ACCESS_TOKEN", "SALESFORCE_REFRESH_TOKEN"):
+            os.environ.pop(k, None)
+
+    def test_both_providers_registered(self):
+        self.assertEqual(set(CP.PROVIDERS), {"hubspot", "salesforce"})
+
+    def test_every_provider_implements_the_protocol(self):
+        for p in CP.PROVIDERS.values():
+            for m in ("configured", "contacts", "companies", "deals", "status"):
+                self.assertTrue(callable(getattr(p, m)), f"{p.id} missing {m}")
+
+    def test_unconfigured_returns_empty_not_an_error(self):
+        for p in CP.PROVIDERS.values():
+            self.assertEqual(p.contacts(), [])
+            self.assertEqual(p.companies(), [])
+            self.assertEqual(p.deals(), [])
+
+    def test_status_tells_you_what_to_set(self):
+        notes = {p.id: p.status()["note"] for p in CP.PROVIDERS.values()}
+        self.assertIn("HUBSPOT_TOKEN", notes["hubspot"])
+        self.assertIn("SALESFORCE", notes["salesforce"])
+
+    def test_lifecycle_normalises_across_providers(self):
+        """HubSpot's salesqualifiedlead and Salesforce's Qualified must become
+        the same value or the graph holds two vocabularies."""
+        self.assertEqual(CP._lifecycle("salesqualifiedlead"), "sql")
+        self.assertEqual(CP._lifecycle("Qualified"), "sql")
+        self.assertEqual(CP._lifecycle("customer"), "customer")
+        self.assertEqual(CP._lifecycle("Closed - Converted"), "customer")
+
+    def test_sync_with_no_provider_writes_nothing(self):
+        G.reset()
+        before = G.counts()["nodes"]
+        out = CRM.sync()
+        self.assertFalse(out["ok"])
+        self.assertEqual(G.counts()["nodes"], before)
+
+
+class RunStateContract(unittest.TestCase):
+    def test_typed_state_is_defined(self):
+        self.assertTrue(hasattr(AG, "RunState"))
+        self.assertTrue(hasattr(AG, "StepState"))
+
+    def test_carry_is_bounded(self):
+        big = {"_items": list(range(AG.CARRY_MAX * 3))}
+        self.assertLessEqual(len(AG._carry(big)["_items"]), AG.CARRY_MAX)
 
 
 if __name__ == "__main__":

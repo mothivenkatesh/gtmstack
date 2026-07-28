@@ -29,11 +29,68 @@ from __future__ import annotations
 
 import time
 import uuid
+from typing import Any, Dict, List, Optional
+
+try:
+    from typing import TypedDict
+except ImportError:                                              # pragma: no cover
+    TypedDict = None
 
 import _graph as G
 import _observe as O
 import _otel as T
 from _approvals import decide, request as request_approval
+
+# ── the run state contract ──────────────────────────────────────────────────
+# These were dicts passed by convention, which is fine until someone adds a key
+# in one place and reads a different one somewhere else. That is exactly the bug
+# class that has bitten this repo twice. TypedDict costs nothing at runtime and
+# makes the contract checkable.
+
+if TypedDict is not None:
+    class StepState(TypedDict, total=False):
+        n: int
+        text: str
+        tool: str
+        risk: str
+        status: str          # ok | error | awaiting_approval | skipped
+        output: str
+        count: Optional[int]
+        rule: Optional[str]
+        error: str
+        action_id: str
+
+    class RunState(TypedDict, total=False):
+        """Everything needed to resume a run from where it stopped.
+
+        `carry` is the state threaded BETWEEN steps (Listener's fetched items,
+        Analyst's resolved definitions). Persisting it is what makes a resume
+        real rather than a restart: without it, resuming would re-fetch and the
+        earlier steps' work would be lost."""
+        run_id: str
+        agent: str
+        name: str
+        input: Dict[str, Any]
+        carry: Dict[str, Any]
+        steps: List[StepState]
+        emitted: int
+        queued: List[Dict[str, Any]]
+        risk_flags: List[Dict[str, Any]]
+        started_at: float
+        duration_s: float
+        ok: bool
+        done: bool
+        resumed_from: Optional[str]
+else:                                                            # pragma: no cover
+    StepState = dict
+    RunState = dict
+
+
+# Keys the engines thread through `inp` between steps. Persisted on checkpoint so
+# a resumed run does not have to redo the fetch.
+CARRY_KEYS = ("_items", "_definitions", "_result", "_rates", "_dupes", "_source")
+CARRY_MAX = 200          # cap what we persist: a checkpoint is not a data store
+
 
 # ── the AOP library ─────────────────────────────────────────────────────────
 # Ten agents from the PRD. Each carries the plain-English procedure plus the
@@ -271,10 +328,57 @@ def _risky_inputs(agent_id, inp):
 
 # ── execution ───────────────────────────────────────────────────────────────
 
-def run(agent_id, inp=None, approved=False):
-    """Execute an agent. Anything consequential is gated: when `decide` says a
-    step needs a human, the step is queued to the approval queue and the run
-    reports it rather than proceeding. Returns the run record."""
+def _carry(inp):
+    """The state a resumed run needs, bounded. A checkpoint records enough to
+    continue, not a copy of everything the run touched."""
+    out = {}
+    for k in CARRY_KEYS:
+        v = inp.get(k)
+        if isinstance(v, list):
+            out[k] = v[:CARRY_MAX]
+        elif v is not None:
+            out[k] = v
+    return out
+
+
+def _checkpoint(rec):
+    """Persist progress after every step.
+
+    This is the gap that made a crashed run unrecoverable: the run node was only
+    written at the END, so a process that died mid-way left nothing behind. The
+    graph already stores runs, so durability needs no new infrastructure, just
+    writing sooner and writing the carried state with it."""
+    try:
+        G.upsert("run", rec, key=rec["run_id"], agent=rec.get("agent"),
+                 run_id=rec["run_id"])
+    except Exception:                                            # noqa: BLE001
+        pass          # a checkpoint failure must not fail the run it protects
+
+
+def resumable(limit=20):
+    """Runs that stopped before finishing. A crashed run leaves done=False."""
+    out = []
+    for r in G.query("run", limit=limit * 5):
+        d = r["data"]
+        if d.get("done") is False and d.get("agent") in AGENTS:
+            out.append({"run_id": d.get("run_id"), "agent": d.get("agent"),
+                        "completed": sum(1 for s in d.get("steps") or []
+                                         if s.get("status") == "ok"),
+                        "total": len(d.get("steps") or []),
+                        "started_at": d.get("started_at")})
+        if len(out) >= limit:
+            break
+    return out
+
+
+def run(agent_id, inp=None, approved=False, resume=None):
+    """Execute an agent, or resume one that stopped.
+
+    Anything consequential is gated: when `decide` says a step needs a human the
+    step is queued and the run reports it rather than proceeding.
+
+    `resume` takes a run_id and continues from the last completed step, reusing
+    the carried state so earlier work is not redone."""
     a = AGENTS.get(agent_id)
     if not a:
         # A roadmap teammate is a known name, not a typo, so say which it is.
@@ -282,10 +386,26 @@ def run(agent_id, inp=None, approved=False):
             return {"error": f"{ROADMAP[agent_id]['name']} is not built yet",
                     "roadmap": True, "agent": agent_id}, 400
         return {"error": f"unknown agent: {agent_id}"}, 404
-    inp = inp or {}
+    inp = dict(inp or {})
     run_id = f"run_{uuid.uuid4().hex[:10]}"
     started = time.time()
     steps_out, emitted, queued = [], [], []
+    done_tools, resumed_from = set(), None
+
+    if resume:
+        prior = next((r["data"] for r in G.query("run", limit=200)
+                      if r["data"].get("run_id") == resume), None)
+        if not prior:
+            return {"error": f"unknown run: {resume}"}, 404
+        if prior.get("done"):
+            return {"error": "that run already finished", "run_id": resume}, 400
+        # Restore the carried state so the resume continues rather than restarts.
+        inp.update(prior.get("input") or {})
+        inp.update(prior.get("carry") or {})
+        steps_out = [s for s in (prior.get("steps") or []) if s.get("status") == "ok"]
+        done_tools = {s.get("tool") for s in steps_out}   # skipped steps DO re-run
+        emitted = [None] * int(prior.get("emitted") or 0)
+        resumed_from, run_id = resume, resume
 
     O.log(O.RUN_START, agent=agent_id, run_id=run_id,
           summary=f"{a['name']} started", input=inp)
@@ -297,6 +417,8 @@ def run(agent_id, inp=None, approved=False):
     p = plan(agent_id, inp)
 
     for s in p["steps"]:
+        if s["tool"] in done_tools:
+            continue                       # already completed in the run we resumed
         d = decide(s["tool"], agent=agent_id, scope=inp.get("scope", "*"))
         O.log(O.DECISION, agent=agent_id, run_id=run_id, ok=d.allowed,
               summary=f"{s['tool']}: {d.reason}", tool=s["tool"],
@@ -306,6 +428,11 @@ def run(agent_id, inp=None, approved=False):
                                    payload=inp, summary=s["text"])
             queued.append({"action_id": aid, "tool": s["tool"], "text": s["text"]})
             steps_out.append({**s, "status": "awaiting_approval", "action_id": aid})
+            _checkpoint({"run_id": run_id, "agent": agent_id, "name": a["name"],
+                         "input": {k: v for k, v in inp.items() if not k.startswith("_")},
+                         "carry": _carry(inp), "steps": steps_out,
+                         "emitted": len(emitted), "queued": queued, "done": False,
+                         "started_at": started, "resumed_from": resumed_from})
             continue
         t0 = time.time()
         try:
@@ -317,6 +444,11 @@ def run(agent_id, inp=None, approved=False):
             steps_out.append({**s, "status": "ok", "output": out.get("summary", ""),
                               "count": out.get("count"), "rule": d.rule})
             emitted += out.get("emitted", [])
+            _checkpoint({"run_id": run_id, "agent": agent_id, "name": a["name"],
+                         "input": {k: v for k, v in inp.items() if not k.startswith("_")},
+                         "carry": _carry(inp), "steps": steps_out,
+                         "emitted": len(emitted), "queued": queued, "done": False,
+                         "started_at": started, "resumed_from": resumed_from})
             O.log(O.STEP, agent=agent_id, run_id=run_id, ok=True,
                   ms=(time.time() - t0) * 1000, summary=out.get("summary", ""),
                   tool=s["tool"], count=out.get("count"))
@@ -325,11 +457,44 @@ def run(agent_id, inp=None, approved=False):
             O.log(O.ERROR, agent=agent_id, run_id=run_id, ok=False,
                   ms=(time.time() - t0) * 1000,
                   summary=f"{s['tool']}: {str(e)[:160]}", tool=s["tool"])
+            # HALT. These procedures are linear: every step consumes what the
+            # previous one produced. Continuing past a failure ran the remaining
+            # steps on incomplete state and reported them "ok", which wrote
+            # signals with no sentiment. Silently corrupt output is worse than a
+            # stopped run, and stopping is also what makes the run resumable.
+            for later in p["steps"][p["steps"].index(s) + 1:]:
+                steps_out.append({**later, "status": "skipped",
+                                  "output": "not run: an earlier step failed"})
+            _checkpoint({"run_id": run_id, "agent": agent_id, "name": a["name"],
+                         "input": {k: v for k, v in inp.items() if not k.startswith("_")},
+                         "carry": _carry(inp), "steps": steps_out,
+                         "emitted": len(emitted), "queued": queued, "done": False,
+                         "started_at": started, "resumed_from": resumed_from,
+                         "failed_at": s["tool"]})
+            rec = {
+                "run_id": run_id, "agent": agent_id, "name": a["name"], "input": inp,
+                "steps": steps_out, "emitted": len(emitted), "queued": queued,
+                "risk_flags": p["risk_flags"], "done": False, "ok": False,
+                "resumed_from": resumed_from, "failed_at": s["tool"],
+                "started_at": started, "duration_s": round(time.time() - started, 2),
+                "resume_hint": f"fix the cause, then resume run {run_id}",
+            }
+            O.log(O.RUN_END, agent=agent_id, run_id=run_id, ok=False,
+                  ms=(time.time() - started) * 1000,
+                  summary=f"{a['name']} stopped at {s['tool']}")
+            T.set_ok(run_span, False)
+            try:
+                run_span_cm.__exit__(None, None, None)
+            except Exception:                                    # noqa: BLE001
+                pass
+            T.flush()
+            return rec, 200
 
     rec = {
         "run_id": run_id, "agent": agent_id, "name": a["name"], "input": inp,
         "steps": steps_out, "emitted": len(emitted), "queued": queued,
         "risk_flags": p["risk_flags"],
+        "carry": {}, "done": True, "resumed_from": resumed_from,
         "started_at": started, "duration_s": round(time.time() - started, 2),
         "ok": all(s["status"] != "error" for s in steps_out),
     }
