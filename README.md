@@ -154,6 +154,80 @@ Governed autonomy is adapted from [OpenWorker](https://github.com/andrewyng/open
 
 ---
 
+## How the wedge agent works
+
+Listener is the one agent shipped end to end, so it is the clearest illustration of the whole design. Everything below is what runs, not what is planned.
+
+### The pipeline
+
+```
+fetch -> keyword match -> exclusion filter -> classify relevance
+      -> classify sentiment + intent -> resolve entity
+      -> write Signal (with provenance) -> dedup -> deliver once
+```
+
+### The AOP, as it actually runs
+
+This is the procedure in the product, editable in plain English, with the deterministic tool each step calls:
+
+> **When to use this AOP.** A public post or comment has matched a keyword from the active set, from a monitored source.
+>
+> 1. Check the author against the exclusion list. If it is one of our own handles, drop it. `[exclusion_filter]`
+> 2. Classify relevance to the business. If not relevant, drop it and log it for the eval set. `[classify_relevance]`
+> 3. Classify sentiment and intent type. `[classify_sentiment]`
+> 4. Resolve the author to a Person, and the Person to an Account. If ambiguous, attach a best guess with confidence. `[resolve_entity]`
+> 5. Write a Signal to the graph with all fields and provenance. `[write_signal]`
+> 6. Route an alert to the configured Slack channel and email. `[send_message]`
+>
+> **Rules and guardrails**
+> - Third-party sources only. Never alert on our own handles.
+> - Never fabricate an author or account match. Low confidence stays low confidence.
+> - One alert per unique item. Idempotency key is platform plus post id.
+> - Every alert links to its source. No unsourced claims.
+
+Steps 1 to 4 are READ and run automatically. Steps 5 and 6 are WRITE and are gated until you approve them once.
+
+### What is deterministic and what is agentic
+
+The split that keeps it reliable. If it can be computed, it is computed.
+
+| Step | Deterministic | Agentic |
+|---|---|---|
+| Fetch from a source | yes | |
+| Keyword and phrase match | yes | |
+| Exclusion filtering | yes | |
+| Relevance classification | | yes |
+| Sentiment | | yes |
+| Intent-type classification | | yes |
+| Author to Person to Account | assisted | yes, on ambiguous cases |
+| Dedup and idempotency | yes | |
+| Route and format the alert | yes | |
+
+### Intent types
+
+`category_intent` (someone asking which vendor to use), `competitor_comparison`, `complaint`, `brand_mention`. The first two are treated as buying signals and are what gets delivered by default. Catching the **un-named** category post ("which payment gateway should I use", with no brand mentioned) is the differentiated part, and it is what most listening tools miss.
+
+### Built versus originally spec'd
+
+The build spec set targets before anything existed. Where reality differs, honestly:
+
+| | Spec | Built |
+|---|---|---|
+| Precision target | 0.85 | **0.952** |
+| Recall target | 0.70 | **1.0** |
+| Golden set | ~200 posts | 40 posts, grown from production misses |
+| Classifier | LLM | **Keyword lexicon with negation handling.** Good on explicit phrasing, 0.571 on sarcasm |
+| Sources v1 | Reddit and X | Reddit proven end to end; the other eight are wired but need credentials |
+| Cadence | every 5 to 15 minutes | **every 6 hours.** Public posts do not move that fast, and delivery is idempotent so a tighter interval is safe when needed |
+
+**Precision first was a deliberate call**, taken from the spec and worth repeating: alert fatigue kills adoption faster than a missed post does. Recall was raised only once precision held.
+
+### Hosting, a hard requirement
+
+Run the scheduler on a small always-on box, **not a corporate network**. A TLS-intercepting proxy breaks these connections and Reddit blocks corporate egress IPs wholesale. This is a constraint discovered the hard way, not a preference.
+
+---
+
 ## Product strategy
 
 ### The thesis
