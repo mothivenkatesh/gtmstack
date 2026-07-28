@@ -465,3 +465,68 @@ PRD's 0.85 precision target needs a real classifier plus the golden-set eval
 harness, which is the next increment. Alert delivery is a dry run until a Slack
 or email destination is connected. The graph is local SQLite, so serverless gets
 an ephemeral copy per cold start until DATABASE_URL backs it.
+
+## Build plan, this change (dead-code cull, harness gate, observability, tests + evals)
+
+Goal: a ruthless review found unused code, duplicate endpoints, and unbacked
+claims. This removes them, closes the security hole the harness opened, and
+replaces "it works" with numbers.
+
+**Deleted (dead, ~1,300 lines of surface):**
+- `api/_connectors.py` (96 lines): a full Nango OAuth integration with ZERO
+  importers, no Module, no endpoint. The Connectors tab never called it.
+- `ApprovalsModule` + `api/approvals.py`: a duplicate of Inbox over the same
+  `_approvals` engine. Nothing in the frontend called it. Its one unique
+  capability (list + revoke standing grants) was FOLDED INTO Inbox rather than
+  lost, phrased as outcomes to match the coworker surface.
+- `_watcher_tool`: an unreachable stub returning a hardcoded string.
+- The 8 stepless agents moved OUT of `AGENTS` into a separate `ROADMAP` dict.
+  Anything in `AGENTS` can now actually be routed to and run. Advertising eight
+  teammates that returned an empty card was the most misleading thing in here.
+  `route()` returns `roadmap:true` for them instead of silently handing the work
+  to Listener, and `run()` refuses with a named reason.
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 1 | `_harness_ok` gate: harness endpoints run agents and mutate the graph, unlike the read-only tools. HARNESS_SECRET set -> header must match; unset on Vercel -> DENIED (fail closed, since a public deploy with no secret is the case being guarded); unset locally -> allowed, so dev needs no config. Applied ONCE via `_gated()` at registry construction, not as a guard line in all 14 entry points: a gate you must remember to add is one you eventually forget | api/_registry.py | low |
+| 2 | Frontend sends `X-Harness-Secret` from localStorage, never baked into the bundle (js/ is a public static asset), and renders a 401 as a readable message | js/harness.js | low |
+| 3 | Observability (RISK.md's third critical finding): `_observe.py` append-only event log, own SQLite table not graph nodes (events are high-volume and disposable, graph nodes are the durable business record). `log()` never raises. `metrics()` rolls up runs, success rate, p50/p95, per-agent, top errors. Bounded by `prune()`. Instrumented into the run loop and the approval resolve | api/_observe.py, api/_agents.py, api/_approvals.py, api/observe.py | low |
+| 4 | 28 tests for the approval engine, the security boundary. The load-bearing one: a standing policy can NEVER unlock a guardrail. Also tier defaults, rule citation, cross-agent leakage, queue lifecycle | tests/test_approvals.py | low |
+| 5 | 41 tests for graph / cohorts / definitions / agents / observe: upsert idempotency (the retry story), provenance, deterministic cohort membership, honest lift, routing, the gate queueing rather than forcing | tests/test_harness.py | low |
+| 6 | Eval harness + 40-case golden set. The PRD's accuracy target was a sentence; it is now a gate (`--gate` exits non-zero below target). Splits EXPLICIT from HARD cases, because one blended number would hide the exact gap that decides whether a real classifier is needed | evals/run_evals.py, evals/golden_intent.json | low |
+
+**Classifier rewritten** after the evals exposed it: added negation handling
+(`not bad` scored negative before), request-vs-praise ("recommend a gateway" is
+someone asking, not praise), and clause-boundary negation (in "support never
+replies, worst experience" the `never` belongs to the first clause and must not
+cancel `worst` in the second, which made the angriest posts read neutral).
+
+Results, measured not asserted: buying-intent precision 1.0 -> 0.952, recall
+0.688 -> 1.0, F1 0.815 -> 0.976, sentiment 0.667 -> 0.825. All three PRD targets
+now PASS. Hard cases went 0.0 -> 0.833 precision. Explicit-case misses: 0.
+
+**Two bugs found only by looking at production data, not tests:**
+1. `_extract` turned "watch for people asking which payment gateway to use" into
+   the search query "asking which payment gateway to use". A sentence-shaped
+   query returns whatever the engine free-associates to, which is how a payments
+   feed filled with essay-writing and work-from-home spam. Now strips trailing
+   filler and leading question words -> "payment gateway". Same ask now returns
+   19 real payment posts with 4 buying-intent, versus 25 spam with 0.
+2. "What is your International Payment gateway of choice?" (a real Reddit post)
+   read as a brand mention. `of choice`, `recommendations`, `do you use`,
+   `anyone using` added. Both cases added to the golden set, which is the
+   discipline: a production miss becomes a permanent test.
+
+**A bug in the observability itself:** a blocked decision was counted as an
+error, so a correctly-gated run reported `errors: 2`. The gate refusing an
+ungranted write is the system working; counting it as failure makes a healthy
+install look broken and trains people to ignore the error count. Fixed, with a
+regression test.
+
+Verified: 6 test files (110+ cases) pass, eval gate exits 0, `/api/approvals`
+now 404s, `/api/observe` live, and a full delegate -> gate -> approve -> re-run
+cycle works end to end on real Reddit data.
+
+Honest scope: hard cases (sarcasm, implication) still score 0.571 on sentiment.
+That needs a real classifier, and the eval harness is how that work will be
+measured. Alert delivery remains a dry run until Slack or email is connected.

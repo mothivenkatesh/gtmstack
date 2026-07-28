@@ -26,6 +26,7 @@ import json
 import time
 import uuid
 
+import _observe as O
 from _graph import _conn, upsert, query
 from _risk import RiskClass, classify, is_consequential
 
@@ -199,6 +200,11 @@ def resolve(action_id, outcome, scope=None):
     with _conn() as c:
         c.execute("UPDATE node SET data=?, updated_at=? WHERE id=?",
                   (json.dumps(d), time.time(), action_id))
+    # Every human answer is a label. Logging it is what makes the approvals
+    # shrink measurable rather than asserted.
+    O.log(O.APPROVAL, agent=d.get("agent"), ok=(outcome != DENY),
+          summary=f"{d.get('action')}: {outcome}", action=d.get("action"),
+          outcome=outcome, made_standing=bool(granted))
     return {"ok": True, "action": action_id, "outcome": outcome, "policy": granted}
 
 

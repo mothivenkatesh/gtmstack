@@ -2,33 +2,106 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "functions": {
-    "api/transcript.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
-    "api/clean.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
-    "api/plays.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
-    "api/signals.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
-    "api/persona.py": { "includeFiles": "api/_*.py" },
-    "api/jobs.py": { "includeFiles": "api/_*.py" },
-    "api/report.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
-    "api/monitor.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
-    "api/watchdog.py": { "maxDuration": 30, "includeFiles": "api/_*.py" },
-    "api/groups.py": { "includeFiles": "api/_*.py" },
-    "api/graph.py": { "includeFiles": "api/_*.py" },
-    "api/agents.py": { "maxDuration": 60, "includeFiles": "api/_*.py" },
-    "api/cohorts.py": { "includeFiles": "api/_*.py" },
-    "api/approvals.py": { "includeFiles": "api/_*.py" },
-    "api/definitions.py": { "includeFiles": "api/_*.py" },
-    "api/inbox.py": { "includeFiles": "api/_*.py" },
-    "api/mcp.py": { "maxDuration": 60, "includeFiles": "api/_*.py" }
+    "api/transcript.py": {
+      "maxDuration": 30,
+      "includeFiles": "api/_*.py"
+    },
+    "api/clean.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/plays.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/signals.py": {
+      "maxDuration": 30,
+      "includeFiles": "api/_*.py"
+    },
+    "api/persona.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/jobs.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/report.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/monitor.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/watchdog.py": {
+      "maxDuration": 30,
+      "includeFiles": "api/_*.py"
+    },
+    "api/groups.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/graph.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/agents.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/cohorts.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/definitions.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/inbox.py": {
+      "includeFiles": "api/_*.py"
+    },
+    "api/mcp.py": {
+      "maxDuration": 60,
+      "includeFiles": "api/_*.py"
+    },
+    "api/observe.py": {
+      "includeFiles": "api/_*.py"
+    }
   },
   "crons": [
-    { "path": "/api/watchdog", "schedule": "30 9 * * *" }
+    {
+      "path": "/api/watchdog",
+      "schedule": "30 9 * * *"
+    }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
-    { "source": "/", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] },
-    { "source": "/index.html", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] },
-    { "source": "/fonts/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }] }
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
   ]
 }

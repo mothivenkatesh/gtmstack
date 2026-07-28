@@ -1,0 +1,249 @@
+{
+  "_readme": "Golden set for Listener's classifiers. Labels are the ground truth the PRD's accuracy targets are measured against. Real examples were taken from live Reddit payment-gateway threads; the 'hard' ones are deliberate edge cases (sarcasm, negation, implicit intent) that a keyword heuristic is expected to miss. Do not delete a failing case to make the score go up: a shrinking golden set is how an eval suite becomes a lie. Add cases when a miss is found in production.",
+  "_fields": "text, intent (category_intent|competitor_comparison|complaint|brand_mention), sentiment (positive|negative|neutral), hard (true when it needs real NLU)",
+  "cases": [
+    {
+      "text": "Best Payment Gateway in India with Highest Success Rate",
+      "intent": "category_intent",
+      "sentiment": "positive",
+      "hard": false
+    },
+    {
+      "text": "Finally registered my GST for my tech agency...which payment gateway is easiest to get activated fast?",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Which payment gateway should I use for my D2C store?",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Looking for suggestions for a payment gateway with low MDR",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "What is the best payment gateway for a startup in India",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false,
+      "_note": "label corrected from positive to neutral: asking which option is best is a question, not praise. Correcting wrong ground truth is legitimate; deleting a case the classifier fails is not."
+    },
+    {
+      "text": "Recommend a payment gateway that supports international cards",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Any good alternative to my current PG? Tired of the downtime",
+      "intent": "competitor_comparison",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "Razorpay vs Cashfree, which one has better settlement times?",
+      "intent": "competitor_comparison",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Compare PayU and Cashfree for subscriptions",
+      "intent": "competitor_comparison",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Thinking of switching, is there an alternative to Razorpay worth it",
+      "intent": "competitor_comparison",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "Cashfree vs Stripe for cross border payments",
+      "intent": "competitor_comparison",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "My refund has been stuck for 12 days and support is not responding",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "Payment failed but money got debited, this is not working",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "Settlement is delayed again, third time this month. Terrible",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "Their support team never replies, worst experience",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "KYC issue since last week, no resolution",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": false
+    },
+    {
+      "text": "We just integrated the payouts API and it went smoothly",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": false
+    },
+    {
+      "text": "Great documentation, integration took an afternoon",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": false
+    },
+    {
+      "text": "Been using them for two years now for our subscription billing",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "They just launched a new dashboard",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "The onboarding flow is smooth and fast, would recommend",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": false
+    },
+    {
+      "text": "UPI autopay works well for us",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": false
+    },
+    {
+      "text": "Oh brilliant, another failed settlement. Love it.",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": true
+    },
+    {
+      "text": "Great, my payout is stuck again. Just great.",
+      "intent": "complaint",
+      "sentiment": "negative",
+      "hard": true
+    },
+    {
+      "text": "Not bad at all, honestly better than I expected",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": true
+    },
+    {
+      "text": "I would not say it is a bad gateway",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": true
+    },
+    {
+      "text": "This is not a problem for us anymore since we moved",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "We are evaluating options for collecting money online this quarter",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "Our current provider keeps timing out, considering our options",
+      "intent": "competitor_comparison",
+      "sentiment": "negative",
+      "hard": true
+    },
+    {
+      "text": "Anyone here moved off their PG recently? How did it go",
+      "intent": "competitor_comparison",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "Need to start accepting cards on my new site, where do I begin",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "The success rate is not great but support makes up for it",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "Cannot complain about the uptime this quarter",
+      "intent": "brand_mention",
+      "sentiment": "positive",
+      "hard": true
+    },
+    {
+      "text": "It works, I guess",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "Best decision we made was leaving them",
+      "intent": "competitor_comparison",
+      "sentiment": "negative",
+      "hard": true
+    },
+    {
+      "text": "Their fees are the worst part but everything else is solid",
+      "intent": "brand_mention",
+      "sentiment": "neutral",
+      "hard": true
+    },
+    {
+      "text": "What is your International Payment gateway of choice?",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false,
+      "_note": "real Reddit post, missed in production before 'of choice' was added"
+    },
+    {
+      "text": "payment gateway recommendations please",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false,
+      "_note": "real production miss"
+    },
+    {
+      "text": "Which payment gateway do you use?",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    },
+    {
+      "text": "anyone using a good PG for high ticket sales",
+      "intent": "category_intent",
+      "sentiment": "neutral",
+      "hard": false
+    }
+  ]
+}

@@ -74,6 +74,32 @@ class Module:
         secret = os.getenv("CRON_SECRET")
         return not secret or req.headers.get("x-cron-secret") == secret
 
+    def _harness_ok(self, req: Req):
+        """Gate for the harness endpoints, which are a different class from the
+        read-only lookup tools: they run agents and mutate the context graph, so
+        an open one lets a stranger write to your graph and burn your source
+        quota.
+
+        Secure by default in production, zero friction locally:
+          - HARNESS_SECRET set  -> the X-Harness-Secret header must match.
+          - unset, on Vercel    -> DENIED. Fail closed, because a public deploy
+                                   with no secret is the case we are guarding.
+          - unset, local        -> allowed, so `python app.py` needs no config.
+
+        Returns None when allowed, or a Resp to return as-is.
+        """
+        secret = os.getenv("HARNESS_SECRET")
+        if secret:
+            if req.headers.get("x-harness-secret") == secret:
+                return None
+            return Resp({"error": "unauthorized",
+                         "detail": "this endpoint needs the X-Harness-Secret header"}, 401)
+        if os.getenv("VERCEL") or os.getenv("VERCEL_ENV"):
+            return Resp({"error": "unauthorized",
+                         "detail": "HARNESS_SECRET is not set on this deployment, so the "
+                                   "harness endpoints are disabled"}, 401)
+        return None
+
 
 # ── feature modules ──────────────────────────────────────────────────────────
 
@@ -352,13 +378,13 @@ class AgentsModule(Module):
     id, name, desc = "agents", "Agents", "The agent workforce, their AOPs, plans, and runs"
 
     def get(self, req):
-        from _agents import catalog, aop, runs
+        from _agents import catalog, aop, runs, roadmap
         if req.params.get("id"):
             a = aop(req.params["id"])
             return Resp(a) if a else Resp({"error": "unknown agent"}, 404)
         if req.params.get("runs"):
             return Resp({"runs": runs(limit=int(req.params.get("limit", 25)))})
-        return Resp({"agents": catalog()})
+        return Resp({"agents": catalog(), "roadmap": roadmap()})
 
     def post(self, req):
         from _agents import plan, run, route
@@ -420,8 +446,9 @@ class InboxModule(Module):
     id, name, desc = "inbox", "Inbox", "What your team needs from you"
 
     def get(self, req):
-        from _approvals import pending, stats
+        from _approvals import pending, policies, stats
         from _agents import ask_copy, AGENTS
+        from _risk import RiskClass, tier_meta
         items = []
         for p in pending():
             d = p["data"]
@@ -436,11 +463,27 @@ class InboxModule(Module):
                 "requested_at": d.get("requested_at"),
             })
         s = stats()
+        # Standing grants ride along: "what have I permanently allowed, and how
+        # do I take it back" is part of the same question as "what needs me now".
+        # Phrased as outcomes, since this is the coworker surface, not a console.
+        standing = []
+        for p in policies():
+            d = p["data"]
+            copy = ask_copy(d.get("action", ""))
+            standing.append({"id": p["id"], "title": copy["title"],
+                             "agent": AGENTS.get(d.get("agent"), {}).get(
+                                 "name", d.get("agent") or "any teammate"),
+                             "granted_at": d.get("granted_at")})
         return Resp({"items": items, "count": len(items),
-                     "settled": s.get("standing_policies", 0)})
+                     "settled": s.get("standing_policies", 0),
+                     "standing": standing, "stats": s,
+                     "tiers": [{"risk": r.value, **tier_meta(r)} for r in RiskClass]})
 
     def post(self, req):
-        from _approvals import resolve
+        from _approvals import resolve, revoke
+        if req.body.get("action") == "revoke":
+            revoke(req.body.get("id"))
+            return Resp({"ok": True, "revoked": req.body.get("id")})
         return Resp(resolve(req.body.get("id"), req.body.get("outcome", "once"),
                             req.body.get("scope")))
 
@@ -464,35 +507,6 @@ class CohortsModule(Module):
                            req.body.get("kind", "dynamic"), req.body.get("play")))
 
 
-class ApprovalsModule(Module):
-    id, name, desc = "approvals", "Approvals", "Tiered, approve-once governance over agent actions"
-
-    def get(self, req):
-        from _approvals import pending, policies, stats
-        from _risk import RiskClass, tier_meta
-        return Resp({
-            "pending": pending(),
-            "policies": [{"id": p["id"], **p["data"]} for p in policies()],
-            "stats": stats(),
-            "tiers": [{"risk": r.value, **tier_meta(r)} for r in RiskClass],
-        })
-
-    def post(self, req):
-        from _approvals import resolve, revoke, grant
-        act = req.body.get("action")
-        if act == "resolve":
-            return Resp(resolve(req.body.get("id"), req.body.get("outcome", "once"),
-                                req.body.get("scope")))
-        if act == "revoke":
-            revoke(req.body.get("id"))
-            return Resp({"ok": True})
-        if act == "grant":
-            return Resp({"ok": True, "id": grant(req.body.get("tool"),
-                                                 req.body.get("scope", "*"),
-                                                 req.body.get("agent"))})
-        return Resp({"error": "unknown action"}, 400)
-
-
 class DefinitionsModule(Module):
     id, name, desc = "definitions", "Key Definitions", "One authoritative definition per metric"
 
@@ -507,10 +521,47 @@ class DefinitionsModule(Module):
                             req.body.get("source_run")))
 
 
+class ObserveModule(Module):
+    """What the agents actually did. RISK.md flagged no-observability as
+    critical; this is the answer to "is it healthy" and "why did it do that"."""
+    id, name, desc = "observe", "Activity", "Runs, decisions, errors, and health"
+
+    def get(self, req):
+        import _observe as O
+        if req.params.get("run"):
+            return Resp({"events": O.recent(200, run_id=req.params["run"])})
+        return Resp({"metrics": O.metrics(),
+                     "recent": O.recent(int(req.params.get("limit", 60)),
+                                        kind=req.params.get("kind"))})
+
+
+def _gated(mod):
+    """Wrap a module's get/post with the harness gate.
+
+    Applied here, once, rather than as a guard line inside all fourteen entry
+    points: a gate you have to remember to add is a gate you eventually forget,
+    and the one you forget is the hole. Both dispatchers (app.py and _http.py)
+    call get/post on these same instances, so wrapping the instance covers both
+    deployments with no dispatcher change.
+    """
+    for name in ("get", "post"):
+        original = getattr(mod, name)
+
+        def wrapped(req, _original=original, _mod=mod):
+            denied = _mod._harness_ok(req)
+            return denied if denied is not None else _original(req)
+
+        setattr(mod, name, wrapped)
+    return mod
+
+
+# The harness endpoints run agents and mutate the context graph, unlike the
+# read-only lookup tools, so they are gated. See Module._harness_ok.
+HARNESS = [_gated(m) for m in (GraphModule(), AgentsModule(), CohortsModule(),
+                               InboxModule(), McpModule(), DefinitionsModule(),
+                               ObserveModule())]
+
 MODULES = [TranscriptModule(), PersonaModule(), SignalsModule(), ReportModule(),
            MonitorModule(), GroupsModule(), JobsModule(), CleanModule(),
-           PlaysModule(), AuthModule(), WatchdogModule(),
-           GraphModule(), AgentsModule(), CohortsModule(), ApprovalsModule(),
-           InboxModule(), McpModule(),
-           DefinitionsModule()]
+           PlaysModule(), AuthModule(), WatchdogModule()] + HARNESS
 REGISTRY = {m.id: m for m in MODULES}

@@ -31,6 +31,7 @@ import time
 import uuid
 
 import _graph as G
+import _observe as O
 from _approvals import decide, request as request_approval
 
 # ── the AOP library ─────────────────────────────────────────────────────────
@@ -128,6 +129,14 @@ AGENTS = {
         "evals": ["duplicate precision", "duplicate recall", "false-merge rate (must be zero)",
                   "fill-rate accuracy"],
     },
+}
+
+
+# Declared, NOT built. These have no procedure and no connector, so they are kept
+# OUT of AGENTS entirely: anything in AGENTS is a teammate that can actually be
+# routed to and run. Advertising eight teammates that return an empty card was
+# the single most misleading thing in this codebase.
+ROADMAP = {
     "scout":     {"name": "Scout", "role": "Account intelligence and TAM", "runnable": False,
                   "tenx": "Replaces manual list-building, dedup, and enrichment.",
                   "hundredx": "A clean tiered graph is the foundation every other agent stands on.",
@@ -179,14 +188,21 @@ AGENTS = {
 }
 
 
+def _card(aid, a, runnable):
+    return {"id": aid, "name": a["name"], "role": a["role"], "runnable": runnable,
+            "wedge": a.get("wedge", False), "tenx": a.get("tenx", ""),
+            "hundredx": a.get("hundredx", ""), "steps": len(a.get("steps", [])),
+            "evals": a.get("evals", [])}
+
+
 def catalog():
-    out = []
-    for aid, a in AGENTS.items():
-        out.append({"id": aid, "name": a["name"], "role": a["role"],
-                    "runnable": a.get("runnable", False), "wedge": a.get("wedge", False),
-                    "tenx": a.get("tenx", ""), "hundredx": a.get("hundredx", ""),
-                    "steps": len(a.get("steps", [])), "evals": a.get("evals", [])})
-    return out
+    """Only teammates that can actually run. Roadmap is a separate key so the UI
+    cannot accidentally present an unbuilt agent as available."""
+    return [_card(aid, a, True) for aid, a in AGENTS.items()]
+
+
+def roadmap():
+    return [_card(aid, a, False) for aid, a in ROADMAP.items()]
 
 
 def aop(agent_id):
@@ -260,29 +276,46 @@ def run(agent_id, inp=None, approved=False):
     reports it rather than proceeding. Returns the run record."""
     a = AGENTS.get(agent_id)
     if not a:
+        # A roadmap teammate is a known name, not a typo, so say which it is.
+        if agent_id in ROADMAP:
+            return {"error": f"{ROADMAP[agent_id]['name']} is not built yet",
+                    "roadmap": True, "agent": agent_id}, 400
         return {"error": f"unknown agent: {agent_id}"}, 404
     inp = inp or {}
     run_id = f"run_{uuid.uuid4().hex[:10]}"
     started = time.time()
     steps_out, emitted, queued = [], [], []
 
+    O.log(O.RUN_START, agent=agent_id, run_id=run_id,
+          summary=f"{a['name']} started", input=inp)
+
     p = plan(agent_id, inp)
 
     for s in p["steps"]:
         d = decide(s["tool"], agent=agent_id, scope=inp.get("scope", "*"))
+        O.log(O.DECISION, agent=agent_id, run_id=run_id, ok=d.allowed,
+              summary=f"{s['tool']}: {d.reason}", tool=s["tool"],
+              risk=d.risk.value if d.risk else None, rule=d.rule)
         if d.needs_user and not approved:
             aid = request_approval(s["tool"], agent_id, inp.get("scope", "*"),
                                    payload=inp, summary=s["text"])
             queued.append({"action_id": aid, "tool": s["tool"], "text": s["text"]})
             steps_out.append({**s, "status": "awaiting_approval", "action_id": aid})
             continue
+        t0 = time.time()
         try:
             out = _exec(agent_id, s["tool"], inp, run_id)
             steps_out.append({**s, "status": "ok", "output": out.get("summary", ""),
                               "count": out.get("count"), "rule": d.rule})
             emitted += out.get("emitted", [])
+            O.log(O.STEP, agent=agent_id, run_id=run_id, ok=True,
+                  ms=(time.time() - t0) * 1000, summary=out.get("summary", ""),
+                  tool=s["tool"], count=out.get("count"))
         except Exception as e:                                   # noqa: BLE001
             steps_out.append({**s, "status": "error", "error": str(e)[:300]})
+            O.log(O.ERROR, agent=agent_id, run_id=run_id, ok=False,
+                  ms=(time.time() - t0) * 1000,
+                  summary=f"{s['tool']}: {str(e)[:160]}", tool=s["tool"])
 
     rec = {
         "run_id": run_id, "agent": agent_id, "name": a["name"], "input": inp,
@@ -292,6 +325,11 @@ def run(agent_id, inp=None, approved=False):
         "ok": all(s["status"] != "error" for s in steps_out),
     }
     G.upsert("run", rec, key=run_id, agent=agent_id, run_id=run_id)
+    O.log(O.RUN_END, agent=agent_id, run_id=run_id, ok=rec["ok"],
+          ms=(time.time() - started) * 1000,
+          summary=f"{a['name']}: {len(emitted)} written, {len(queued)} awaiting you",
+          emitted=len(emitted), queued=len(queued))
+    O.prune()
     return rec, 200
 
 
@@ -304,8 +342,6 @@ def _exec(agent_id, tool, inp, run_id):
         return _analyst_tool(tool, inp, run_id)
     if agent_id == "steward":
         return _steward_tool(tool, inp, run_id)
-    if agent_id == "watcher":
-        return _watcher_tool(tool, inp, run_id)
     return {"summary": "declared, not wired yet", "emitted": []}
 
 
@@ -394,18 +430,84 @@ def _listener_tool(tool, inp, run_id):
     return {"summary": "noop", "emitted": []}
 
 
-_NEG = ("worst", "bad", "issue", "problem", "fail", "down", "refund", "scam", "slow",
-        "bug", "broken", "angry", "terrible", "avoid")
-_POS = ("best", "great", "love", "good", "smooth", "fast", "recommend", "excellent",
-        "works well", "solid")
+# ── the classifiers ─────────────────────────────────────────────────────────
+# A lexicon with negation handling, NOT a model. Measured by evals/run_evals.py
+# against a labelled golden set, so its real accuracy is a number rather than a
+# claim. It does well on explicit phrasing and poorly on sarcasm and implication;
+# that gap is reported, not hidden, and closing it means a real classifier.
+
+_NEG = ("worst", "bad", "issue", "problem", "fail", "failed", "down", "downtime",
+        "scam", "slow", "bug", "broken", "angry", "terrible", "avoid", "stuck",
+        "delayed", "delay", "never replies", "not responding", "not working",
+        "tired of", "poor")
+_POS = ("best", "great", "love", "good", "smooth", "fast", "excellent",
+        "works well", "solid", "would recommend", "seamless", "reliable")
+
+# Negation flips the polarity of the word that follows. Without this, "not bad"
+# and "cannot complain" score negative, which is the single biggest source of
+# sentiment error in a lexicon.
+_NEGATORS = ("not ", "no ", "never ", "cannot ", "can't ", "cant ", "without ",
+             "hardly ", "would not ", "wouldn't ", "isn't ", "is not ")
+
+_COMPLAINT = ("refund", "not working", "failed", "issue", "support", "stuck",
+              "delayed", "delay", "debited", "kyc", "no resolution", "never replies",
+              "not responding", "downtime")
+
 _CAT = ("best payment gateway", "which payment gateway", "which pg", "recommend a",
-        "alternative to", "vs ", " vs", "compare", "should i use", "suggestions for")
+        "recommend any", "alternative to", "alternatives to", "vs ", " vs", "compare",
+        "should i use", "suggestions for", "looking for", "evaluating options",
+        "considering our options", "where do i begin", "start accepting",
+        "moved off", "switching", "switch from", "of choice", "recommendations",
+        "do you use", "anyone using", "suggest a", "suggest any", "go with")
+
+_COMPARE = ("vs ", " vs", "compare", "alternative to", "alternatives to", "versus",
+            "moved off", "switching", "switch from", "considering our options",
+            "leaving them", "better than")
+
+# Phrases that are a REQUEST, not praise. "recommend a gateway" is someone asking,
+# so it must not read as positive sentiment about anyone.
+_ASKING = ("recommend a", "recommend any", "suggestions for", "looking for",
+           "which ", "what is the best", "any good", "where do i", "how do i",
+           "should i")
+
+
+def _has(t, phrase):
+    """True when `phrase` appears un-negated. Looks back up to 24 characters,
+    which catches 'not bad' and 'would not say it is a bad'.
+
+    The lookback STOPS at a clause boundary, because negation does not cross one:
+    in "their support never replies, worst experience" the 'never' belongs to the
+    first clause and must not cancel 'worst' in the second. Without this the
+    angriest posts read as neutral, which is the worst possible failure for a
+    complaint detector."""
+    i = t.find(phrase)
+    while i != -1:
+        window = t[max(0, i - 24):i]
+        for sep in (",", ".", ";", " but ", " however "):
+            if sep in window:
+                window = window.rsplit(sep, 1)[1]
+        if not any(neg in window for neg in _NEGATORS):
+            return True
+        i = t.find(phrase, i + 1)
+    return False
+
+
+def _negated(t, phrase):
+    """True when the phrase appears ONLY in a negated form, which flips polarity."""
+    return phrase in t and not _has(t, phrase)
 
 
 def _sentiment(text):
-    t = (text or "").lower()
-    neg = sum(1 for w in _NEG if w in t)
-    pos = sum(1 for w in _POS if w in t)
+    t = " " + (text or "").lower().strip()
+    neg = sum(1 for w in _NEG if _has(t, w))
+    pos = sum(1 for w in _POS if _has(t, w))
+    # A negated negative reads positive ("not bad", "cannot complain about"),
+    # and a negated positive reads negative.
+    pos += sum(1 for w in _NEG if _negated(t, w))
+    neg += sum(1 for w in _POS if _negated(t, w))
+    # Asking for a recommendation is not praise.
+    if any(a in t for a in _ASKING) and pos and not neg:
+        return "neutral"
     if neg > pos:
         return "negative"
     if pos > neg:
@@ -414,16 +516,18 @@ def _sentiment(text):
 
 
 def _intent(text):
-    t = (text or "").lower()
+    t = " " + (text or "").lower().strip()
+    if any(_has(t, k) for k in _COMPARE):
+        return "competitor_comparison"
     if any(k in t for k in _CAT):
-        return "competitor_comparison" if (" vs" in t or "alternative to" in t or "compare" in t) \
-            else "category_intent"
-    if any(w in t for w in ("refund", "not working", "failed", "issue", "support")):
+        return "category_intent"
+    # A complaint is a negative sentiment ABOUT a specific failure. Checking both
+    # avoids tagging "the fees are the worst part but everything else is solid"
+    # as a complaint when it is really a mixed brand mention.
+    if any(_has(t, w) for w in _COMPLAINT) and _sentiment(text) == "negative":
         return "complaint"
     return "brand_mention"
 
-
-# ── Analyst: plan-then-execute over the graph ───────────────────────────────
 
 def _analyst_tool(tool, inp, run_id):
     from _definitions import resolve_for_question, DEFINITIONS
@@ -500,10 +604,6 @@ def _steward_tool(tool, inp, run_id):
     return {"summary": f"{len(accounts)} accounts in graph", "emitted": []}
 
 
-def _watcher_tool(tool, inp, run_id):
-    return {"summary": "competitor scan uses the existing Competitor Intel engine", "emitted": []}
-
-
 def runs(limit=25):
     return [r["data"] for r in G.query("run", limit=limit)]
 
@@ -543,6 +643,14 @@ def route(text):
     for agent_id, keys in _ROUTES:
         hit = next((k for k in keys if k in low), None)
         if hit:
+            # A roadmap teammate is still the RIGHT match, so say so and stop,
+            # rather than silently handing the work to someone else. Being told
+            # "Watcher is not built yet" beats getting Listener's answer to a
+            # question you did not ask.
+            if agent_id in ROADMAP:
+                return {"agent": agent_id, "name": ROADMAP[agent_id]["name"],
+                        "input": _extract(agent_id, t), "roadmap": True,
+                        "why": f"you mentioned {hit.strip()}, but this teammate is not built yet"}
             return {"agent": agent_id, "name": AGENTS[agent_id]["name"],
                     "input": _extract(agent_id, t),
                     "why": f"you mentioned {hit.strip()}"}
@@ -555,8 +663,18 @@ def route(text):
 
 _STOP = ("watch for", "watch", "listen for", "listen", "monitor", "tell me when",
          "tell me about", "keep an eye on", "people", "anyone", "who is", "who are",
-         "talking about", "asking about", "mentions of", "mention of", "any",
-         "on reddit", "on twitter", "on x", "please", "for me")
+         "talking about", "asking about", "asking for", "asking", "asks about",
+         "mentions of", "mention of", "any", "on reddit", "on twitter", "on x",
+         "please", "for me", "looking for", "searching for", "posts about")
+
+# Trailing filler. "which payment gateway to use" must search for "payment
+# gateway", not the whole sentence: a sentence-shaped query returns whatever the
+# search engine free-associates to, which is how a payment feed filled up with
+# essay-writing spam.
+_TAIL = ("to use", "to buy", "to pick", "to choose", "should i use", "do i use",
+         "i should use", "for my business", "for my store", "right now", "today")
+_LEAD = ("which", "what", "who", "where", "how", "the", "a", "an", "is", "are",
+         "to", "for", "about", "that", "and", "or", "of")
 
 
 def _extract(agent_id, text):
@@ -571,6 +689,16 @@ def _extract(agent_id, text):
     for s in _STOP:
         low = low.replace(s, " ")
     q = " ".join((q if len(q.split()) <= 8 else " ".join(low.split())).split())
+    # Strip trailing filler, then leading question words, until the topic is bare.
+    low = q.lower()
+    for t in sorted(_TAIL, key=len, reverse=True):
+        if low.endswith(t):
+            q = q[: len(q) - len(t)].strip(" ,")
+            low = q.lower()
+    words = q.split()
+    while words and words[0].lower().strip(",") in _LEAD:
+        words.pop(0)
+    q = " ".join(words).strip(" ,?.")
     if agent_id == "analyst":
         return {"question": text, "query": q}
     return {"query": q or text, "sources": ["reddit"], "question": text}

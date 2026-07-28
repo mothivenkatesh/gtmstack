@@ -19,9 +19,32 @@
 */
 import { API_BASE, Icon, html, useEffect, useState } from './core.js';
 
-const api = (path, body) => fetch(`${API_BASE}/api/${path}`, body ? {
-  method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
-} : undefined).then(r => r.json());
+/* The harness endpoints are gated (they run agents and write to the graph), so
+   the browser has to present the shared secret. It is read from localStorage,
+   NOT baked into the bundle: this file is served as a public static asset, so a
+   literal here would publish the secret to anyone who views source.
+
+   Set it once in the console:  localStorage.gtmstackHarnessSecret = '...'
+   Local dev needs nothing, because the gate only bites when HARNESS_SECRET is
+   set or the code is running on Vercel. */
+const secret = () => { try { return localStorage.getItem('gtmstackHarnessSecret') || ''; }
+                       catch (e) { return ''; } };
+
+const api = (path, body) => {
+  const h = {};
+  const s = secret();
+  if (s) h['X-Harness-Secret'] = s;
+  if (body) h['Content-Type'] = 'application/json';
+  return fetch(`${API_BASE}/api/${path}`,
+               body ? { method: 'POST', headers: h, body: JSON.stringify(body) }
+                    : { headers: h })
+    .then(async r => {
+      const d = await r.json().catch(() => ({}));
+      // Surface the gate as a readable message instead of a blank panel.
+      if (r.status === 401) return { error: d.detail || 'unauthorized', unauthorized: true };
+      return d;
+    });
+};
 
 const TABS = [
   ['work',  'Work',      'zap'],
