@@ -49,6 +49,56 @@ app = Flask(__name__, static_folder=HERE, static_url_path="")
 CORS(app)
 
 
+# `static_folder=HERE` serves the whole project directory, which means the dev
+# server will happily hand out .env, cookies, and internal docs to anyone who
+# asks. Production is already safe (.vercelignore keeps them off the deploy),
+# but "it is only localhost" is not a guarantee: this app has webhook features,
+# so tunnelling the dev server through ngrok is a normal thing to do, and that
+# turns a local convenience into nine leaked credentials.
+#
+# Mirrors .vercelignore. Keep the two in step.
+_BLOCKED_NAMES = {
+    ".env", ".env.example", "app.py", "daily_report.py", "connect_sources.py",
+    "claude.md", "risk.md", "roadmap.md", "monitor_plan.md", "design_system.md",
+    "case_study_notes.md", "ui_generation_context.md", "requirements.txt",
+    "vercel.json", ".vercelignore", ".gitignore", "mcp_server.py",
+}
+_BLOCKED_PREFIXES = (".git", ".venv", ".vercel", ".claude", "api/_store",
+                     "tests", "launchd", "evals", "__pycache__", ".gtmstack")
+_BLOCKED_SUFFIXES = (".py", ".db", ".sqlite", ".pyc", ".log", ".pem", ".key")
+
+
+def _is_blocked(path):
+    p = (path or "").lstrip("/").replace("\\", "/")
+    low = p.lower()
+    name = low.rsplit("/", 1)[-1]
+    if name in _BLOCKED_NAMES or low in _BLOCKED_NAMES:
+        return True
+    if any(low.startswith(pre) for pre in _BLOCKED_PREFIXES):
+        return True
+    if low.endswith(_BLOCKED_SUFFIXES):
+        return True
+    # Anything that looks like a credential store, whatever it is called.
+    return any(w in low for w in ("cookie", "secret", "credential", "token"))
+
+
+@app.before_request
+def _block_sensitive_static():
+    """Refuse before Flask's static handler ever sees the path.
+
+    A real API route is ONE segment (/api/signals). Anything deeper is a file on
+    disk that merely starts with the same prefix, so /api/_store/graph.db must
+    still be checked: exempting the whole /api/ tree is how the graph database
+    stayed downloadable after the first pass at this.
+    """
+    p = request.path
+    if p.startswith("/api/") and "/" not in p[5:].rstrip("/"):
+        return None
+    if _is_blocked(p):
+        return jsonify({"error": "not found"}), 404
+    return None
+
+
 @app.get("/")
 def index():
     return send_from_directory(HERE, "index.html")

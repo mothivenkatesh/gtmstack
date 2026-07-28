@@ -530,3 +530,56 @@ cycle works end to end on real Reddit data.
 Honest scope: hard cases (sarcasm, implication) still score 0.571 on sentiment.
 That needs a real classifier, and the eval harness is how that work will be
 measured. Alert delivery remains a dry run until Slack or email is connected.
+
+## Build plan, this change (end-to-end suite + dev-server file leak)
+
+Goal: test the whole app module by module, smoke and functional, and fix what it
+found.
+
+New `tests/smoke_e2e.py`: 51 checks against a LIVE server, two levels per module
+(SMOKE = responds with the right shape, FUNCTIONAL = does the right thing with
+real input). Runs against localhost or a deployment (`--base`), with `--quick` to
+skip network calls and `--secret` for a gated deploy. Network failures report
+DEGRADED, not FAIL, because "Reddit rate-limited us" is not "our code is broken"
+and conflating them makes the report useless.
+
+This exists because unit tests and E2E catch different things. Every production
+bug found in this repo (sentence-shaped search query, the intent miss, the
+blocked-decision-as-error) was invisible to unit tests and obvious the moment
+real data moved through the assembled app.
+
+Coverage: transcript, persona, signals, clean, plays, jobs, report, monitor,
+groups, watchdog, auth, graph, agents, inbox, cohorts, definitions, observe,
+mcp, security. Behavioural assertions rather than status codes: verdict buckets
+must sum to unique (the old double-count bug), cohort membership must be stable
+across repeated calls, every auto-allowed step must cite its rule, every graph
+node must carry provenance, a bad MCP tool call must never 500, and no runnable
+agent may have zero steps.
+
+**Real bug found and fixed: the dev server served `.env`.** `app.py` sets
+`static_folder=HERE`, so Flask happily handed out `.env` (9 live credentials),
+`CLAUDE.md`, `RISK.md`, `app.py`, every `api/_*.py`, and `api/_store/*.db` to
+anyone who asked. Production was never affected (`.vercelignore` keeps them off
+the deploy, verified 404 post-deploy), so this was local-dev only, but "it is
+only localhost" is not a guarantee: this app has webhook features, so tunnelling
+the dev server through ngrok is a normal thing to do and would have exposed every
+credential. Fixed with a `before_request` deny-list mirroring `.vercelignore`.
+
+Second pass needed on that fix: the first version exempted the whole `/api/`
+tree, which left `api/_store/graph.db` downloadable. A real API route is ONE
+segment (`/api/signals`); anything deeper is a file on disk. Now checked.
+
+Two findings that were bugs in the TEST, not the app, and were corrected rather
+than reported: the transcript check looked for `text`/`segments` when the engine
+returns `plain`/`cues`, and the report POST check used a 20s timeout against a
+scan that legitimately runs longer. A suite that cries wolf is worse than none.
+
+UI verified separately in the browser: all 10 tools render with their own heading
+and no console errors; NoBounce cleans a pasted list end to end; Persona scores
+real copy; the harness delegate flow runs live (19 real Reddit posts, 4 correctly
+identified as vendor-choice intent). One apparent bug during UI probing (tools
+showing the previous tool's heading) was a measurement artifact of an 800ms wait,
+not a defect, confirmed by re-probing individually.
+
+Final state: 6 unit files pass, 51/51 E2E checks pass with 0 degraded, eval gate
+exits 0 with all three PRD targets met.
