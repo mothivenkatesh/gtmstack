@@ -47,7 +47,7 @@ def _db_path():
 # columns. Queries stay fast with the type + key indexes below.
 NODE_TYPES = (
     "account", "person", "signal", "cohort", "deal",
-    "action", "outcome", "definition", "policy", "run",
+    "action", "outcome", "definition", "policy", "run", "watch",
 )
 
 _SCHEMA = """
@@ -93,6 +93,23 @@ def _row(r):
     except (ValueError, TypeError):
         d["data"] = {}
     return d
+
+
+def upsert_ex(type_, data, key=None, agent=None, run_id=None, source=None, id=None):
+    """upsert, but reports whether the node was CREATED or merely updated.
+
+    This distinction is load-bearing, not cosmetic. A watch firing every six
+    hours re-reads the same posts, and without it the run reports "19 new
+    signals" forever: the user gets told the same thing repeatedly and every
+    value metric downstream is inflated. `new` has to mean new."""
+    existed = False
+    if key:
+        with _conn() as c:
+            existed = c.execute("SELECT 1 FROM node WHERE type=? AND key=?",
+                                (type_, key)).fetchone() is not None
+    nid = upsert(type_, data, key=key, agent=agent, run_id=run_id,
+                 source=source, id=id)
+    return nid, (not existed)
 
 
 def upsert(type_, data, key=None, agent=None, run_id=None, source=None, id=None):

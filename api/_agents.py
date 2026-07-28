@@ -401,32 +401,53 @@ def _listener_tool(tool, inp, run_id):
         return {"summary": f"Worked out who {n} of the posters are", "count": n, "emitted": []}
 
     if tool == "write_signal":
-        items, ids = inp.get("_items") or [], []
+        # `ids` collects only NEW nodes, so `emitted` means new. A re-run over
+        # the same posts must report nothing new, not the same number forever.
+        items, ids, seen_again = inp.get("_items") or [], [], 0
         for m in items:
             plat = m.get("platform") or "unknown"
             # Idempotency key is platform plus post id (the url here), which is
             # what makes a re-run update rather than duplicate.
             key = f"{plat}:{m.get('id') or m.get('url') or m.get('text', '')[:80]}"
-            sid = G.upsert("signal", {
+            sid, created = G.upsert_ex("signal", {
                 "platform": plat, "url": m.get("url"), "author": m.get("author"),
                 "text": (m.get("text") or "")[:600],
                 "sentiment": m.get("sentiment"), "intent_type": m.get("intent_type"),
                 "posted_at": m.get("ts"), "ago": m.get("ago"), "where": m.get("where"),
                 "actioned": False, "query": inp.get("query"),
             }, key=key, agent="listener", run_id=run_id, source=m.get("url"))
-            ids.append(sid)
+            if created:
+                ids.append(sid)
+            seen_again += 0 if created else 1
             if m.get("_person_id"):
                 G.link(sid, "authored_by", m["_person_id"])
-        return {"summary": f"Saved {len(ids)} posts, each with a link back to the original",
+        if not ids:
+            return {"summary": f"Nothing new. The {seen_again} posts found were "
+                               f"already saved.", "count": 0, "emitted": []}
+        extra = f", {seen_again} already seen" if seen_again else ""
+        return {"summary": f"Saved {len(ids)} new post{'s' if len(ids) != 1 else ''}, "
+                           f"each with a link back to the original{extra}",
                 "count": len(ids), "emitted": ids}
 
     if tool == "send_message":
-        items = inp.get("_items") or []
-        n = sum(1 for m in items
-                if m.get("intent_type") in ("category_intent", "competitor_comparison"))
-        return {"summary": (f"{n} alert ready for you" if n == 1 else f"{n} alerts ready for you")
-                           + ". Connect Slack or email in Connectors to have them delivered.",
-                "count": n, "emitted": []}
+        # Real delivery. This step was a dry run, which meant the agent only ever
+        # did work while a human watched it. Delivery is idempotent (the
+        # `delivered_at` stamp on the signal), so a scheduler firing twice cannot
+        # double-alert.
+        import _deliver
+        out = _deliver.deliver(query=inp.get("query"))
+        if out.get("sent"):
+            n = out["sent"]
+            return {"summary": f"Sent you {n} alert{'s' if n != 1 else ''} "
+                               f"({', '.join(out.get('channels', []))})",
+                    "count": n, "emitted": []}
+        ready = out.get("ready", 0)
+        if ready:
+            return {"summary": f"{ready} alert{'s' if ready != 1 else ''} ready. "
+                               f"Connect Slack or email to have them delivered.",
+                    "count": ready, "emitted": []}
+        return {"summary": out.get("note", "Nothing new to send"),
+                "count": 0, "emitted": []}
     return {"summary": "noop", "emitted": []}
 
 

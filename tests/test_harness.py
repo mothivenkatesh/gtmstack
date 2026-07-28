@@ -19,6 +19,7 @@ No em dashes.
 import os
 import sys
 import tempfile
+import time
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,6 +30,8 @@ os.environ["GTMSTACK_GRAPH_DB"] = os.path.join(_TMP, "graph.db")
 os.environ["OBSERVE_DB"] = os.path.join(_TMP, "events.db")
 
 import _agents as AG           # noqa: E402
+import _deliver as DL          # noqa: E402
+import _watch as W             # noqa: E402
 import _cohorts as C           # noqa: E402
 import _definitions as D       # noqa: E402
 import _graph as G             # noqa: E402
@@ -294,6 +297,102 @@ class Observe(unittest.TestCase):
             O.log(O.STEP, summary=f"e{i}")
         O.prune(keep=10)
         self.assertLessEqual(len(O.recent(100)), 10)
+
+
+class DeliveryAndOutcomes(unittest.TestCase):
+    """The loop that turns a demo into a product: deliver once, record what the
+    human did, and report a number worth paying for."""
+
+    def setUp(self):
+        G.reset()
+        self.sig = G.upsert("signal", {"text": "which payment gateway should I use",
+                                       "intent_type": "category_intent",
+                                       "sentiment": "neutral", "platform": "reddit"},
+                            key="reddit:t1", agent="listener")
+
+    def test_pending_only_undelivered_buying_intent(self):
+        G.upsert("signal", {"text": "nice docs", "intent_type": "brand_mention"},
+                 key="reddit:t2", agent="listener")
+        p = DL.pending()
+        self.assertEqual(len(p), 1, "only buying intent should be alert-worthy")
+
+    def test_delivery_is_idempotent(self):
+        """A watch firing every six hours must never re-alert the same post."""
+        G.upsert("signal", {"delivered_at": 123.0}, key="reddit:t1")
+        self.assertEqual(len(DL.pending()), 0)
+
+    def test_unconfigured_reports_ready_not_sent(self):
+        """It must never pretend to have sent."""
+        out = DL.deliver()
+        self.assertEqual(out["sent"], 0)
+        self.assertEqual(out.get("ready"), 1)
+        self.assertIn("Connect", out["note"])
+
+    def test_mark_writes_an_outcome_and_links_it(self):
+        r = DL.mark(self.sig, DL.CONVERTED, note="booked a call")
+        self.assertTrue(r["ok"])
+        self.assertTrue(G.query("outcome"))
+        self.assertTrue(G.neighbours(self.sig, "resulted_in"))
+
+    def test_mark_rejects_a_bad_outcome(self):
+        self.assertFalse(DL.mark(self.sig, "vibes")["ok"])
+
+    def test_mark_unknown_signal_is_handled(self):
+        self.assertFalse(DL.mark("signal_nope", DL.ACTIONED)["ok"])
+
+    def test_value_is_honest_with_no_outcomes(self):
+        v = DL.value()
+        self.assertEqual(v["converted"], 0)
+        self.assertIn("cannot tell you what it was worth", v["sentence"])
+
+    def test_value_reports_conversions(self):
+        DL.mark(self.sig, DL.CONVERTED)
+        v = DL.value()
+        self.assertEqual(v["converted"], 1)
+        self.assertIn("became conversations", v["sentence"])
+
+
+class Watches(unittest.TestCase):
+    def setUp(self):
+        G.reset()
+
+    def test_add_requires_a_keyword(self):
+        self.assertFalse(W.add("")["ok"])
+
+    def test_add_is_idempotent(self):
+        W.add("payment gateway"); W.add("payment gateway")
+        self.assertEqual(len(W.list_watches()), 1)
+
+    def test_a_new_watch_is_due(self):
+        W.add("payment gateway")
+        self.assertEqual(len(W.due()), 1)
+
+    def test_a_just_run_watch_is_not_due(self):
+        W.add("payment gateway")
+        w = W.list_watches()[0]
+        d = dict(w); d.pop("id", None); d["last_run"] = time.time()
+        G.upsert("watch", d, key="payment gateway")
+        self.assertEqual(len(W.due()), 0)
+
+    def test_status_flags_a_never_run_watch(self):
+        W.add("payment gateway")
+        self.assertFalse(W.status()["healthy"])
+
+    def test_status_is_healthy_with_no_watches_configured(self):
+        self.assertEqual(W.status()["watches"], 0)
+
+
+class GraphCreatedFlag(unittest.TestCase):
+    def setUp(self):
+        G.reset()
+
+    def test_upsert_ex_reports_created_then_updated(self):
+        """`new` must mean new, or a watch reports the same finds forever and
+        every value metric downstream is inflated."""
+        _, created = G.upsert_ex("signal", {"text": "a"}, key="k1")
+        self.assertTrue(created)
+        _, created2 = G.upsert_ex("signal", {"text": "b"}, key="k1")
+        self.assertFalse(created2)
 
 
 if __name__ == "__main__":

@@ -583,3 +583,47 @@ not a defect, confirmed by re-probing individually.
 
 Final state: 6 unit files pass, 51/51 E2E checks pass with 0 degraded, eval gate
 exits 0 with all three PRD targets met.
+
+## Build plan, this change (close the loop: delivery, scheduling, outcomes)
+
+Goal: make the app do work while nobody is looking. Diagnosis that drove it:
+`send_message` was a dry run, nothing was scheduled, and no outcome was ever
+recorded, so the app only ever worked while a human watched it. That is a
+toolkit, and nobody pays monthly for a toolkit they have to operate. Everything
+upstream (real reads, classification, provenance) already worked; only the last
+mile was missing.
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 1 | `_deliver.py`: Slack webhook + email delivery, formatted with the fields the original brief asked for (platform, link, author, timestamp, matched keyword, sentiment). IDEMPOTENT via a `delivered_at` stamp on the signal node, so a scheduler firing twice cannot double-alert. Stamps ONLY on a successful send, because stamping a failure loses the alert forever, which is worse than a duplicate. Gated: unconfigured reports "N ready, connect Slack" and never pretends to have sent | api/_deliver.py | low |
+| 2 | Outcome tracking: `mark(signal, actioned/ignored/converted)` writes an `outcome` node linked to the signal. This is the node the entire value story rests on, and it doubles as the label that teaches the classifier which alerts were worth sending | api/_deliver.py | low |
+| 3 | `value()`: found, buying-intent, delivered, actioned, converted, plus `useful_alert_rate` (of what we bothered a human with, how much did they act on). That last one predicts churn far better than offline F1 | api/_deliver.py | low |
+| 4 | `_watch.py`: standing watches (keyword + interval), `run_due()` / `run_all()` / `status()`. A watch is deliberately NOT an agent, just a schedule plus a keyword, so you can add one without touching an AOP. A standing watch carries a standing grant, since the user already consented by creating it | api/_watch.py | med |
+| 5 | `WatchModule` + shim; POST is cron-gated so a public deployment cannot be used to burn source quota | api/_registry.py, api/watch.py, vercel.json | low |
+| 6 | `watch_run.py` CLI + `launchd/install_watch.sh` (every 6h). This is the piece that makes it unattended | watch_run.py, launchd/install_watch.sh | low |
+| 7 | Listener's `send_message` now really delivers | api/_agents.py | low |
+
+**Honesty bug found while testing, and it would have been serious in
+production:** a re-fired watch reported "19 new signals" every time. The graph
+upsert is idempotent so nothing duplicated, but `emitted` counted every write
+including updates, so a watch running four times a day would have claimed the
+same 19 finds forever and inflated every value metric. Added `G.upsert_ex()`
+which reports created-vs-updated; `write_signal` now counts only new nodes and
+says "Nothing new. The N posts found were already saved." Re-fire now correctly
+reports 0.
+
+**A subtlety worth remembering:** `upsert` MERGES, so a field cannot be unset by
+omitting it. Write `{"field": None}` explicitly. This cost a confusing test run.
+
+Verified end to end with a local webhook receiver: 4 buying-intent alerts
+delivered exactly once (webhook log shows one POST with real Reddit posts,
+sources linked), the second and third calls report "nothing new to send", a
+re-fired watch reports 0 new, an outcome marked converted, and the value surface
+returns "Found 4 people publicly choosing a vendor. You acted on 1, and 1 became
+conversations." Full battery green: 6 unit files (56 harness tests), 51/51 E2E,
+eval gate passing.
+
+Not done, and deliberately: OpenTelemetry (agreed as an exporter alongside the
+local event log, not a replacement), and the IA revamp that makes the harness the
+frame rather than a sidebar item. Both are queued behind getting a paying design
+partner, since the loop being closed is what makes that conversation possible.

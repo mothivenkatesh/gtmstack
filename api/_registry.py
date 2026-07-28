@@ -521,6 +521,39 @@ class DefinitionsModule(Module):
                             req.body.get("source_run")))
 
 
+class WatchModule(Module):
+    """Standing watches plus the value surface. This is the endpoint a scheduler
+    hits, so POST is cron-gated the same way the other unattended jobs are."""
+    id, name, desc = "watch", "Watches", "Keywords checked on a schedule, delivered once"
+
+    def get(self, req):
+        import _watch, _deliver
+        if req.params.get("value"):
+            return Resp(_deliver.value())
+        return Resp({"watches": _watch.list_watches(), "status": _watch.status(),
+                     "delivery": _deliver.configured(), "value": _deliver.value()})
+
+    def post(self, req):
+        import _watch, _deliver
+        act = req.body.get("action")
+        if act == "add":
+            return Resp(_watch.add(req.body.get("query"), req.body.get("sources"),
+                                   int(req.body.get("interval_s") or _watch.DEFAULT_INTERVAL_S),
+                                   req.body.get("label")))
+        if act == "remove":
+            return Resp(_watch.remove(req.body.get("id")))
+        if act == "mark":
+            return Resp(_deliver.mark(req.body.get("signal"), req.body.get("outcome"),
+                                      req.body.get("note")))
+        if act in ("run", "run_due"):
+            # The scheduled path. Gated so a public deployment cannot be used to
+            # burn source quota by anyone who finds the URL.
+            if not self._cron_ok(req):
+                return Resp({"error": "unauthorized"}, 401)
+            return Resp(_watch.run_due() if act == "run_due" else _watch.run_all())
+        return Resp({"error": "unknown action"}, 400)
+
+
 class ObserveModule(Module):
     """What the agents actually did. RISK.md flagged no-observability as
     critical; this is the answer to "is it healthy" and "why did it do that"."""
@@ -559,7 +592,7 @@ def _gated(mod):
 # read-only lookup tools, so they are gated. See Module._harness_ok.
 HARNESS = [_gated(m) for m in (GraphModule(), AgentsModule(), CohortsModule(),
                                InboxModule(), McpModule(), DefinitionsModule(),
-                               ObserveModule())]
+                               ObserveModule(), WatchModule())]
 
 MODULES = [TranscriptModule(), PersonaModule(), SignalsModule(), ReportModule(),
            MonitorModule(), GroupsModule(), JobsModule(), CleanModule(),

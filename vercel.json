@@ -61,6 +61,10 @@
     },
     "api/observe.py": {
       "includeFiles": "api/_*.py"
+    },
+    "api/watch.py": {
+      "maxDuration": 300,
+      "includeFiles": "api/_*.py"
     }
   },
   "crons": [
