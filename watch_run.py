@@ -45,6 +45,14 @@ def main():
         return 0 if s["healthy"] or not s["watches"] else 1
     out = _watch.run_all() if "--all" in sys.argv else _watch.run_due()
     print(f"ran {out['ran']} watches, {out.get('found', 0)} new signals")
+    # Keep the public graph number honest without anyone remembering to.
+    if out.get("found") and "--no-stats" not in sys.argv:
+        try:
+            import subprocess
+            subprocess.run([sys.executable, os.path.join(HERE, "scripts", "graph_stats.py")],
+                           capture_output=True, timeout=60)
+        except Exception:                                        # noqa: BLE001
+            pass
     for r in out.get("results", []):
         print(f"   {r.get('watch')}: {r.get('found', 0)} found "
               f"({'ok' if r.get('ok') else 'FAILED ' + str(r.get('error', ''))[:80]})")
