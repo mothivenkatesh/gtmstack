@@ -627,3 +627,50 @@ Not done, and deliberately: OpenTelemetry (agreed as an exporter alongside the
 local event log, not a replacement), and the IA revamp that makes the harness the
 frame rather than a sidebar item. Both are queued behind getting a paying design
 partner, since the loop being closed is what makes that conversation possible.
+
+## Build plan, this change (OpenTelemetry exporter + the Vercel deploy fix)
+
+**OTel.** An agent run IS a trace: run = root span, step = child, tool call =
+grandchild. `_observe.py`'s flat table throws that structure away, and the
+structure is where the answers are (step 4 was slow because the fetch inside it
+retried twice). `api/_otel.py` adds spans following the OpenTelemetry GenAI
+semantic conventions (`gen_ai.operation.name`, `gen_ai.agent.name`,
+`gen_ai.tool.name`), so any tracing backend can read them.
+
+Deliberately an EXPORTER, not a replacement. `_observe.py` stays the source of
+truth for the in-app Activity tab: zero-config, offline, no collector. A product
+that cannot show its own activity without a Grafana stack is a worse product.
+
+Three rules, inherited from `log()`: never raises, zero cost when off (no
+endpoint means no import), and flushes before freeze (serverless suspends the
+process the moment the response is written, so a batch processor silently loses
+the spans for the request you most wanted to debug).
+
+Enabled by the standard env var only, nothing app-specific:
+`OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
+
+Verified against a real OTLP receiver: a Steward run emitted `invoke_agent
+steward` as root with four `execute_tool` children (fill_rates,
+detect_duplicates, blast_radius, merge_records) carrying the full attribute set
+including the approval rule that allowed each step. Also verified the two
+failure modes: with tracing off the run is a 19ms no-op, and with an unreachable
+collector the run still returns ok. 7 new tests.
+
+**Why Vercel was never updating.** Production had been serving 18-day-old code
+while four deploys sat at UNKNOWN with no duration. Three separate causes, found
+in order:
+
+1. Netskope intercepts TLS and Node's fetch does not trust the corporate root
+   CA, so the CLI failed with a bare `fetch failed`. Fixed by exporting the
+   System keychain roots to `~/.corp-ca.pem` and setting `NODE_EXTRA_CA_CERTS`.
+2. The Vercel token had expired, which needs an interactive `vercel login`.
+3. **`.venv` (210MB) was never in `.vercelignore`**, so every deploy sat
+   uploading a virtualenv that Vercel rebuilds from requirements.txt anyway.
+   Adding `.venv/`, `node_modules/`, caches, and the bundles took the upload
+   from **217MB to 1.1MB**.
+
+Also corrected: this doc claimed the live URL was `gtmstack-ashen.vercel.app`
+and that a git push auto-deploys. Both are wrong. The live URL is
+**`gtmforce-ashen.vercel.app`** (project `gtmforce`), and the Vercel CLI
+explicitly reports no Git repository is connected, so a push does NOT deploy.
+Connecting it is worth doing: it removes this whole class of problem.

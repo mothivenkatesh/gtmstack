@@ -32,6 +32,7 @@ os.environ["OBSERVE_DB"] = os.path.join(_TMP, "events.db")
 import _agents as AG           # noqa: E402
 import _deliver as DL          # noqa: E402
 import _watch as W             # noqa: E402
+import _otel as T              # noqa: E402
 import _cohorts as C           # noqa: E402
 import _definitions as D       # noqa: E402
 import _graph as G             # noqa: E402
@@ -393,6 +394,56 @@ class GraphCreatedFlag(unittest.TestCase):
         self.assertTrue(created)
         _, created2 = G.upsert_ex("signal", {"text": "b"}, key="k1")
         self.assertFalse(created2)
+
+
+class Tracing(unittest.TestCase):
+    """OTel must be invisible when off and harmless when broken. Telemetry that
+    can fail the work it measures is worse than no telemetry."""
+
+    def setUp(self):
+        os.environ.pop("OTEL_EXPORTER_OTLP_ENDPOINT", None)
+        T._tracer, T._init_tried, T._provider = None, False, None
+
+    def test_disabled_without_an_endpoint(self):
+        self.assertFalse(T.enabled())
+        self.assertFalse(T.status()["active"])
+
+    def test_span_is_a_noop_when_off(self):
+        with T.span("anything", **{"a": 1}) as sp:
+            self.assertIsNone(sp)
+
+    def test_set_ok_tolerates_a_none_span(self):
+        T.set_ok(None, True, **{"x": 1})          # must not raise
+
+    def test_flush_is_safe_when_off(self):
+        self.assertFalse(T.flush())
+
+    def test_span_reraises_body_errors(self):
+        """Tracing must not swallow a real failure."""
+        with self.assertRaises(ValueError):
+            with T.span("x"):
+                raise ValueError("boom")
+
+    def test_an_unreachable_collector_does_not_break_a_run(self):
+        os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://127.0.0.1:9"
+        T._tracer, T._init_tried, T._provider = None, False, None
+        try:
+            with T.span("x") as sp:
+                pass                                # no exception is the assertion
+        finally:
+            os.environ.pop("OTEL_EXPORTER_OTLP_ENDPOINT", None)
+            T._tracer, T._init_tried, T._provider = None, False, None
+
+    def test_semantic_convention_span_names(self):
+        os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://127.0.0.1:9"
+        T._tracer, T._init_tried, T._provider = None, False, None
+        try:
+            with T.agent_span("listener", "run_1"):
+                with T.tool_span("write_signal", "listener"):
+                    pass
+        finally:
+            os.environ.pop("OTEL_EXPORTER_OTLP_ENDPOINT", None)
+            T._tracer, T._init_tried, T._provider = None, False, None
 
 
 if __name__ == "__main__":

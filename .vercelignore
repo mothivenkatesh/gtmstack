@@ -23,3 +23,19 @@ launchd/
 logs/
 CLAUDE.md
 RISK.md
+
+# Bulk that must never be uploaded. .venv alone is 210MB and its absence here is
+# why every deploy hung: the CLI sat uploading a virtualenv Vercel builds itself
+# from requirements.txt. Deploys showed UNKNOWN with no duration, and production
+# silently kept serving 18-day-old code.
+.venv/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+evals/
+mcp_server.py
+watch_run.py
+*.bundle
+*.dmg
+*.log

@@ -24,3 +24,10 @@ psycopg[binary]>=3.1
 # GOOGLE_SA_JSON or GOOGLE_SA_KEY is set. The monitor runs without it and just
 # prints results to the log instead.
 gspread>=6.0
+
+# OpenTelemetry (optional). Only imported when OTEL_EXPORTER_OTLP_ENDPOINT is
+# set, so the app runs identically without these installed. An agent run is a
+# trace: run = root span, step = child, tool call = grandchild.
+opentelemetry-api>=1.27
+opentelemetry-sdk>=1.27
+opentelemetry-exporter-otlp-proto-http>=1.27

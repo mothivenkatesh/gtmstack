@@ -32,6 +32,7 @@ import uuid
 
 import _graph as G
 import _observe as O
+import _otel as T
 from _approvals import decide, request as request_approval
 
 # ── the AOP library ─────────────────────────────────────────────────────────
@@ -289,6 +290,10 @@ def run(agent_id, inp=None, approved=False):
     O.log(O.RUN_START, agent=agent_id, run_id=run_id,
           summary=f"{a['name']} started", input=inp)
 
+    run_span_cm = T.agent_span(agent_id, run_id,
+                               **{"gtmstack.query": (inp.get("query") or "")[:120]})
+    run_span = run_span_cm.__enter__()
+
     p = plan(agent_id, inp)
 
     for s in p["steps"]:
@@ -304,7 +309,11 @@ def run(agent_id, inp=None, approved=False):
             continue
         t0 = time.time()
         try:
-            out = _exec(agent_id, s["tool"], inp, run_id)
+            with T.tool_span(s["tool"], agent_id,
+                             **{"gtmstack.risk": s.get("risk"),
+                                "gtmstack.rule": d.rule}) as tsp:
+                out = _exec(agent_id, s["tool"], inp, run_id)
+                T.set_ok(tsp, True, **{"gtmstack.count": out.get("count")})
             steps_out.append({**s, "status": "ok", "output": out.get("summary", ""),
                               "count": out.get("count"), "rule": d.rule})
             emitted += out.get("emitted", [])
@@ -329,6 +338,15 @@ def run(agent_id, inp=None, approved=False):
           ms=(time.time() - started) * 1000,
           summary=f"{a['name']}: {len(emitted)} written, {len(queued)} awaiting you",
           emitted=len(emitted), queued=len(queued))
+    T.set_ok(run_span, rec["ok"], **{"gtmstack.emitted": len(emitted),
+                                     "gtmstack.queued": len(queued)})
+    try:
+        run_span_cm.__exit__(None, None, None)
+    except Exception:                                            # noqa: BLE001
+        pass
+    # Serverless suspends the process the moment the response is written, so the
+    # batch processor never drains on its own. Flush the run we just traced.
+    T.flush()
     O.prune()
     return rec, 200
 

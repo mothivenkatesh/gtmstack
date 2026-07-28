@@ -563,7 +563,8 @@ class ObserveModule(Module):
         import _observe as O
         if req.params.get("run"):
             return Resp({"events": O.recent(200, run_id=req.params["run"])})
-        return Resp({"metrics": O.metrics(),
+        import _otel
+        return Resp({"metrics": O.metrics(), "tracing": _otel.status(),
                      "recent": O.recent(int(req.params.get("limit", 60)),
                                         kind=req.params.get("kind"))})
 
