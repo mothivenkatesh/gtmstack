@@ -554,6 +554,61 @@ class WatchModule(Module):
         return Resp({"error": "unknown action"}, 400)
 
 
+class CrmModule(Module):
+    """CRM sync. Read-only: pulling is safe and immediately useful, while
+    writing back is a SPEND-tier action against someone's system of record and
+    needs the approval ladder before it goes anywhere near production."""
+    id, name, desc = "crm", "CRM", "Sync HubSpot contacts, companies, and deals into the graph"
+
+    def get(self, req):
+        import _crm
+        return Resp(_crm.status())
+
+    def post(self, req):
+        import _crm
+        objs = req.body.get("objects") or ["contacts", "companies", "deals"]
+        out = _crm.sync(tuple(objs))
+        return Resp(out, 200 if out.get("ok") else 400)
+
+
+class DocsModule(Module):
+    """Durable storage for user documents (Tables) plus first-party analytics.
+
+    Replaces browser localStorage, which is per-browser, per-profile, wiped by a
+    cache clear, invisible to the server, and unshareable. A table built on a
+    laptop must not vanish when the user opens the app on their phone."""
+    id, name, desc = "docs", "Documents", "Durable user documents and product analytics"
+
+    def get(self, req):
+        import _docs
+        if req.params.get("usage"):
+            return Resp(_docs.usage())
+        k = req.params.get("key")
+        if k:
+            d = _docs.get(k)
+            return Resp({"key": k, "data": d, "found": d is not None})
+        return Resp({"docs": _docs.listing(req.params.get("kind", "table")),
+                     "backend": _docs.backend()})
+
+    def post(self, req):
+        import _docs
+        act = req.body.get("action")
+        if act == "track":
+            # Analytics are fire-and-forget: a failed write must never surface
+            # to the user as an error in the tool they were actually using.
+            _docs.track(req.body.get("name", "view"), req.body.get("tool"),
+                        req.body.get("session"), **(req.body.get("data") or {}))
+            return Resp({"ok": True})
+        if act == "delete":
+            _docs.delete(req.body.get("key"))
+            return Resp({"ok": True})
+        key = req.body.get("key")
+        if not key:
+            return Resp({"error": "key required"}, 400)
+        _docs.put(key, req.body.get("data"), req.body.get("kind", "table"))
+        return Resp({"ok": True, "key": key, "backend": _docs.backend()})
+
+
 class ObserveModule(Module):
     """What the agents actually did. RISK.md flagged no-observability as
     critical; this is the answer to "is it healthy" and "why did it do that"."""
@@ -567,6 +622,35 @@ class ObserveModule(Module):
         return Resp({"metrics": O.metrics(), "tracing": _otel.status(),
                      "recent": O.recent(int(req.params.get("limit", 60)),
                                         kind=req.params.get("kind"))})
+
+
+def _recorded(mod):
+    """Wrap a tool module so its work lands in the context graph.
+
+    The gap this closes: the toolkit and the harness were two disconnected
+    systems sharing a sidebar. Run Signals by hand and the result rendered and
+    vanished; run it through Listener and it became nodes with provenance. Same
+    engine, same data, completely different consequence, which made "one graph,
+    many doors" untrue and meant half the product contributed nothing to the
+    moat it claims.
+
+    Applied at the registry rather than inside each engine, so the engines stay
+    pure and testable and there is exactly one place to look.
+    """
+    original = mod.post
+
+    def wrapped(req, _original=original, _mod=mod):
+        resp = _original(req)
+        try:
+            if getattr(resp, "status", 500) < 300:
+                import _toolgraph
+                _toolgraph.record(_mod.id, req.body or {}, resp.payload)
+        except Exception:                                        # noqa: BLE001
+            pass          # recording must never break the tool it observes
+        return resp
+
+    mod.post = wrapped
+    return mod
 
 
 def _gated(mod):
@@ -593,9 +677,17 @@ def _gated(mod):
 # read-only lookup tools, so they are gated. See Module._harness_ok.
 HARNESS = [_gated(m) for m in (GraphModule(), AgentsModule(), CohortsModule(),
                                InboxModule(), McpModule(), DefinitionsModule(),
-                               ObserveModule(), WatchModule())]
+                               ObserveModule(), WatchModule(), CrmModule())]
+# Docs is NOT harness-gated: it stores the user's own documents and receives
+# analytics pings from the browser, both of which must work without a secret.
+MODULES_EXTRA = [DocsModule()]
 
-MODULES = [TranscriptModule(), PersonaModule(), SignalsModule(), ReportModule(),
-           MonitorModule(), GroupsModule(), JobsModule(), CleanModule(),
-           PlaysModule(), AuthModule(), WatchdogModule()] + HARNESS
+# Tool modules whose output is worth remembering. Read-only lookups and admin
+# endpoints (auth, jobs, groups, watchdog) are not: recording them would fill the
+# graph with noise and bury the signal.
+TOOLS = [_recorded(m) for m in (SignalsModule(), PersonaModule(), CleanModule(),
+                                TranscriptModule())]
+
+MODULES = TOOLS + MODULES_EXTRA + [ReportModule(), MonitorModule(), GroupsModule(), JobsModule(),
+                   PlaysModule(), AuthModule(), WatchdogModule()] + HARNESS
 REGISTRY = {m.id: m for m in MODULES}

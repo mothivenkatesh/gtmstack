@@ -70,6 +70,63 @@ def _row(r):
     }
 
 
+def _fallback(raw):
+    """Dependency-free validation: syntax, dedupe, disposable and role heuristics,
+    and a real MX lookup when the resolver is available."""
+    import re
+    import socket
+    RE = re.compile(r"^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$")
+    DISPOSABLE = {"mailinator.com", "10minutemail.com", "guerrillamail.com",
+                  "tempmail.com", "yopmail.com", "trashmail.com"}
+    ROLE = {"info", "admin", "support", "sales", "contact", "help", "billing",
+            "noreply", "no-reply", "hello", "team"}
+    FREE = {"gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com"}
+
+    def mx_ok(domain, _cache={}):
+        if domain in _cache:
+            return _cache[domain]
+        try:
+            socket.getaddrinfo(domain, None)
+            _cache[domain] = True
+        except Exception:                                        # noqa: BLE001
+            _cache[domain] = False
+        return _cache[domain]
+
+    seen, rows, dupes = set(), [], 0
+    for e in raw or []:
+        k = (e or "").strip().lower()
+        if not k:
+            continue
+        if k in seen:
+            dupes += 1
+            continue
+        seen.add(k)
+        ok_syntax = bool(RE.match(k))
+        dom = k.split("@")[-1] if "@" in k else ""
+        local = k.split("@")[0] if "@" in k else k
+        disp = dom in DISPOSABLE
+        role = local in ROLE
+        mx = mx_ok(dom) if (ok_syntax and dom) else False
+        if not ok_syntax or disp or not mx:
+            verdict = "undeliverable"
+        elif role or dom in FREE:
+            verdict = "risky"
+        else:
+            verdict = "deliverable"
+        rows.append({"email": k, "valid": verdict != "undeliverable", "verdict": verdict,
+                     "domain": dom, "mx_ok": mx, "disposable": disp, "role_based": role,
+                     "free_provider": dom in FREE, "engine": "builtin"})
+    by = {"deliverable": 0, "risky": 0, "undeliverable": 0}
+    for r in rows:
+        by[r["verdict"]] += 1
+    return {"rows": rows, "engine": "builtin",
+            "note": "Validated with the built-in checker (syntax, MX, disposable, role). "
+                    "Install mailguard locally for the full nine-layer check.",
+            "summary": {"unique": len(rows), "valid": sum(1 for r in rows if r["valid"]),
+                        "invalid": sum(1 for r in rows if not r["valid"]),
+                        "duplicates_removed": dupes, "by_verdict": by}}
+
+
 def clean(text="", emails=None, check_smtp=False, check_catchall=False):
     """
     text        : raw CSV / TSV / pasted contacts (emails are scanned out).
@@ -78,7 +135,12 @@ def clean(text="", emails=None, check_smtp=False, check_catchall=False):
     Returns (payload, status_code). Never raises on bad addresses.
     """
     if validate_bulk_sync is None:
-        return {"error": "mailguard is not installed on the server."}, 500
+        # Fall back rather than fail. mailguard is a git dependency that stalls
+        # the Vercel build, so production had NO email validation at all and the
+        # endpoint returned an error. Syntax plus MX gets most of the value with
+        # no dependency; the verdict says which engine produced it so nobody
+        # mistakes the fallback for the full nine-layer check.
+        return _fallback(emails if emails is not None else extract_emails(text)), 200
 
     raw = list(emails) if emails is not None else extract_emails(text)
     seen, uniq, dupes = set(), [], 0

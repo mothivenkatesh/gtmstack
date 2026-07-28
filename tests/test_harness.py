@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "api"))
 
 _TMP = tempfile.mkdtemp(prefix="gtmstack_test_")
+os.environ["GTMSTACK_DOCS_DB"] = os.path.join(_TMP, "docs.db")
 os.environ["GTMSTACK_GRAPH_DB"] = os.path.join(_TMP, "graph.db")
 os.environ["OBSERVE_DB"] = os.path.join(_TMP, "events.db")
 
@@ -37,6 +38,10 @@ import _cohorts as C           # noqa: E402
 import _definitions as D       # noqa: E402
 import _graph as G             # noqa: E402
 import _observe as O           # noqa: E402
+import _contracts as CT        # noqa: E402
+import _crm as CRM            # noqa: E402
+import _docs as DOC           # noqa: E402
+import _toolgraph as TG       # noqa: E402
 
 
 class Graph(unittest.TestCase):
@@ -444,6 +449,125 @@ class Tracing(unittest.TestCase):
         finally:
             os.environ.pop("OTEL_EXPORTER_OTLP_ENDPOINT", None)
             T._tracer, T._init_tried, T._provider = None, False, None
+
+
+class Docs(unittest.TestCase):
+    """Durable storage. Replaces localStorage, which is per-browser, wiped by a
+    cache clear, and invisible to the server."""
+
+    def setUp(self):
+        DOC.reset()
+
+    def test_put_get_roundtrip(self):
+        DOC.put("k1", {"tables": [1, 2]})
+        self.assertEqual(DOC.get("k1"), {"tables": [1, 2]})
+
+    def test_put_overwrites_not_duplicates(self):
+        DOC.put("k1", {"v": 1}); DOC.put("k1", {"v": 2})
+        self.assertEqual(DOC.get("k1")["v"], 2)
+        self.assertEqual(len(DOC.listing()), 1)
+
+    def test_missing_key_is_none(self):
+        self.assertIsNone(DOC.get("nope"))
+
+    def test_delete(self):
+        DOC.put("k1", {"v": 1}); DOC.delete("k1")
+        self.assertIsNone(DOC.get("k1"))
+
+    def test_track_never_raises(self):
+        class Boom:
+            def __repr__(self): raise RuntimeError("boom")
+        self.assertTrue(DOC.track("view", "signals", "s1"))
+        DOC.track("view", "signals", "s1", weird=Boom())    # must not raise
+
+    def test_usage_rolls_up_by_tool(self):
+        DOC.track("open", "signals", "s1"); DOC.track("open", "signals", "s2")
+        DOC.track("open", "clean", "s1")
+        u = DOC.usage()
+        self.assertEqual(u["events"], 3)
+        self.assertEqual(u["sessions"], 2)
+        self.assertEqual(u["by_tool"][0]["tool"], "signals")
+
+
+class Contracts(unittest.TestCase):
+    """The bug class this closes bit twice: `mentions` vs `feed`, and
+    `text` vs `plain`. Both were payload-shape mismatches."""
+
+    def test_good_feed_item_passes(self):
+        d, err = CT.validate("FeedItem", {"text": "hi", "platform": "reddit"})
+        self.assertIsNone(err)
+        self.assertEqual(d["platform"], "reddit")
+
+    def test_check_feed_separates_usable_from_malformed(self):
+        ok, bad = CT.check_feed([{"text": "a", "platform": "reddit"},
+                                 {"text": {"not": "a string"}}])
+        self.assertEqual(len(ok), 1)
+        self.assertEqual(bad, 1)
+
+    def test_validate_never_raises(self):
+        d, err = CT.validate("FeedItem", None)
+        self.assertIsNotNone(d) if d is not None else None
+
+    def test_unknown_model_passes_through(self):
+        d, err = CT.validate("NoSuchModel", {"a": 1})
+        self.assertEqual(d, {"a": 1})
+        self.assertIsNone(err)
+
+
+class Crm(unittest.TestCase):
+    def setUp(self):
+        G.reset()
+        os.environ.pop("HUBSPOT_TOKEN", None)
+
+    def test_unconfigured_reports_honestly(self):
+        self.assertFalse(CRM.configured()["any"])
+        out = CRM.sync()
+        self.assertFalse(out["ok"])
+        self.assertIn("not connected", out["error"].lower())
+
+    def test_status_says_what_to_do(self):
+        s = CRM.status()
+        self.assertIn("HUBSPOT_TOKEN", s["note"])
+        self.assertEqual(s["people_from_crm"], 0)
+
+    def test_sync_never_fabricates_records(self):
+        """An unconfigured sync must write NOTHING, not empty placeholders."""
+        before = G.counts()["nodes"]
+        CRM.sync()
+        self.assertEqual(G.counts()["nodes"], before)
+
+
+class ToolGraph(unittest.TestCase):
+    """The toolkit and the harness must share one memory. Before this, a manual
+    Signals lookup rendered and vanished while the same lookup via Listener
+    became durable nodes."""
+
+    def setUp(self):
+        G.reset()
+
+    def test_signals_output_becomes_people_and_signals(self):
+        payload = {"feed": [
+            {"text": "which gateway", "platform": "reddit", "author": "amy", "url": "u1"},
+            {"text": "another", "platform": "reddit", "author": "bob", "url": "u2"}]}
+        out = TG.record("signals", {"query": "x"}, payload)
+        self.assertEqual(out, {"people": 2, "signals": 2})
+        self.assertEqual(len(G.query("person")), 2)
+        self.assertTrue(G.query("run"))
+
+    def test_a_manual_run_is_marked_human(self):
+        TG.record("signals", {}, {"feed": [{"text": "t", "platform": "reddit",
+                                            "author": "amy", "url": "u"}]})
+        self.assertEqual(G.query("run")[0]["data"]["by"], "human")
+
+    def test_nothing_new_records_nothing(self):
+        p = {"feed": [{"text": "t", "platform": "reddit", "author": "amy", "url": "u"}]}
+        TG.record("signals", {}, p)
+        runs = len(G.query("run"))
+        self.assertIsNone(TG.record("signals", {}, p), "a re-run found nothing new")
+        self.assertEqual(len(G.query("run")), runs)
+
+    def test_non_dict_payload_is_safe(self):
+        self.assertIsNone(TG.record("signals", {}, "not a dict"))
 
 
 if __name__ == "__main__":

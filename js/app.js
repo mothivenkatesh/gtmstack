@@ -1,5 +1,5 @@
 /* App shell: registry, sidebar, mounting */
-import { Icon, h, html, render, useEffect, useState } from './core.js';
+import { API_BASE, Icon, h, html, render, useEffect, useState } from './core.js';
 import { HomeTool,       manifest as mHome }       from './home.js';
 import { PersonaTool,    manifest as mPersona }    from './persona.js';
 import { ExtractTool,    manifest as mExtract }    from './extract.js';
@@ -11,6 +11,25 @@ import { RoutinesTool,   manifest as mReports }    from './reports.js';
 import { ConnectorsTool, manifest as mConnectors } from './connectors.js';
 import { HarnessTool,    manifest as mHarness }    from './harness.js';
 import { Auth, RunsModal, WelcomeModal } from './auth.js';
+
+/* First-party analytics. No third-party script, no cookie, no data leaving the
+   deployment. It answers one question the repo could not previously answer:
+   which of these tools does anyone actually use. That is the evidence needed
+   before deciding what to cut, and cutting on taste instead of evidence is how
+   a codebase accumulates 1,000-line features nobody opens.
+
+   The session id is per-tab and in-memory only, so it is not an identifier that
+   follows anyone anywhere. */
+const SESSION = Math.random().toString(36).slice(2, 12);
+export const track = (name, tool, data) => {
+  try {
+    fetch(`${API_BASE}/api/docs`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ action: 'track', name, tool, session: SESSION, data }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) { /* analytics must never break the app it measures */ }
+};
 
 
 /* ── tool registry: built from each module's manifest (the shared interface) ── */
@@ -27,6 +46,7 @@ export function App(){
   const [tool, setTool] = useState(hashTool);
   const [seed, setSeed] = useState(null);
   const meta = TOOLS[tool];
+  useEffect(() => { track('tool_open', tool); }, [tool]);
 
   useEffect(()=>{ if(hashTool() !== tool) location.hash = tool; }, [tool]);
   useEffect(()=>{ const onHash = () => setTool(hashTool());

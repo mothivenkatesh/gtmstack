@@ -1,6 +1,18 @@
 /* Tables module: Airtable-like grid */
 import { API_BASE, Icon, h, html, useEffect, useMemo, useRef, useState } from './core.js';
 
+/* Persistence is SERVER-SIDE, not localStorage. localStorage is per-browser,
+   per-profile, wiped by a cache clear, invisible to the server, and cannot be
+   shared with a teammate: a table built on a laptop would vanish on a phone.
+   These helpers are deliberately fire-and-forget on write and tolerant on read,
+   so a slow network degrades the save rather than breaking the grid. */
+const docGet = (key) => fetch(`${API_BASE}/api/docs?key=${encodeURIComponent(key)}`)
+  .then(r => r.json()).then(d => (d && d.found) ? d.data : null).catch(() => null);
+const docPut = (key, data) => fetch(`${API_BASE}/api/docs`, {
+  method: 'POST', headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({ key, data, kind: 'table' }),
+}).catch(() => {});
+
 
 /* ════════════════════════ TABLES (Airtable/Notion-like, JSON-first) ════════════════════════ */
 export const TBL_KEY = 'gtmstack.tables.v1';
@@ -628,20 +640,27 @@ export function JsonView({db, onApply, onLoadMonitor, busy, note}){
 export function TablesTool(){
   /* boot flags: did stored data exist but fail to load (corrupt), and should the
      first persist be skipped so we do NOT overwrite that recoverable data */
+  /* Server-backed. The grid renders SAMPLE immediately and swaps in the saved
+     table when it arrives, so a slow round trip never shows a blank screen.
+     `loaded` gates the save effect: without it the initial SAMPLE render would
+     immediately overwrite the user's real table with the sample. */
   const bootRef = useRef({corrupt:false, skip:false});
-  const [db,setDb]=useState(()=>{
-    try{ const s=localStorage.getItem(TBL_KEY);
-      if(s){ const r=validateDb(JSON.parse(s));
-        if(r.ok && (r.db.cols||[]).length>0) return r.db;   // a 0-column table is unrenderable (looks blank)
-        // Corrupt bytes: protect them (skip the first overwrite) so the JSON view can recover.
-        // Valid-but-columnless: fall through to SAMPLE and let it persist over the dead table.
-        if(!r.ok){ bootRef.current.corrupt=true; bootRef.current.skip=true; }
+  const [db,setDb]=useState(SAMPLE);
+  const [view,setView]=useState('table');
+  const [loaded,setLoaded]=useState(false);
+
+  useEffect(()=>{ let live=true;
+    Promise.all([docGet(TBL_KEY), docGet(TBL_VIEW_KEY)]).then(([saved, v])=>{
+      if(!live) return;
+      if(saved){ const r=validateDb(saved);
+        if(r.ok && (r.db.cols||[]).length>0) setDb(r.db);
+        else if(!r.ok) bootRef.current.corrupt=true;   // keep the bad bytes, do not overwrite
       }
-    }catch(e){ try{ if(localStorage.getItem(TBL_KEY)){ bootRef.current.corrupt=true; bootRef.current.skip=true; } }catch(_){} }
-    return SAMPLE;
-  });
-  const [view,setView]=useState(()=>{ try{ const v=localStorage.getItem(TBL_VIEW_KEY);
-    return ['table','list','board','json'].includes(v)?v:'table'; }catch(e){ return 'table'; } });
+      if(v && ['table','list','board','json'].includes(v.view)) setView(v.view);
+      setLoaded(true);
+    });
+    return ()=>{ live=false; };
+  },[]);
   const [rowEd,setRowEd]=useState(null);            // row _id open in the detail editor
   const [groupBy,setGroupBy]=useState('');
   const [sortBy,setSortBy]=useState(''); const [sortDir,setSortDir]=useState('asc');
@@ -666,14 +685,13 @@ export function TablesTool(){
 
   /* persist, but skip the first write when boot data was corrupt (so we leave the
      recoverable bytes on disk); surface a quota/save failure instead of dropping it silently */
-  useEffect(()=>{ if(bootRef.current.skip){ bootRef.current.skip=false; return; }
-    try{ localStorage.setItem(TBL_KEY, JSON.stringify(db)); }
-    catch(e){ setNote('Could not save to browser storage (it may be full). Export your JSON so you do not lose changes.'); } },[db]);
+  useEffect(()=>{ if(!loaded || bootRef.current.corrupt) return;
+    docPut(TBL_KEY, db); },[db, loaded]);
   /* on mount, tell the user if their saved table could not be read */
-  useEffect(()=>{ if(bootRef.current.corrupt)
-    setNote('Your saved table could not be read, so the sample is shown. Your old data is still in storage; export or overwrite when you are ready.'); },[]);
+  useEffect(()=>{ if(loaded && bootRef.current.corrupt)
+    setNote('Your saved table could not be read, so the sample is shown. The stored copy is untouched; export or overwrite when you are ready.'); },[loaded]);
   /* persist the chosen view so a reload keeps you on Table / List / Board / JSON */
-  useEffect(()=>{ try{ localStorage.setItem(TBL_VIEW_KEY, view); }catch(e){} },[view]);
+  useEffect(()=>{ if(loaded) docPut(TBL_VIEW_KEY, {view}); },[view, loaded]);
   /* Board stacks by a select field. On entering Board, if the current group is not
      a select, auto-pick the first select column so lanes make sense; on LEAVING
      board, restore whatever grouping Table/List had, so a board-only stack choice

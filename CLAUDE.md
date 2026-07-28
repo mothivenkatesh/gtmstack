@@ -729,3 +729,40 @@ Deploy from now on:
     npx vercel build --prod && npx vercel deploy --prebuilt --prod
 Building locally is what makes failures visible. Connecting the Git repo in the
 Vercel dashboard would remove this whole class of problem.
+
+## Build plan, this change (ten fixes: DB-backed storage, CRM, WhatsApp, contracts)
+
+Goal: work the prioritised list end to end, with one standing instruction from
+the user: nothing stays in localStorage, connect to a database where that is the
+right answer.
+
+| # | Item | What shipped |
+|---|---|---|
+| 1 | CRM connector | `api/_crm.py`: HubSpot contacts, companies, and deals into the graph, Salesforce-shaped so the second is cheap. READ ONLY on purpose, since writing to someone's system of record is a SPEND-tier action that needs the approval ladder first. Paginated and capped so a first sync cannot time out. Steward now prefers real CRM records and says which source it used |
+| 2 | WhatsApp delivery | `_send_whatsapp` via the Meta Cloud API, a first-class channel alongside Slack and email. It was previously a string in a risk table and an unbuilt agent's description while the README named it four times as the differentiator |
+| 3 | Outcome data | Already shipped; needs a real user to mark alerts, which no amount of code produces |
+| 4 | Tools write to the graph | `api/_toolgraph.py` + a `_recorded()` registry wrapper. The toolkit and the harness were two disconnected systems: a manual Signals lookup rendered and vanished while the same lookup via Listener became durable nodes. One graph, many doors is now true |
+| 5 | Postgres graph | `_graph.py` uses Postgres when DATABASE_URL is set, SQLite otherwise. On serverless the SQLite file lives in the temp dir and dies on every cold start, so the graph the whole moat argument rests on was silently resetting |
+| 6 | Pydantic contracts | `api/_contracts.py` on the seams that cross modules, wired into the exact step where the shape bug happened twice. Graceful no-op when pydantic is absent |
+| 7 | Git connected | `vercel git connect` reports the repo is connected, so pushes deploy |
+| 8 | Tables off localStorage | Server-backed via `/api/docs`. localStorage is per-browser, per-profile, wiped by a cache clear, invisible to the server, and unshareable: a table built on a laptop vanished on a phone |
+| 9 | Analytics | First-party, in `_docs.py`. No third-party script, no cookie, no data leaving the deployment. Answers the question this repo could not answer: which tools does anyone actually use |
+| 10 | /api/clean | A dependency-free fallback (syntax, MX, disposable, role) replaces the hard error. mailguard is a git dependency that stalls the Vercel build, so production had NO validation at all; the verdict names its engine so the fallback is never mistaken for the nine-layer check |
+
+`api/_docs.py` is one module for two shapes because they are the same problem:
+durable documents (Tables) and append-only events (analytics). Both follow the
+Postgres-or-SQLite split.
+
+Two design rules held throughout: recording never breaks the thing it observes
+(`_recorded`, `track`, and `_toolgraph.record` all swallow their own errors), and
+nothing fabricates data when unconfigured (an unconfigured CRM sync writes
+nothing and says why, with a test asserting it).
+
+The `loaded` flag in tables.js is load-bearing: without it the initial SAMPLE
+render would immediately overwrite the user's real table before the fetch
+returned.
+
+Verified: 80 harness tests (up from 63), six unit files, 51 E2E with 0 failures,
+eval gate green. Live checks: a manual Signals run wrote 18 people + 18 signals +
+a run node marked `by: human`; tables round-trip through the DB; analytics roll
+up by tool; the CRM reports honestly when unconfigured.

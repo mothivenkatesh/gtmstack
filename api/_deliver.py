@@ -48,12 +48,58 @@ def configured():
     """What delivery is actually wired. Reported honestly so the UI can say
     'connect Slack' instead of silently doing nothing."""
     import _email
-    return {
-        "slack": bool(os.getenv("SLACK_WEBHOOK_URL")),
-        "email": bool(_email.configured() and os.getenv("ALERT_EMAIL")),
-        "any": bool(os.getenv("SLACK_WEBHOOK_URL")
-                    or (_email.configured() and os.getenv("ALERT_EMAIL"))),
-    }
+    slack = bool(os.getenv("SLACK_WEBHOOK_URL"))
+    email = bool(_email.configured() and os.getenv("ALERT_EMAIL"))
+    wa = bool(os.getenv("WHATSAPP_TOKEN") and os.getenv("WHATSAPP_PHONE_ID")
+              and os.getenv("WHATSAPP_TO"))
+    return {"slack": slack, "email": email, "whatsapp": wa,
+            "any": bool(slack or email or wa)}
+
+
+def _whatsapp_text(items, query):
+    """WhatsApp has no blocks and a hard length limit, so this is the terse cut:
+    the intent, the quote, and the link. Anything longer gets truncated by the
+    client and reads worse than a short message."""
+    head = (f"*{len(items)} new signal{'s' if len(items) != 1 else ''}"
+            + (f" for {query}*" if query else "*"))
+    lines = [head, ""]
+    for s in items[:8]:
+        d = s["data"]
+        lines += [f"*{_LABEL.get(d.get('intent_type'), 'Signal')}* "
+                  f"({d.get('sentiment')})",
+                  (d.get("text") or "").replace("\n", " ")[:140],
+                  (s.get("source") or d.get("url") or ""), ""]
+    if len(items) > 8:
+        lines.append(f"...and {len(items) - 8} more")
+    return "\n".join(lines)
+
+
+def _send_whatsapp(text):
+    """WhatsApp Cloud API (Meta). The channel the India-first positioning names,
+    so it is a first-class destination rather than an afterthought.
+
+    Note the 24-hour rule: outside a customer-initiated window Meta only allows
+    approved template messages. These alerts go to the TEAM's own number, which
+    is a session the team opens, so free-form text is correct here. Customer-
+    facing sends will need a template."""
+    tok = os.getenv("WHATSAPP_TOKEN")
+    pid = os.getenv("WHATSAPP_PHONE_ID")
+    to = os.getenv("WHATSAPP_TO")
+    if not (tok and pid and to and requests):
+        return False, "whatsapp not configured"
+    try:
+        r = requests.post(
+            f"https://graph.facebook.com/v21.0/{pid}/messages",
+            headers={"Authorization": f"Bearer {tok}",
+                     "Content-Type": "application/json"},
+            json={"messaging_product": "whatsapp", "to": to,
+                  "type": "text", "text": {"preview_url": True, "body": text[:4000]}},
+            timeout=20)
+        if r.status_code < 300:
+            return True, "whatsapp sent"
+        return False, f"whatsapp {r.status_code}: {r.text[:80]}"
+    except Exception as e:                                       # noqa: BLE001
+        return False, f"whatsapp error: {str(e)[:90]}"
 
 
 # ── formatting ──────────────────────────────────────────────────────────────
@@ -152,8 +198,8 @@ def deliver(items=None, query=None, intents=("category_intent", "competitor_comp
         return {"sent": 0, "channels": [], "note": "nothing new to send", **cfg}
     if not cfg["any"]:
         return {"sent": 0, "channels": [], "ready": len(items), **cfg,
-                "note": f"{len(items)} alerts ready. Connect Slack or email to "
-                        f"have them delivered."}
+                "note": f"{len(items)} alerts ready. Connect Slack, email, or "
+                        f"WhatsApp to have them delivered."}
 
     channels, ok_any = [], False
     if cfg["slack"]:
@@ -162,6 +208,9 @@ def deliver(items=None, query=None, intents=("category_intent", "competitor_comp
     if cfg["email"]:
         subj = f"[GTMstack] {len(items)} new signal{'s' if len(items) != 1 else ''}"
         ok, note = _send_email(subj, _email_body(items, query))
+        channels.append(note); ok_any = ok_any or ok
+    if cfg["whatsapp"]:
+        ok, note = _send_whatsapp(_whatsapp_text(items, query))
         channels.append(note); ok_any = ok_any or ok
 
     # Only stamp when something actually left the building. Stamping on a failed

@@ -387,10 +387,16 @@ def _listener_tool(tool, inp, run_id):
             for s in payload.get("sources") or []:
                 for a in s.get("activity") or []:
                     items.append({**a, "platform": a.get("platform") or s.get("platform")})
+        # Validate the shape before trusting it. A source changing its payload
+        # under us is exactly how this step once silently processed zero items
+        # and still reported success.
+        import _contracts
+        items, malformed = _contracts.check_feed(items)
         kept = [m for m in items
                 if (m.get("author") or "").lower().lstrip("@").lstrip("u/") not in _EXCLUDED]
         inp["_items"] = kept
-        return {"summary": f"Read {len(items)} public posts, {len(kept)} worth your attention",
+        note = f", {malformed} skipped as malformed" if malformed else ""
+        return {"summary": f"Read {len(items)} public posts, {len(kept)} worth your attention{note}",
                 "count": len(kept), "emitted": []}
 
     if tool == "classify_sentiment":
@@ -604,7 +610,11 @@ def _analyst_tool(tool, inp, run_id):
 # ── Steward: data quality over the graph ────────────────────────────────────
 
 def _steward_tool(tool, inp, run_id):
-    people = G.query("person", limit=1000)
+    # Prefer real CRM records when the connector is wired: duplicate detection
+    # over 19 public posts is a demo, over a CRM it is the job.
+    crm_people = G.query("person", limit=1000, where={"crm": "hubspot"})
+    people = crm_people or G.query("person", limit=1000)
+    inp["_source"] = "crm" if crm_people else "public signals"
     accounts = G.query("account", limit=1000)
     if tool == "fill_rates":
         fields = ("handle", "platform", "name", "account_id")
