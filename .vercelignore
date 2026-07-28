@@ -39,3 +39,32 @@ watch_run.py
 *.bundle
 *.dmg
 *.log
+
+# Per-endpoint shims: superseded by api/index.py, which dispatches every
+# /api/* route through the registry. Kept in git for local clarity, excluded
+# from the deploy so the Hobby 12-function cap is not hit.
+api/agents.py
+api/auth.py
+api/clean.py
+api/cohorts.py
+api/definitions.py
+api/graph.py
+api/groups.py
+api/inbox.py
+api/jobs.py
+api/mcp.py
+api/monitor.py
+api/observe.py
+api/persona.py
+api/plays.py
+api/report.py
+api/signals.py
+api/transcript.py
+api/watch.py
+api/watchdog.py
+
+# Never ship a local database. It bundled read-only into the deploy, which
+# made every graph WRITE crash the function while reads quietly succeeded.
+*.sqlite
+*.sqlite3
+api/_store/**

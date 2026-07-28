@@ -66,6 +66,8 @@ def _db_path():
     p = os.getenv("OBSERVE_DB")
     if p:
         return p
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        return os.path.join(tempfile.gettempdir(), "gtmstack_events.db")
     store = os.path.join(HERE, "_store")
     try:
         os.makedirs(store, exist_ok=True)

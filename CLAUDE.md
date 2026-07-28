@@ -674,3 +674,58 @@ and that a git push auto-deploys. Both are wrong. The live URL is
 **`gtmforce-ashen.vercel.app`** (project `gtmforce`), and the Vercel CLI
 explicitly reports no Git repository is connected, so a push does NOT deploy.
 Connecting it is worth doing: it removes this whole class of problem.
+
+## Build plan, this change (the Vercel deploy, actually fixed)
+
+Production had served 18-day-old code while every deploy hung at "Building..."
+with status UNKNOWN and no logs. The remote build never says why. Running
+`vercel build` LOCALLY finally surfaced the real error, and that is the
+technique to remember: when a Vercel build hangs, build locally.
+
+Four causes, each hiding the next:
+
+1. **Netskope TLS.** Node's fetch does not trust the corporate root CA, so the
+   CLI died with a bare `fetch failed`. Export the System keychain roots and set
+   `NODE_EXTRA_CA_CERTS=$HOME/.corp-ca.pem`.
+2. **`.venv` was never in `.vercelignore`**, so every deploy sat uploading 210MB
+   of virtualenv that Vercel rebuilds from requirements.txt anyway. 217MB -> 73KB.
+3. **THE REAL ONE. Vercel's Python builder finds a function by STATICALLY
+   looking for a `handler` class statement. It does not follow
+   `handler = make_handler("clean")`.** Every shim in this repo used that
+   assignment, so the builder found ZERO functions, the `functions` patterns
+   matched nothing, and the build emitted a static-only site that served the
+   Python source as assets. Proven with a minimal repro: a file with
+   `class handler(BaseHTTPRequestHandler)` built; the identical file using the
+   assignment did not. Fix: `_Base = make_handler(...)` then `class handler(_Base)`.
+4. **Hobby plan caps a deployment at 12 Serverless Functions**; this app has 19
+   endpoints. Fixed by consolidating to ONE function, `api/index.py`, with a
+   rewrite sending `/api/(.*)` to it. `_http.make_handler()` now takes no
+   module id and resolves the module from the request path. This is also simply
+   correct: app.py has always dispatched through one generic handler over the
+   same REGISTRY, so the two deployments finally share a code path.
+
+**A real production bug found by running the E2E suite against the deploy:** the
+graph DB was bundled into the deployment and Vercel's app directory is
+read-only, so reads succeeded and the first WRITE crashed the function with
+FUNCTION_INVOCATION_FAILED. The old `_db_path` used `makedirs(exist_ok=True)`,
+which silently succeeds when a bundled `_store/` exists. Now decided by platform
+(`VERCEL` / `AWS_LAMBDA_FUNCTION_NAME` -> temp dir), and `api/_store/**` plus
+`*.sqlite` are excluded from the bundle so a local database can never ship.
+
+`mailguard` was also removed from requirements: a `git+https` dependency makes
+the build clone a repo at install time. `/api/clean` returns a clean "not
+installed" error, exactly as it already did on the previous deploy.
+
+`HARNESS_SECRET` is set in Vercel production, so the harness endpoints are live
+and gated: 200 with the header, 401 without. The secret is in
+`~/.gtmstack_harness_secret` (chmod 600), never in the repo.
+
+Live: **https://gtmforce-ashen.vercel.app**. Production E2E: 43 pass, 0 fail, 1
+degraded (mailguard, environment not code). Local: 51/51, six unit files, evals
+green.
+
+Deploy from now on:
+    export NODE_EXTRA_CA_CERTS=$HOME/.corp-ca.pem
+    npx vercel build --prod && npx vercel deploy --prebuilt --prod
+Building locally is what makes failures visible. Connecting the Git repo in the
+Vercel dashboard would remove this whole class of problem.

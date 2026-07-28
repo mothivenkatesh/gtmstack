@@ -8,7 +8,15 @@ curl_cffi>=0.7
 # Clean Data (NoBounce): mailguard 0.3.0 is not on PyPI (only 0.1.0 is), so install
 # it straight from the public GitHub repo, pinned to a commit for a reproducible
 # build. Swap to a plain "mailguard>=0.3.0" pin once 0.3.0 is published to PyPI.
-mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b49172df4861af055e6d49a0dd249d07eb
+# mailguard: NOT installed on Vercel. A git+https dependency makes the build
+# clone a repo at install time, and that is where this build hung: deploys sat
+# at "Building..." with status UNKNOWN and no logs, and production silently kept
+# serving 18-day-old code. The evidence it never worked here anyway is that
+# /api/clean returns 501 on the deployed app (guarded import, mailguard absent).
+# Local dev installs it explicitly:
+#     pip install "mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b"
+# Swap to a plain "mailguard>=0.3.0" pin once 0.3.0 is published to PyPI.
+# mailguard @ git+https://github.com/mothivenkatesh/mailguard.git@ae4ab9b49172df4861af055e6d49a0dd249d07eb
 # anthropic is optional: only used when ANTHROPIC_API_KEY is set (live persona +
 # teardown reactions). The deterministic engines run fine without it. The other
 # model path (any OpenAI-compatible endpoint, e.g. a RunPod-hosted reasoning

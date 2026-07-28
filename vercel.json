@@ -2,67 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "functions": {
-    "api/transcript.py": {
-      "maxDuration": 30,
-      "includeFiles": "api/_*.py"
-    },
-    "api/clean.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/plays.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/signals.py": {
-      "maxDuration": 30,
-      "includeFiles": "api/_*.py"
-    },
-    "api/persona.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/jobs.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/report.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/monitor.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/watchdog.py": {
-      "maxDuration": 30,
-      "includeFiles": "api/_*.py"
-    },
-    "api/groups.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/graph.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/agents.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/cohorts.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/definitions.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/inbox.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/mcp.py": {
-      "maxDuration": 60,
-      "includeFiles": "api/_*.py"
-    },
-    "api/observe.py": {
-      "includeFiles": "api/_*.py"
-    },
-    "api/watch.py": {
+    "api/index.py": {
       "maxDuration": 300,
       "includeFiles": "api/_*.py"
     }
@@ -74,6 +14,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    },
     {
       "source": "/",
       "destination": "/index.html"

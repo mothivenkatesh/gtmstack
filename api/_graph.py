@@ -34,6 +34,12 @@ def _db_path():
     p = os.getenv("GTMSTACK_GRAPH_DB")
     if p:
         return p
+    # Serverless has a READ-ONLY application directory; only the temp dir is
+    # writable. The old check (makedirs with exist_ok) silently succeeded when
+    # a bundled _store/ existed, so reads worked and the first write crashed the
+    # function. Decide by platform, not by whether a directory happens to exist.
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        return os.path.join(tempfile.gettempdir(), "gtmstack_graph.db")
     store = os.path.join(HERE, "_store")
     try:
         os.makedirs(store, exist_ok=True)

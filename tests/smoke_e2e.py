@@ -171,6 +171,8 @@ def t_clean():
         s, d = _req("clean", {"text": "a@gmail.com\na@gmail.com\nbad@@x\n"
                                       "info@stripe.com\nnope@thisdomaindoesnotexist12345.com"})
         if s != 200:
+            if "mailguard" in str(d):
+                return (DEGRADED, "mailguard not installed on this server")
             return (FAIL, f"status {s}")
         summ = d.get("summary") or {}
         if not summ:
