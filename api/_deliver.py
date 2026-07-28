@@ -52,8 +52,13 @@ def configured():
     email = bool(_email.configured() and os.getenv("ALERT_EMAIL"))
     wa = bool(os.getenv("WHATSAPP_TOKEN") and os.getenv("WHATSAPP_PHONE_ID")
               and os.getenv("WHATSAPP_TO"))
-    return {"slack": slack, "email": email, "whatsapp": wa,
-            "any": bool(slack or email or wa)}
+    try:
+        import _sheets
+        sheets = bool(_sheets.configured() and os.getenv("GTMSTACK_SHEET_URL"))
+    except Exception:                                            # noqa: BLE001
+        sheets = False
+    return {"slack": slack, "email": email, "whatsapp": wa, "sheets": sheets,
+            "any": bool(slack or email or wa or sheets)}
 
 
 def _whatsapp_text(items, query):
@@ -198,8 +203,8 @@ def deliver(items=None, query=None, intents=("category_intent", "competitor_comp
         return {"sent": 0, "channels": [], "note": "nothing new to send", **cfg}
     if not cfg["any"]:
         return {"sent": 0, "channels": [], "ready": len(items), **cfg,
-                "note": f"{len(items)} alerts ready. Connect Slack, email, or "
-                        f"WhatsApp to have them delivered."}
+                "note": f"{len(items)} alerts ready. Connect a Google Sheet, "
+                        f"Slack, email, or WhatsApp to have them delivered."}
 
     channels, ok_any = [], False
     if cfg["slack"]:
@@ -212,6 +217,17 @@ def deliver(items=None, query=None, intents=("category_intent", "competitor_comp
     if cfg["whatsapp"]:
         ok, note = _send_whatsapp(_whatsapp_text(items, query))
         channels.append(note); ok_any = ok_any or ok
+    if cfg["sheets"]:
+        # The sheet is the surface a GTM operator already lives in, and the only
+        # one they can write BACK from, which is why it carries the Outcome
+        # column. Slack and WhatsApp interrupt; the sheet is where the work
+        # actually gets done.
+        import _sheets
+        r = _sheets.push_signals(items)
+        ok = bool(r.get("pushed")) or r.get("pushed") == 0 and not r.get("error")
+        channels.append(f"sheet +{r.get('pushed', 0)}" if not r.get("error")
+                        else f"sheet error: {r['error'][:60]}")
+        ok_any = ok_any or ok
 
     # Only stamp when something actually left the building. Stamping on a failed
     # send would silently lose the alert forever, which is worse than a duplicate.
@@ -228,7 +244,32 @@ def deliver(items=None, query=None, intents=("category_intent", "competitor_comp
 
 # ── outcomes: the reason anyone pays ────────────────────────────────────────
 
-def mark(signal_id, outcome, note=None):
+def pull_outcomes(sheet_url=None):
+    """Read the sheet's Outcome column and apply it to the graph.
+
+    This closes the loop where the user actually is. `useful_alert_rate` was
+    null not because the metric was hard but because recording an outcome meant
+    opening the app; a dropdown in a sheet they already have open is a habit
+    they already have."""
+    try:
+        import _sheets
+    except Exception:                                            # noqa: BLE001
+        return {"applied": 0, "skipped": True}
+    r = _sheets.read_outcomes(sheet_url)
+    applied, refused = 0, []
+    for row in r.get("outcomes") or []:
+        out = mark(row["signal_id"], row["outcome"], row.get("note"), by="sheet")
+        if out.get("ok"):
+            applied += 1
+        else:
+            refused.append({"signal": row["signal_id"], "why": out.get("error")})
+    O.log(O.APPROVAL, agent="sheet", ok=True,
+          summary=f"read {applied} outcomes from the sheet")
+    return {"applied": applied, "refused": refused,
+            "read": len(r.get("outcomes") or []), "error": r.get("error")}
+
+
+def mark(signal_id, outcome, note=None, by="human"):
     """Record what a human did with an alert.
 
     This is the node the entire value story rests on. Without it the product can
@@ -241,6 +282,13 @@ def mark(signal_id, outcome, note=None):
     sig = G.get(signal_id)
     if not sig:
         return {"ok": False, "error": "unknown signal"}
+    # The lifecycle decides whether this move is legal. Marking an outcome on a
+    # signal that was never delivered is a bug somewhere upstream, and silently
+    # accepting it would corrupt the funnel the value surface reports from.
+    import _lifecycle as L
+    step = L.advance(signal_id, outcome, note=note, by=by)
+    if not step.get("ok"):
+        return {"ok": False, "error": step.get("error"), "state": step.get("from")}
 
     oid = G.upsert("outcome", {
         "signal_id": signal_id, "outcome": outcome, "note": note,

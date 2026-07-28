@@ -43,6 +43,17 @@ def main():
         print(f"watches={s['watches']} enabled={s['enabled']} healthy={s['healthy']}"
               f" last_run={s['hours_since']}h ago stale={s['stale']}")
         return 0 if s["healthy"] or not s["watches"] else 1
+    # Read the sheet BEFORE running, so outcomes recorded since the last run are
+    # applied before new alerts land. A user who marked five rows yesterday
+    # should see that reflected, not buried under today's batch.
+    try:
+        import _deliver
+        pulled = _deliver.pull_outcomes()
+        if pulled.get("applied"):
+            print(f"read {pulled['applied']} outcomes back from the sheet")
+    except Exception:                                            # noqa: BLE001
+        pass
+
     out = _watch.run_all() if "--all" in sys.argv else _watch.run_due()
     print(f"ran {out['ran']} watches, {out.get('found', 0)} new signals")
     # Keep the public graph number honest without anyone remembering to.

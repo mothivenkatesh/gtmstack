@@ -38,6 +38,7 @@ import _cohorts as C           # noqa: E402
 import _definitions as D       # noqa: E402
 import _graph as G             # noqa: E402
 import _observe as O           # noqa: E402
+import _lifecycle as LC       # noqa: E402
 import _contracts as CT        # noqa: E402
 import _crm as CRM            # noqa: E402
 import _crm_providers as CP   # noqa: E402
@@ -336,6 +337,10 @@ class DeliveryAndOutcomes(unittest.TestCase):
         self.assertIn("Connect", out["note"])
 
     def test_mark_writes_an_outcome_and_links_it(self):
+        # Deliver first. The lifecycle refuses an outcome on something never
+        # sent, which is correct: you cannot have acted on an alert you never got.
+        import _lifecycle as _LC
+        _LC.advance(self.sig, _LC.DELIVERED)
         r = DL.mark(self.sig, DL.CONVERTED, note="booked a call")
         self.assertTrue(r["ok"])
         self.assertTrue(G.query("outcome"))
@@ -353,6 +358,8 @@ class DeliveryAndOutcomes(unittest.TestCase):
         self.assertIn("cannot tell you what it was worth", v["sentence"])
 
     def test_value_reports_conversions(self):
+        import _lifecycle as _LC
+        _LC.advance(self.sig, _LC.DELIVERED)
         DL.mark(self.sig, DL.CONVERTED)
         v = DL.value()
         self.assertEqual(v["converted"], 1)
@@ -679,6 +686,76 @@ class RunStateContract(unittest.TestCase):
     def test_carry_is_bounded(self):
         big = {"_items": list(range(AG.CARRY_MAX * 3))}
         self.assertLessEqual(len(AG._carry(big)["_items"]), AG.CARRY_MAX)
+
+
+class Lifecycle(unittest.TestCase):
+    """One state machine so every surface agrees. Before this, delivery,
+    outcomes, and the value surface each had their own idea of what stage a
+    signal was at, expressed as ad-hoc field checks."""
+
+    def setUp(self):
+        G.reset()
+        self.sid = G.upsert("signal", {"text": "which gateway", "sentiment": "neutral",
+                                       "intent_type": "category_intent", "platform": "reddit"},
+                            key="reddit:lc1", agent="listener")
+
+    def test_state_is_derived_not_stored(self):
+        """Derived, so it cannot disagree with itself. A stored status field is a
+        second source of truth that goes stale."""
+        self.assertEqual(LC.state_of(G.get(self.sid)), LC.QUEUED)
+
+    def test_a_non_buying_signal_is_saved_not_queued(self):
+        s2 = G.upsert("signal", {"intent_type": "brand_mention"}, key="reddit:lc2")
+        self.assertEqual(LC.state_of(G.get(s2)), LC.SAVED)
+
+    def test_delivery_advances_the_state(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        self.assertEqual(LC.state_of(G.get(self.sid)), LC.DELIVERED)
+
+    def test_an_illegal_transition_is_refused(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        out = LC.advance(self.sid, LC.QUEUED)
+        self.assertFalse(out["ok"])
+        self.assertIn("cannot go from", out["error"])
+
+    def test_an_outcome_on_an_undelivered_signal_is_refused(self):
+        """Marking an outcome on something never sent is a bug upstream, and
+        accepting it would corrupt the funnel the value surface reports from."""
+        out = DL.mark(self.sid, "converted")
+        self.assertFalse(out["ok"])
+
+    def test_the_full_round_trip(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        self.assertTrue(DL.mark(self.sid, "converted", by="sheet")["ok"])
+        self.assertEqual(LC.state_of(G.get(self.sid)), LC.CONVERTED)
+
+    def test_an_actioned_signal_can_still_convert(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        DL.mark(self.sid, "actioned")
+        self.assertTrue(DL.mark(self.sid, "converted")["ok"])
+
+    def test_a_terminal_state_is_terminal(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        DL.mark(self.sid, "ignored")
+        self.assertFalse(LC.advance(self.sid, LC.DELIVERED)["ok"])
+
+    def test_funnel_reports_the_useful_alert_rate(self):
+        LC.advance(self.sid, LC.DELIVERED)
+        DL.mark(self.sid, "converted")
+        f = LC.funnel()
+        self.assertEqual(f["delivered"], 1)
+        self.assertEqual(f["decided"], 1)
+        self.assertEqual(f["useful_alert_rate"], 100.0)
+
+    def test_funnel_flags_a_stalled_queue(self):
+        """Signals piling up at delivered with nothing decided means the alerts
+        are not worth acting on, which is the number that predicts churn."""
+        LC.advance(self.sid, LC.DELIVERED)
+        self.assertTrue(LC.funnel()["stalled"])
+
+    def test_every_state_has_user_facing_copy(self):
+        for st in LC.TRANSITIONS:
+            self.assertIn(st, LC.LABELS, f"{st} has no label for the UI")
 
 
 if __name__ == "__main__":

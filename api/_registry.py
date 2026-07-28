@@ -527,11 +527,14 @@ class WatchModule(Module):
     id, name, desc = "watch", "Watches", "Keywords checked on a schedule, delivered once"
 
     def get(self, req):
-        import _watch, _deliver
+        import _watch, _deliver, _lifecycle, _sheets
         if req.params.get("value"):
             return Resp(_deliver.value())
+        if req.params.get("funnel"):
+            return Resp(_lifecycle.funnel())
         return Resp({"watches": _watch.list_watches(), "status": _watch.status(),
-                     "delivery": _deliver.configured(), "value": _deliver.value()})
+                     "delivery": _deliver.configured(), "value": _deliver.value(),
+                     "funnel": _lifecycle.funnel(), "sheet": _sheets.setup_hint()})
 
     def post(self, req):
         import _watch, _deliver
@@ -545,6 +548,10 @@ class WatchModule(Module):
         if act == "mark":
             return Resp(_deliver.mark(req.body.get("signal"), req.body.get("outcome"),
                                       req.body.get("note")))
+        if act == "sync_sheet":
+            # Pull outcomes on demand, so a user who just filled in the sheet
+            # does not wait for the next scheduled run to see it reflected.
+            return Resp(_deliver.pull_outcomes(req.body.get("sheet_url")))
         if act in ("run", "run_due"):
             # The scheduled path. Gated so a public deployment cannot be used to
             # burn source quota by anyone who finds the URL.

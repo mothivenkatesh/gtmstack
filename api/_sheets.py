@@ -233,3 +233,130 @@ def _get_or_rotate_tab(ss, tab, rotate_at):
         return ws
     except gspread.WorksheetNotFound:
         return ss.add_worksheet(title=base, rows=5000, cols=len(_HEADER))
+
+
+# ── signals: the two-way surface ────────────────────────────────────────────
+# The monitor pushes mentions one way. Signals are different: the sheet is where
+# a GTM operator LIVES, so it is both the delivery surface and the place they
+# record what they did. That makes it the only realistic path to outcome data,
+# because nobody logs into a dashboard to fill in a dropdown they could have
+# filled in where they already were.
+#
+# Field ownership is split so a two-way sync needs no conflict resolution:
+# every column except Outcome is written by the graph and is read-only in
+# practice; Outcome is written by the human and read back by us.
+
+SIGNAL_HEADER = ["id", "found", "what it is", "sentiment", "who", "where",
+                 "what they said", "link", "Outcome", "notes"]
+OUTCOME_COL = 9          # 1-indexed column I
+NOTES_COL = 10
+OUTCOME_CHOICES = ["", "actioned", "ignored", "converted"]
+
+
+def _signal_row(node):
+    d = node.get("data", {}) or {}
+    text = (d.get("text") or "")[:500]
+    if text[:1] in ("=", "+", "-", "@"):
+        text = "'" + text          # formula-injection guard, as elsewhere
+    labels = {"category_intent": "Choosing a vendor",
+              "competitor_comparison": "Comparing options",
+              "complaint": "Unhappy in public", "brand_mention": "Mentioned you"}
+    return [
+        node.get("id") or "",                                   # A: graph id, the join key
+        d.get("ago") or d.get("posted_at") or "",               # B
+        labels.get(d.get("intent_type"), d.get("intent_type") or ""),  # C
+        d.get("sentiment") or "",                               # D
+        d.get("author") or "",                                  # E
+        d.get("where") or d.get("platform") or "",              # F
+        text,                                                   # G
+        node.get("source") or d.get("url") or "",               # H
+        "",                                                     # I: Outcome, THEIRS
+        "",                                                     # J: notes, THEIRS
+    ]
+
+
+def push_signals(nodes, sheet_url=None, tab="Signals"):
+    """Append signal rows, skipping any whose graph id is already present.
+
+    Dedup is on the graph id in column A, which is stronger than a content hash:
+    the same post re-read on a later run resolves to the same node, so it cannot
+    produce a second row even if its text changed."""
+    if not configured():
+        return {"skipped": True, "reason": "not_configured"}
+    url = sheet_url or os.getenv("GTMSTACK_SHEET_URL") or ""
+    if not url:
+        return {"skipped": True, "reason": "no_sheet_url"}
+    try:
+        gc = _client()
+        sh = _with_retry(lambda: gc.open_by_url(url))
+        try:
+            ws = sh.worksheet(tab)
+        except Exception:                                        # noqa: BLE001
+            ws = _with_retry(lambda: sh.add_worksheet(title=tab, rows=1000,
+                                                      cols=len(SIGNAL_HEADER)))
+            _with_retry(lambda: ws.update("A1", [SIGNAL_HEADER],
+                                          value_input_option="RAW"))
+        head = _with_retry(lambda: ws.row_values(1))
+        if not head:
+            _with_retry(lambda: ws.update("A1", [SIGNAL_HEADER],
+                                          value_input_option="RAW"))
+        have = set(_with_retry(lambda: ws.col_values(1))[1:])
+        rows = [_signal_row(n) for n in nodes if (n.get("id") or "") not in have]
+        if not rows:
+            return {"pushed": 0, "skipped_dup": len(nodes), "sheet_url": url, "tab": tab}
+        _with_retry(lambda: ws.append_rows(rows, value_input_option="RAW"))
+        return {"pushed": len(rows), "skipped_dup": len(nodes) - len(rows),
+                "sheet_url": url, "tab": tab}
+    except Exception as e:                                       # noqa: BLE001
+        return {"error": str(e)[:200]}
+
+
+def read_outcomes(sheet_url=None, tab="Signals"):
+    """Read the Outcome column back.
+
+    This is the half that makes the sheet an input surface rather than an
+    export. Returns [{signal_id, outcome, note}] for rows a human has filled in.
+    Only the outcome and notes columns are read: everything else in that row is
+    the graph's, and reading it back would invite a conflict that the ownership
+    split exists to prevent."""
+    if not configured():
+        return {"skipped": True, "reason": "not_configured", "outcomes": []}
+    url = sheet_url or os.getenv("GTMSTACK_SHEET_URL") or ""
+    if not url:
+        return {"skipped": True, "reason": "no_sheet_url", "outcomes": []}
+    try:
+        gc = _client()
+        sh = _with_retry(lambda: gc.open_by_url(url))
+        ws = sh.worksheet(tab)
+        vals = _with_retry(lambda: ws.get_all_values())
+        out = []
+        for row in vals[1:]:
+            if len(row) < OUTCOME_COL:
+                continue
+            sid = (row[0] or "").strip()
+            outcome = (row[OUTCOME_COL - 1] or "").strip().lower()
+            note = (row[NOTES_COL - 1] or "").strip() if len(row) >= NOTES_COL else ""
+            if sid and outcome in ("actioned", "ignored", "converted"):
+                out.append({"signal_id": sid, "outcome": outcome, "note": note or None})
+        return {"outcomes": out, "rows": len(vals) - 1, "sheet_url": url, "tab": tab}
+    except Exception as e:                                       # noqa: BLE001
+        return {"error": str(e)[:200], "outcomes": []}
+
+
+def setup_hint():
+    """What a user must do to connect a sheet, in their words. Shown in the UI
+    rather than buried in a README, because a connector nobody can find is the
+    same as one that does not exist."""
+    return {
+        "configured": configured(),
+        "steps": [
+            "Create a Google Sheet, or use an existing one.",
+            "Share it (Editor) with the service account email in your Google credentials.",
+            "Set GTMSTACK_SHEET_URL to the sheet URL.",
+            "Set GOOGLE_SA_JSON (path) or GOOGLE_SA_KEY (the JSON itself).",
+        ],
+        "then": ("Your team's alerts land in a Signals tab. Fill in the Outcome "
+                 "column (actioned, ignored, converted) and GTMstack reads it "
+                 "back, so it learns which alerts were worth sending."),
+        "sheet_url": os.getenv("GTMSTACK_SHEET_URL") or None,
+    }

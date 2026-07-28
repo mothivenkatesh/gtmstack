@@ -826,3 +826,66 @@ arrived. When it does, porting a working system with a typed state contract and
 checkpointing already in place is straightforward, and the approval queue stays
 as-is because a durable queue survives a process death in a way an in-memory
 interrupt does not.
+
+## Build plan, this change (Google Sheets as the two-way surface + signal lifecycle)
+
+Driven by the user's observation: "for gtm folks getting data on google sheets is
+a lot more easier." That is right, and the reasoning matters more than the
+feature. Sheets is not a downgrade from a web UI, it is where GTM operators
+already live: zero onboarding, editable, shareable, and they can add their own
+columns and a VLOOKUP into their CRM. A read-only dashboard cannot compete with
+that.
+
+The correction worth recording: the reference script was NOT better. Its problems
+(no dedup, no memory, no idempotency, two bare `except: pass`) come from being a
+script, not from using Sheets. `api/_sheets.py` already had the good version
+(dedup by row id, formula-injection guard, RAW input, retries, tab rotation); it
+was simply only wired to the monitor, so the agents could not deliver there.
+
+**The insight that made this the highest-leverage item.** `useful_alert_rate` was
+null, not because the metric was hard but because recording an outcome meant
+opening the app. Nobody logs into a dashboard to fill in a dropdown they could
+have filled in where they already were. Putting the alerts in a sheet with an
+Outcome column and reading it back closes the loop where the habit already is.
+
+**`api/_lifecycle.py`, the design spine.** Delivery, outcomes, cohorts, and the
+value surface each had their own implicit idea of what stage a signal was at,
+expressed as ad-hoc field checks. One state machine, written once:
+
+    discovered -> classified -> saved -> queued -> delivered -> actioned
+                                                             -> ignored
+                                                             -> converted
+
+State is DERIVED from the fields, never stored. A stored status column is a
+second source of truth that goes stale the moment a writer forgets it.
+
+**The ownership split is the decision everything hangs off:** the GRAPH owns
+every field except the outcome; the SHEET owns the outcome column and nothing
+else. Each field has exactly one writer, so a two-way sync needs no conflict
+resolution. Editing the text of a row in the sheet changes nothing upstream
+(the post is a fact about the world), and setting the Outcome dropdown changes
+everything (the outcome is the user's judgment and only they have it). A row
+deleted from the sheet is never re-pushed: delivery is a thing that happened, not
+a desired end state.
+
+| # | Change | File | Risk |
+|---|---|---|---|
+| 1 | The lifecycle: states, legal transitions, `state_of` (derived), `advance` (refuses illegal jumps, never raises), `funnel()` with response rate, useful-alert rate, and a `stalled` flag. User-facing copy lives with the state it describes so the two cannot drift | api/_lifecycle.py | low |
+| 2 | `push_signals` (dedup on the graph id in column A, stronger than a content hash) + `read_outcomes` (reads ONLY the outcome and notes columns) + `setup_hint` for the UI | api/_sheets.py | low |
+| 3 | Sheets as a fourth delivery channel; `pull_outcomes()` applies the sheet back to the graph; `mark()` now routes through the lifecycle so an outcome on an undelivered signal is refused | api/_deliver.py | med |
+| 4 | The scheduler reads outcomes BEFORE running, so yesterday's decisions are reflected before today's batch lands | watch_run.py | low |
+| 5 | `?funnel=1` and a `sync_sheet` action, so a user who just filled in the sheet does not wait for the next scheduled run | api/_registry.py | low |
+| 6 | Connectors tab rebuilt as a real discovery surface: live connection status per destination, why each one matters, and the four setup steps inline when no sheet is connected. A connector nobody can find is the same as one that does not exist, and this tab is where a user goes looking | js/connectors.js, index.html | low |
+
+Two older tests failed after this and the failure was CORRECT: they marked an
+outcome on a signal that was never delivered, which the new guard refuses. They
+now deliver first, which is what the real flow does.
+
+Verified end to end: a signal moves queued -> delivered -> converted, an illegal
+jump back to queued is refused with a stated reason, marking an undelivered
+signal is refused, and the funnel reports useful_alert_rate 100% with the value
+sentence intact. 104 harness tests (up from 93), six unit files, 51 E2E with 0
+failures, eval gate green.
+
+Not done: pushing to a real sheet needs GOOGLE_SA_JSON plus GTMSTACK_SHEET_URL,
+so the round trip is verified against the lifecycle rather than against Google.
